@@ -12,14 +12,13 @@
       <div class="form-group">
         <div class="input-group">
           <span class="input-icon">
-            <i class="fas fa-envelope"></i>
+            <i class="fas fa-user"></i>
           </span>
-          <input type="email" class="form-control" placeholder="Correo electrónico" formControlName="email"
+          <input type="text" class="form-control" placeholder="Usuario o correo electrónico" formControlName="email"
             [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
         </div>
         <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error-text">
-          <small *ngIf="loginForm.get('email')?.errors?.['required']">El email es requerido</small>
-          <small *ngIf="loginForm.get('email')?.errors?.['email']">Email inválido</small>
+          <small *ngIf="loginForm.get('email')?.errors?.['required']">Usuario o email es requerido</small>
         </div>
       </div>
 
@@ -47,16 +46,21 @@
         <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <button type="submit" class="btn-submit" [disabled]="loading">
-        <span *ngIf="!loading">Iniciar Sesión</span>
+      <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+        <span *ngIf="!loading">
+          <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+        </span>
         <span *ngIf="loading">
-          <i class="fas fa-spinner fa-spin"></i> Iniciando...
+          <i class="fas fa-spinner fa-spin me-2"></i>Iniciando...
         </span>
       </button>
     </form>
 
-    <div class="auth-footer">
-      <p>¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+    <!-- Social Login Component -->
+    <app-social-login></app-social-login>
+
+    <div class="text-center mt-3">
+      <p class="text-muted">¿No tienes cuenta? <a routerLink="/register" class="text-decoration-none">Regístrate</a></p>
     </div>
   </div>
 </div>

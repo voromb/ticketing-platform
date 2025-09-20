@@ -1,2 +1,3 @@
 export { default as TicketController } from './ticket.controller';
 export { default as EventController } from './event.controller';
+export { default as AuthController } from './auth.controller';

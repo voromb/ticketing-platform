@@ -9,6 +9,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const compression_1 = __importDefault(require("compression"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 // Configuración
 dotenv_1.default.config();
 // Importar configuraciones
@@ -39,6 +40,7 @@ class App {
     }
     initializeRoutes() {
         // Health check
+        this.app.use('/api/auth', auth_routes_1.default);
         this.app.get('/health', (req, res) => {
             res.json({
                 status: 'ok',

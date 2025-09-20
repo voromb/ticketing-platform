@@ -1,0 +1,47 @@
+<div class="social-login-container">
+  <div class="divider">
+    <span class="divider-text">O continúa con</span>
+  </div>
+
+  <!-- Google Login Button -->
+  <div class="social-button-container">
+    <div id="google-signin-button" class="google-button"></div>
+    <!-- Fallback manual button -->
+    <button 
+      type="button" 
+      class="btn btn-social btn-google" 
+      (click)="signInWithGoogle()">
+      <i class="fab fa-google me-2"></i>
+      Continuar con Google
+    </button>
+  </div>
+
+  <!-- GitHub Login Button -->
+  <div class="social-button-container">
+    <button 
+      type="button" 
+      class="btn btn-social btn-github" 
+      (click)="signInWithGitHub()">
+      <i class="fab fa-github me-2"></i>
+      Continuar con GitHub
+    </button>
+  </div>
+
+  <!-- Facebook Login Button -->
+  <div class="social-button-container">
+    <button 
+      type="button" 
+      class="btn btn-social btn-facebook" 
+      (click)="signInWithFacebook()">
+      <i class="fab fa-facebook-f me-2"></i>
+      Continuar con Facebook
+    </button>
+  </div>
+
+  <!-- Información adicional -->
+  <div class="social-login-info">
+    <small class="text-muted text-center d-block mt-3">
+      Al continuar, aceptas nuestros términos de servicio y política de privacidad
+    </small>
+  </div>
+</div>

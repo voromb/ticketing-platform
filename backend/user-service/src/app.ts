@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes';
 
 // Configuración
 dotenv.config();
@@ -42,6 +43,7 @@ class App {
 
   private initializeRoutes(): void {
     // Health check
+    this.app.use('/api/auth', authRoutes);
     this.app.get('/health', (req: Request, res: Response) => {
       res.json({ 
         status: 'ok', 

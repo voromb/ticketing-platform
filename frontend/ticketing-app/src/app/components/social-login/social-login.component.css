@@ -1,0 +1,125 @@
+.social-login-container {
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e9ecef;
+}
+
+.divider-text {
+  background: white;
+  padding: 0 1rem;
+  color: #6c757d;
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.social-button-container {
+  margin-bottom: 0.75rem;
+}
+
+.btn-social {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-google {
+  background-color: white;
+  border-color: #dadce0;
+  color: #3c4043;
+}
+
+.btn-google:hover {
+  background-color: #f8f9fa;
+  border-color: #dadce0;
+  color: #3c4043;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-github {
+  background-color: #24292e;
+  border-color: #24292e;
+  color: white;
+}
+
+.btn-github:hover {
+  background-color: #1a1e22;
+  border-color: #1a1e22;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(36, 41, 46, 0.3);
+}
+
+.btn-facebook {
+  background-color: #1877f2;
+  border-color: #1877f2;
+  color: white;
+}
+
+.btn-facebook:hover {
+  background-color: #166fe5;
+  border-color: #166fe5;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3);
+}
+
+.btn-social i {
+  font-size: 16px;
+}
+
+.social-login-info {
+  margin-top: 1rem;
+}
+
+/* Google Button Styling Override */
+.google-button {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 10px !important;
+}
+
+/* Custom Google Button Styling */
+::ng-deep .google-button iframe {
+  border-radius: 10px !important;
+}
+
+::ng-deep .google-button div[role="button"] {
+  border-radius: 10px !important;
+  height: 48px !important;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .btn-social {
+    font-size: 13px;
+    padding: 0.65rem 0.75rem;
+  }
+  
+  .social-button-container {
+    margin-bottom: 0.5rem;
+  }
+}
