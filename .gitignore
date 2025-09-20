@@ -1,6 +1,8 @@
 # Environment
 .env              # <-- Esto evita que se suba a Git
+**/.env          # <-- Esto evita que se suban archivos .env en subcarpetas
 .env.local
+**/.env.local
 *.local
 
 # Dependencies
