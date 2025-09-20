@@ -1,0 +1,159 @@
+.navbar {
+  border-bottom: 3px solid #667eea;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+  color: #667eea !important;
+}
+
+.user-menu {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+
+.user-menu:hover {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #667eea !important;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+}
+
+.user-avatar-large {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 11px;
+  color: #6c757d;
+  line-height: 1;
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 0.5rem 0;
+  min-width: 280px;
+  margin-top: 0.5rem;
+}
+
+.dropdown-header {
+  padding: 1rem 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 0;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: none;
+  background: none;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #667eea;
+  transform: translateX(5px);
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #f8d7da;
+  color: #dc3545 !important;
+}
+
+.dropdown-item i {
+  width: 20px;
+  text-align: center;
+}
+
+.nav-link {
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #667eea !important;
+}
+
+.nav-link.active {
+  color: #667eea !important;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 0.25em 0.5em;
+}
+
+/* Dropdown functionality */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.dropdown.show .dropdown-menu,
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Prevent dropdown from closing when clicking inside */
+.dropdown-menu {
+  cursor: default;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}

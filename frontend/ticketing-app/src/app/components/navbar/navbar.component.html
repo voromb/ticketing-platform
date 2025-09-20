@@ -1,0 +1,96 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <!-- Logo y título -->
+    <a class="navbar-brand d-flex align-items-center" routerLink="/events">
+      <i class="fas fa-ticket-alt me-2 fs-4"></i>
+      <span class="fw-bold">Ticketing Platform</span>
+    </a>
+
+    <!-- Navegación principal -->
+    <div class="navbar-nav me-auto">
+      <a class="nav-link" routerLink="/events" routerLinkActive="active">
+        <i class="fas fa-calendar-alt me-1"></i>Eventos
+      </a>
+    </div>
+
+    <!-- Menú de usuario -->
+    <div class="navbar-nav ms-auto" *ngIf="user">
+      <div class="nav-item dropdown" [class.show]="showDropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center user-menu" 
+           href="#" 
+           (click)="toggleDropdown($event)"
+           [class.show]="showDropdown">
+          <div class="user-avatar me-2">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ user.username }}</span>
+            <small class="user-role">{{ getRoleDisplayName(user.role) }}</small>
+          </div>
+        </a>
+        
+        <ul class="dropdown-menu dropdown-menu-end" [class.show]="showDropdown">
+          <li class="dropdown-header">
+            <div class="d-flex align-items-center">
+              <div class="user-avatar-large me-2">
+                <i class="fas fa-user"></i>
+              </div>
+              <div>
+                <div class="fw-semibold">{{ user.username }}</div>
+                <small class="text-muted">{{ user.email }}</small>
+                <div class="mt-1">
+                  <span [class]="getRoleBadgeClass(user.role)">
+                    {{ getRoleDisplayName(user.role) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          
+          <li>
+            <a class="dropdown-item" href="#" (click)="goToProfile($event)">
+              <i class="fas fa-user-edit me-2"></i>Mi Perfil
+            </a>
+          </li>
+          
+          <li>
+            <a class="dropdown-item" href="#" (click)="goToMyTickets($event)">
+              <i class="fas fa-ticket-alt me-2"></i>Mis Tickets
+            </a>
+          </li>
+          
+          <li *ngIf="user.role === 'admin'">
+            <a class="dropdown-item" href="#" routerLink="/admin" (click)="closeDropdown()">
+              <i class="fas fa-cog me-2"></i>Administración
+            </a>
+          </li>
+          
+          <li *ngIf="user.role === 'company'">
+            <a class="dropdown-item" href="#" routerLink="/company" (click)="closeDropdown()">
+              <i class="fas fa-building me-2"></i>Mi Empresa
+            </a>
+          </li>
+          
+          <li><hr class="dropdown-divider"></li>
+          
+          <li>
+            <a class="dropdown-item text-danger" href="#" (click)="logout($event)">
+              <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Si no hay usuario logueado -->
+    <div class="navbar-nav ms-auto" *ngIf="!user">
+      <a class="nav-link" routerLink="/login">
+        <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+      </a>
+      <a class="nav-link" routerLink="/register">
+        <i class="fas fa-user-plus me-1"></i>Registrarse
+      </a>
+    </div>
+  </div>
+</nav>

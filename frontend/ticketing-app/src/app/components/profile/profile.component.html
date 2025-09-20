@@ -1,0 +1,203 @@
+<app-navbar></app-navbar>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header del perfil -->
+      <div class="profile-header mb-4">
+        <div class="d-flex align-items-center">
+          <div class="profile-avatar me-3">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <h2 class="mb-1">{{ user?.username }}</h2>
+            <p class="text-muted mb-1">{{ user?.email }}</p>
+            <span [class]="getRoleBadgeClass(user?.role)">
+              {{ getRoleDisplayName(user?.role) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs de navegación -->
+      <ul class="nav nav-tabs profile-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link" 
+             [class.active]="activeTab === 'profile'"
+             (click)="setActiveTab('profile')">
+            <i class="fas fa-user me-2"></i>Información Personal
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" 
+             [class.active]="activeTab === 'password'"
+             (click)="setActiveTab('password')">
+            <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+          </a>
+        </li>
+      </ul>
+
+      <!-- Contenido de las tabs -->
+      <div class="tab-content">
+        
+        <!-- Tab de Información Personal -->
+        <div class="tab-pane" [class.active]="activeTab === 'profile'">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-user-edit me-2"></i>Información Personal
+              </h5>
+            </div>
+            <div class="card-body">
+              <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+                <div class="row">
+                  <!-- Username -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre de Usuario *</label>
+                    <input type="text" class="form-control" formControlName="username"
+                           [class.is-invalid]="profileForm.get('username')?.invalid && profileForm.get('username')?.touched">
+                    <div *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched" class="invalid-feedback">
+                      Mínimo 3 caracteres
+                    </div>
+                  </div>
+
+                  <!-- Email (solo lectura) -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" [value]="user?.email" readonly>
+                    <small class="text-muted">Solo un administrador puede cambiar el email</small>
+                  </div>
+
+                  <!-- Nombre -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-control" formControlName="firstName" placeholder="Tu nombre">
+                  </div>
+
+                  <!-- Apellidos -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Apellidos</label>
+                    <input type="text" class="form-control" formControlName="lastName" placeholder="Tus apellidos">
+                  </div>
+
+                  <!-- Teléfono -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" formControlName="phone" placeholder="+34 600 000 000">
+                  </div>
+
+                  <!-- Fecha de nacimiento -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" class="form-control" formControlName="dateOfBirth">
+                  </div>
+
+                  <!-- Dirección -->
+                  <div class="col-12 mb-3">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" class="form-control" formControlName="address" placeholder="Calle, número, piso...">
+                  </div>
+
+                  <!-- Ciudad -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" formControlName="city" placeholder="Tu ciudad">
+                  </div>
+
+                  <!-- País -->
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">País</label>
+                    <select class="form-control" formControlName="country">
+                      <option value="">Selecciona tu país</option>
+                      <option value="ES">España</option>
+                      <option value="FR">Francia</option>
+                      <option value="DE">Alemania</option>
+                      <option value="IT">Italia</option>
+                      <option value="PT">Portugal</option>
+                      <option value="UK">Reino Unido</option>
+                      <option value="US">Estados Unidos</option>
+                      <option value="OTHER">Otro</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary" [disabled]="loading">
+                    <span *ngIf="!loading">
+                      <i class="fas fa-save me-2"></i>Guardar Cambios
+                    </span>
+                    <span *ngIf="loading">
+                      <i class="fas fa-spinner fa-spin me-2"></i>Guardando...
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab de Cambiar Contraseña -->
+        <div class="tab-pane" [class.active]="activeTab === 'password'">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+              </h5>
+            </div>
+            <div class="card-body">
+              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                <div class="row justify-content-center">
+                  <div class="col-md-8">
+                    
+                    <!-- Contraseña actual -->
+                    <div class="mb-3">
+                      <label class="form-label">Contraseña Actual *</label>
+                      <input type="password" class="form-control" formControlName="currentPassword"
+                             [class.is-invalid]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+                      <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" class="invalid-feedback">
+                        La contraseña actual es requerida
+                      </div>
+                    </div>
+
+                    <!-- Nueva contraseña -->
+                    <div class="mb-3">
+                      <label class="form-label">Nueva Contraseña *</label>
+                      <input type="password" class="form-control" formControlName="newPassword"
+                             [class.is-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+                      <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" class="invalid-feedback">
+                        Mínimo 6 caracteres
+                      </div>
+                    </div>
+
+                    <!-- Confirmar nueva contraseña -->
+                    <div class="mb-4">
+                      <label class="form-label">Confirmar Nueva Contraseña *</label>
+                      <input type="password" class="form-control" formControlName="confirmPassword"
+                             [class.is-invalid]="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched">
+                      <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="invalid-feedback">
+                        Las contraseñas no coinciden
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                      <button type="submit" class="btn btn-danger" [disabled]="loading">
+                        <span *ngIf="!loading">
+                          <i class="fas fa-key me-2"></i>Cambiar Contraseña
+                        </span>
+                        <span *ngIf="loading">
+                          <i class="fas fa-spinner fa-spin me-2"></i>Cambiando...
+                        </span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Crear Cuenta</h2>
+      <p>Únete a Ticketing Platform</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-icon">
+            <i class="fas fa-user"></i>
+          </span>
+          <input type="text" class="form-control" placeholder="Nombre de usuario" formControlName="username"
+            [class.is-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+        </div>
+        <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched" class="error-text">
+          <small>Mínimo 3 caracteres</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-icon">
+            <i class="fas fa-envelope"></i>
+          </span>
+          <input type="email" class="form-control" placeholder="Correo electrónico" formControlName="email"
+            [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        </div>
+        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
+          <small>Email inválido</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-icon">
+            <i class="fas fa-lock"></i>
+          </span>
+          <input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Contraseña"
+            formControlName="password"
+            [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
+          <small>Mínimo 6 caracteres</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-icon">
+            <i class="fas fa-check-circle"></i>
+          </span>
+          <input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Confirmar contraseña"
+            formControlName="confirmPassword"
+            [class.is-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+        </div>
+        <div *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched"
+          class="error-text">
+          <small>Las contraseñas no coinciden</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-icon">
+            <i class="fas fa-user-tag"></i>
+          </span>
+          <select class="form-control" formControlName="role">
+            <option value="user">Usuario</option>
+            <option value="company">Empresa</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        <span *ngIf="!loading">Crear Cuenta</span>
+        <span *ngIf="loading">
+          <i class="fas fa-spinner fa-spin"></i> Creando...
+        </span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>
