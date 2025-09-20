@@ -1,0 +1,21 @@
+{
+  "name": "ticketing-platform",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sistema de venta de tickets",
+  "scripts": {
+    "docker:up": "cd docker && docker compose up -d",
+    "docker:down": "cd docker && docker compose down",
+    "docker:logs": "cd docker && docker compose logs -f",
+    "docker:reset": "cd docker && docker compose down -v",
+    "docker:ps": "cd docker && docker compose ps",
+    "docker:restart": "npm run docker:down && npm run docker:up",
+    "start": "npm run docker:up",
+    "stop": "npm run docker:down",
+    "logs": "npm run docker:logs",
+    "clean": "npm run docker:reset"
+  },
+  "keywords": ["tickets", "microservices"],
+  "author": "",
+  "license": "ISC"
+}
