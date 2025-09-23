@@ -6,22 +6,22 @@ export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./components/login/login.component').then((m) => m.LoginComponent),
+      import('./shared/components/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'register',
     loadComponent: () =>
-      import('./components/register/register.component').then((m) => m.RegisterComponent),
+      import('./shared/components/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'events',
     loadComponent: () =>
-      import('./components/events/events.component').then((m) => m.EventsComponent),
+      import('./shared/components/events/events.component').then((m) => m.EventsComponent),
   },
   {
     path: 'profile',
     loadComponent: () =>
-      import('./components/profile/profile.component').then((m) => m.ProfileComponent),
+      import('./shared/components/profile/profile.component').then((m) => m.ProfileComponent),
   },
   // { estan comentades perque encara no estan fets els components
   //   path: 'admin',
