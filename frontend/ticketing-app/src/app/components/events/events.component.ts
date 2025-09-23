@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventService, IEvent } from '../../services/event.service';
+import { EventService, IEvent } from '../../core/services/event.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 
 @Component({
