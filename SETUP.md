@@ -13,7 +13,7 @@
 
 ## 🔧 **Crear backup de la base de datos:**
 ```bash
-# Desde la carpeta docker/
+# Desde la carpeta docker/ 
 docker exec ticketing-mongodb mongoexport --username admin --password admin123 --authenticationDatabase admin --db ticketing --collection events --out /events.json
 docker exec ticketing-mongodb mongoexport --username admin --password admin123 --authenticationDatabase admin --db ticketing --collection users --out /users.json
 docker cp ticketing-mongodb:/events.json ./bd_backup/
