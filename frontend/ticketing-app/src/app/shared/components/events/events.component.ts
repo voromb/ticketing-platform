@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventService, IEvent } from '../../services/event.service';
-import { NavbarComponent } from '../navbar/navbar.component';
+import { EventService, IEvent } from '../../../core/services/event.service';
+
 
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule],
   templateUrl: './events.component.html'
 })
 export class EventsComponent implements OnInit {

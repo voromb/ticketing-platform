@@ -1,15 +1,36 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { EventsComponent } from './components/events/events.component';
-import { ProfileComponent } from './components/profile/profile.component';
+
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'events', component: EventsComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'admin', component: EventsComponent },
-  { path: 'company', component: EventsComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' }, //*Hi ha que cambiar a futur al home */
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./shared/components/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./shared/components/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'events',
+    loadComponent: () =>
+      import('./shared/components/events/events.component').then((m) => m.EventsComponent),
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./shared/components/profile/profile.component').then((m) => m.ProfileComponent),
+  },
+  // { estan comentades perque encara no estan fets els components
+  //   path: 'admin',
+  //   loadComponent: () =>
+  //     import('./components/admin/admin.component').then((m) => m.AdminComponent),
+  // },
+  // {
+  //   path: 'company',
+  //   loadComponent: () =>
+  //     import('./components/company/company.component').then((m) => m.CompanyComponent),
+  // },
 ];
