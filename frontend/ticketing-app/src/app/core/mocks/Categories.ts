@@ -85,4 +85,47 @@ export const MOCK_CATEGORIES: Category[] = [
       },
     ],
   },
+  {
+  id_cat: '3',
+  slug: 'festivales-internacionales',
+  category_name: 'Festivales Internacionales',
+  image: 'assets/categories/festivales-internacionales.jpg',
+  events: [
+    {
+      _id: 'e5',
+      name: 'Hellfest 2025',
+      slug: 'hellfest-2025',
+      description: 'El festival francés de metal extremo. Death, black, doom y más géneros underground en un ambiente único.',
+      date: new Date('2025-06-20T16:00:00'),
+      venue: {
+        name: 'Hellfest Grounds',
+        address: 'Clisson, Francia',
+        capacity: 60000,
+      },
+      totalCapacity: 60000,
+      availableSeats: 8750,
+      basePrice: 220,
+      status: 'published',
+      imageUrl: 'assets/events/hellfest.jpg',
+    },
+    {
+      _id: 'e6',
+      name: 'Graspop Metal Meeting',
+      slug: 'graspop-metal-meeting',
+      description: 'Uno de los festivales más importantes de Europa con metal para todos los gustos.',
+      date: new Date('2025-06-19T15:00:00'),
+      venue: {
+        name: 'Festivalpark Stenehei',
+        address: 'Dessel, Bélgica',
+        capacity: 50000,
+      },
+      totalCapacity: 50000,
+      availableSeats: 9400,
+      basePrice: 180,
+      status: 'published',
+      imageUrl: 'assets/events/graspop.jpg',
+    },
+  ],
+}
+
 ];
