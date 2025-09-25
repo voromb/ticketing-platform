@@ -1,0 +1,88 @@
+import { Category } from '../models/Categories.model';
+
+export const MOCK_CATEGORIES: Category[] = [
+  {
+    id_cat: '1',
+    slug: 'rock-metal',
+    category_name: 'Rock / Metal',
+    image: 'assets/categories/rock-metal.jpg',
+    events: [
+      {
+        _id: 'e1',
+        name: 'Wacken Open Air 2025',
+        slug: 'wacken-open-air-2025',
+        description: 'El festival de metal más grande del mundo...',
+        date: new Date('2025-08-01T18:00:00'),
+        venue: {
+          name: 'Wacken Festival Grounds',
+          address: 'Wacken, Alemania',
+          capacity: 85000,
+        },
+        totalCapacity: 85000,
+        availableSeats: 12500,
+        basePrice: 285,
+        status: 'published',
+        imageUrl: 'assets/events/wacken.jpg',
+      },
+      {
+        _id: 'e2',
+        name: 'Download Festival Madrid',
+        slug: 'download-festival-madrid',
+        description: 'Rock y metal en estado puro. Bandas legendarias y nuevas promesas en un solo lugar.',
+        date: new Date('2025-06-28T17:00:00'),
+        venue: {
+          name: 'Caja Mágica',
+          address: 'Madrid, España',
+          capacity: 45000,
+        },
+        totalCapacity: 45000,
+        availableSeats: 6800,
+        basePrice: 165,
+        status: 'published',
+        imageUrl: 'assets/events/download.jpg',
+      },
+    ],
+  },
+  {
+    id_cat: '2',
+    slug: 'otros-estilos',
+    category_name: 'Otros Estilos Relacionados',
+    image: 'assets/categories/otros-estilos.jpg',
+    events: [
+      {
+        _id: 'e3',
+        name: 'Indie Rock Barcelona Fest',
+        slug: 'indie-rock-barcelona-fest',
+        description: 'Festival de indie y rock alternativo con las bandas emergentes más potentes.',
+        date: new Date('2025-05-10T20:00:00'),
+        venue: {
+          name: 'Parc del Fòrum',
+          address: 'Barcelona, España',
+          capacity: 30000,
+        },
+        totalCapacity: 30000,
+        availableSeats: 10500,
+        basePrice: 75,
+        status: 'published',
+        imageUrl: 'assets/events/indie-rock.jpg',
+      },
+      {
+        _id: 'e4',
+        name: 'Symphonic Metal Night',
+        slug: 'symphonic-metal-night',
+        description: 'Una noche épica de metal sinfónico con orquesta en directo.',
+        date: new Date('2025-09-21T21:00:00'),
+        venue: {
+          name: 'Royal Albert Hall',
+          address: 'Londres, Reino Unido',
+          capacity: 5200,
+        },
+        totalCapacity: 5200,
+        availableSeats: 1200,
+        basePrice: 120,
+        status: 'published',
+        imageUrl: 'assets/events/symphonic-metal.jpg',
+      },
+    ],
+  },
+];

@@ -1,0 +1,24 @@
+<div class="card h-100 shadow-sm border-0">
+  <!-- Imagen de la categoría -->
+  <img [src]="category.image"
+       class="card-img-top"
+       [alt]="category.category_name">
+
+  <div class="card-body text-center">
+    <!-- Nombre de la categoría -->
+    <h5 class="card-title fw-bold text-dark">
+      {{ category.category_name }}
+    </h5>
+
+    <!-- Número de eventos -->
+    <p class="text-muted mb-3">
+      <i class="fas fa-music me-2"></i>
+      {{ category.events?.length || 0 }} eventos
+    </p>
+
+    <!-- Botón -->
+    <button class="btn btn-outline-danger btn-sm px-4">
+      Ver eventos
+    </button>
+  </div>
+</div>

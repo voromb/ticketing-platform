@@ -11,11 +11,11 @@ export class Home {
 
     //tenim que tirar a un servei per agafar els concerts en el component de carrousel
     concerts = [
-    { imageUrl: '/assets/metal1.jpg', title: 'Concierto Metallica' },
-    { imageUrl: '/assets/rock1.jpg', title: 'Festival Rock Nacional' },
-    { imageUrl: '/assets/metal2.jpg', title: 'Iron Maiden Live' },
+    { imageUrl: 'assets/metal1.jpg', title: 'Concierto Metallica' },
+    { imageUrl: 'assets/rock1.jpg', title: 'Festival Rock Nacional' },
+    { imageUrl: 'assets/metal2.jpg', title: 'Iron Maiden Live' },
 
-    
+
   ];
 
 }

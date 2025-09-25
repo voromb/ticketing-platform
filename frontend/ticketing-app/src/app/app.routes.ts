@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' }, //*Hi ha que cambiar a futur al home */
+  { path: '', redirectTo: 'home', pathMatch: 'full' }, //*Hi ha que cambiar a futur al home */
    {
     path: 'home',
     loadComponent: () =>
