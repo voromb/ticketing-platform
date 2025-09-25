@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-list-card',
   imports: [],
   templateUrl: './list-card.html',
-  styleUrl: './list-card.scss'
+  styleUrl: './list-card.css'
 })
 export class ListCard {
 

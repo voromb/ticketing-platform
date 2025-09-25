@@ -13,6 +13,13 @@
       </a>
     </div>
 
+      <!-- Navegación home -->
+    <div class="navbar-nav me-auto">
+      <a class="nav-link" routerLink="/home" routerLinkActive="active">
+      <i class="fas fa-calendar-alt me-1"></i>Home
+      </a>
+    </div>
+
     <!-- Menú de usuario -->
     <div class="navbar-nav ms-auto" *ngIf="user">
       <div class="nav-item dropdown" [class.show]="showDropdown">
