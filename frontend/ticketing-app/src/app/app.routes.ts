@@ -19,9 +19,9 @@ export const routes: Routes = [
       import('./shared/components/register/register.component').then((m) => m.RegisterComponent),
   },
   {
-    path: 'events',
+    path: 'shop',
     loadComponent: () =>
-      import('./shared/components/events/events.component').then((m) => m.EventsComponent),
+      import('./pages/shop/shop').then((m) => m.Shop),
   },
   {
     path: 'profile',
