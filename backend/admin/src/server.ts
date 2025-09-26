@@ -88,7 +88,6 @@ export async function buildServer(): Promise<FastifyInstance> {
     });
   });
 
-  // Registrar rutas
   try {
     await server.register(authRoutes, { prefix: '/api/auth' });
     await server.register(eventRoutes, { prefix: '/api/events' });
@@ -98,8 +97,6 @@ export async function buildServer(): Promise<FastifyInstance> {
   } catch (error) {
     logger.error('Error registrando rutas:', error);
   }
-
-  // Health check
   server.get('/health', async (request, reply) => {
     const dbHealthy = await prisma.$queryRaw`SELECT 1`
       .then(() => true)
@@ -151,12 +148,12 @@ export async function startServer() {
     console.log(`
     ╔════════════════════════════════════════════╗
     ║                                            ║
-    ║   Ticketing Admin API v1.0.0           ║
+    ║   Ticketing Admin API v1.0.0               ║
     ║                                            ║
-    ║   Servidor corriendo en:                  ║
+    ║   Servidor corriendo en:                   ║
     ║   http://localhost:${ENV.PORT}             ║
     ║                                            ║
-    ║   Health Check:                        ║
+    ║   Health Check:                            ║
     ║   http://localhost:${ENV.PORT}/health      ║
     ║                                            ║
     ╚════════════════════════════════════════════╝

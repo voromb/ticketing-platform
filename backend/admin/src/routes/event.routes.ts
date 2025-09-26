@@ -1,23 +1,12 @@
 import { FastifyInstance } from 'fastify';
+import SimpleEventController from '../controllers/event.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 export async function eventRoutes(fastify: FastifyInstance) {
-  // Por ahora sin autenticación hasta que esté listo
-  // TODO: Añadir authMiddleware cuando esté funcionando
-  
-  fastify.get('/', async (request, reply) => {
-    return reply.send({
-      message: 'Events API working',
-      endpoints: [
-        'GET /api/events',
-        'POST /api/events',
-        'GET /api/events/:id',
-        'PUT /api/events/:id',
-        'DELETE /api/events/:id'
-      ]
-    });
-  });
+  fastify.addHook('preHandler', authMiddleware);
 
-  fastify.get('/test', async (request, reply) => {
-    return { status: 'Events route is working!' };
-  });
+  fastify.post('/', SimpleEventController.createRockEvent.bind(SimpleEventController));
+  fastify.get('/', SimpleEventController.listRockEvents.bind(SimpleEventController));
+  fastify.get('/stats', SimpleEventController.getRockEventStats.bind(SimpleEventController));
+  fastify.get('/:id', SimpleEventController.getRockEventById.bind(SimpleEventController));
 }

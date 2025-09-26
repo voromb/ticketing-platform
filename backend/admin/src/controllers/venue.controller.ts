@@ -6,7 +6,6 @@ import logger from '../utils/logger';
 
 const prisma = new PrismaClient();
 
-// ==================== SCHEMAS DE VALIDACIÓN ====================
 const createVenueSchema = z.object({
     name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
     slug: z
@@ -50,7 +49,6 @@ const venueQuerySchema = z.object({
     maxCapacity: z.string().optional().transform(Number),
 });
 
-// ==================== TYPES ====================
 type CreateVenueDTO = z.infer<typeof createVenueSchema>;
 type UpdateVenueDTO = z.infer<typeof updateVenueSchema>;
 type VenueQueryDTO = z.infer<typeof venueQuerySchema>;
@@ -69,7 +67,6 @@ export class VenueController {
         try {
             const validatedData = createVenueSchema.parse(request.body);
 
-            // Verificar que el slug no exista
             const existingVenue = await prisma.venue.findUnique({
                 where: { slug: validatedData.slug },
             });
@@ -80,10 +77,8 @@ export class VenueController {
                 });
             }
 
-            // Extraer secciones si existen
             const { sections, ...venueData } = validatedData;
 
-            // Crear el venue con sus secciones
             const venue = await prisma.venue.create({
                 data: {
                     ...venueData,
@@ -107,7 +102,6 @@ export class VenueController {
                 },
             });
 
-            // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('venue.created', {
                 venueId: venue.id,
                 venueName: venue.name,
@@ -144,7 +138,6 @@ export class VenueController {
             const query = venueQuerySchema.parse(request.query);
             const { page, limit, search, city, isActive, minCapacity, maxCapacity } = query;
 
-            // Construir filtros
             const where: any = {};
 
             if (typeof isActive === 'boolean') {
@@ -169,10 +162,8 @@ export class VenueController {
                 if (maxCapacity) where.capacity.lte = maxCapacity;
             }
 
-            // Obtener total
             const total = await prisma.venue.count({ where });
 
-            // Obtener venues paginados
             const venues = await prisma.venue.findMany({
                 where,
                 skip: (page - 1) * limit,
@@ -268,7 +259,6 @@ export class VenueController {
             const { id } = request.params;
             const validatedData = updateVenueSchema.parse(request.body);
 
-            // Verificar que el venue existe
             const existingVenue = await prisma.venue.findUnique({
                 where: { id },
             });
@@ -279,7 +269,6 @@ export class VenueController {
                 });
             }
 
-            // Si se está actualizando el slug, verificar que no exista
             if (validatedData.slug && validatedData.slug !== existingVenue.slug) {
                 const slugExists = await prisma.venue.findUnique({
                     where: { slug: validatedData.slug },
@@ -292,7 +281,6 @@ export class VenueController {
                 }
             }
 
-            // Actualizar venue
             const venue = await prisma.venue.update({
                 where: { id },
                 data: validatedData,
@@ -309,7 +297,6 @@ export class VenueController {
                 },
             });
 
-            // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('venue.updated', {
                 venueId: venue.id,
                 venueName: venue.name,
@@ -345,7 +332,6 @@ export class VenueController {
         try {
             const { id } = request.params;
 
-            // Verificar que no tenga eventos activos
             const activeEvents = await prisma.event.count({
                 where: {
                     venueId: id,
@@ -362,13 +348,11 @@ export class VenueController {
                 });
             }
 
-            // Desactivar venue
             const venue = await prisma.venue.update({
                 where: { id },
                 data: { isActive: false },
             });
 
-            // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('venue.deactivated', {
                 venueId: venue.id,
                 venueName: venue.name,
@@ -401,7 +385,6 @@ export class VenueController {
                 data: { isActive: true },
             });
 
-            // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('venue.activated', {
                 venueId: venue.id,
                 venueName: venue.name,
@@ -483,7 +466,6 @@ export class VenueController {
                     break;
             }
 
-            // Obtener venue actualizado con secciones
             const venue = await prisma.venue.findUnique({
                 where: { id },
                 include: { sections: true },
@@ -528,7 +510,6 @@ export class VenueController {
                 }),
             ]);
 
-            // Venues con mayor capacidad
             const largestVenues = await prisma.venue.findMany({
                 where: { isActive: true },
                 orderBy: { capacity: 'desc' },
