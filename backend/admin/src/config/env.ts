@@ -1,25 +1,31 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
 
-export const config = {
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    PORT: parseInt(process.env.PORT || '3003'),
-    HOST: process.env.HOST || '0.0.0.0',
+// Cargar variables de entorno
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
-    DATABASE_URL: process.env.DATABASE_URL!,
-
-    JWT_SECRET: process.env.JWT_SECRET!,
-    JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-
-    RABBITMQ_URL: process.env.RABBITMQ_URL || 'amqp://admin:admin123@localhost:5672',
-    RABBITMQ_EXCHANGE: process.env.RABBITMQ_EXCHANGE || 'ticketing_events',
-
-    CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:4200',
-    API_PREFIX: process.env.API_PREFIX || '/api/v1',
-    API_VERSION: process.env.API_VERSION || '1.0.0',
-
-    SWAGGER_ENABLED: process.env.SWAGGER_ENABLED !== 'false',
-    SWAGGER_HOST: process.env.SWAGGER_HOST || 'localhost:3003',
-
-    SALT_ROUNDS: parseInt(process.env.SALT_ROUNDS || '10'),
+export const ENV = {
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseInt(process.env.PORT || '3003', 10),
+  DATABASE_URL: process.env.DATABASE_URL || 'postgresql://admin:admin123@localhost:5432/ticketing?schema=public',
+  JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-please-change-in-production',
+  RABBITMQ_URL: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
+  REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
+  LOG_LEVEL: process.env.LOG_LEVEL || 'info'
 };
+
+// Verificar configuración crítica
+if (!ENV.JWT_SECRET || ENV.JWT_SECRET === 'your-secret-key-please-change-in-production') {
+  console.warn('⚠️  WARNING: Using default JWT_SECRET. Please set a secure JWT_SECRET in production!');
+}
+
+// Log de configuración (solo en desarrollo)
+if (ENV.NODE_ENV === 'development') {
+  console.log('📋 Environment Configuration:');
+  console.log(`   - NODE_ENV: ${ENV.NODE_ENV}`);
+  console.log(`   - PORT: ${ENV.PORT}`);
+  console.log(`   - DATABASE: ${ENV.DATABASE_URL.split('@')[1] || 'configured'}`);
+  console.log(`   - JWT_SECRET: ${ENV.JWT_SECRET.substring(0, 10)}...`);
+}
+
+export default ENV;

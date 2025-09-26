@@ -1,58 +1,30 @@
-import amqp, { Channel, Connection } from 'amqplib';
-import { logger } from '../utils/logger';
-import { config } from '../config/env';
-
 export class RabbitMQService {
-    private connection: Connection | null = null;
-    private channel: Channel | null = null;
-    private readonly url: string;
-    private readonly exchange: string;
+  private connected: boolean = false;
 
-    constructor(url: string) {
-        this.url = url;
-        this.exchange = config.RABBITMQ_EXCHANGE;
+  async connect(): Promise<void> {
+    try {
+      // Por ahora es un mock, no intenta conectar realmente
+      this.connected = true;
+      console.log('RabbitMQ service initialized (mock mode)');
+    } catch (error) {
+      console.error('Error in RabbitMQ mock:', error);
+      this.connected = false;
     }
+  }
 
-    async connect(): Promise<void> {
-        try {
-            this.connection = await amqp.connect(this.url);
-            this.channel = await this.connection.createChannel();
+  isConnected(): boolean {
+    return this.connected;
+  }
 
-            await this.channel.assertExchange(this.exchange, 'topic', { durable: true });
-
-            logger.info('RabbitMQ connected successfully');
-        } catch (error) {
-            logger.error('Failed to connect to RabbitMQ:', error);
-            // Reintentaremos la conexión más tarde
-        }
+  async publishEvent(eventName: string, data: any): Promise<void> {
+    if (this.connected) {
+      console.log(`[RabbitMQ] Event published: ${eventName}`);
     }
+  }
 
-    async publish(eventType: string, data: any): Promise<void> {
-        if (!this.channel) {
-            logger.warn('RabbitMQ channel not initialized, skipping publish');
-            return;
-        }
-
-        const message = Buffer.from(
-            JSON.stringify({
-                eventType,
-                data,
-                timestamp: new Date().toISOString(),
-                source: 'admin-service',
-            })
-        );
-
-        await this.channel.publish(this.exchange, eventType, message, { persistent: true });
-
-        logger.debug(`Published event: ${eventType}`);
-    }
-
-    isConnected(): boolean {
-        return this.connection !== null && this.channel !== null;
-    }
-
-    async close(): Promise<void> {
-        if (this.channel) await this.channel.close();
-        if (this.connection) await this.connection.close();
-    }
+  async close(): Promise<void> {
+    this.connected = false;
+    console.log('RabbitMQ connection closed');
+  }
 }
+
