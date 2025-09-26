@@ -1,0 +1,113 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  eventsCreated Event[]
+  auditLogs     AuditLog[]
+
+  @@map("admins")
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  slug        String      @unique
+  status      EventStatus @default(DRAFT)
+  
+  eventDate    DateTime
+  saleStartDate DateTime
+  saleEndDate   DateTime
+  
+  venueId      String
+  venue        Venue     @relation(fields: [venueId], references: [id])
+  
+  totalCapacity    Int
+  availableTickets Int
+  
+  category     String
+  tags         String[]
+  
+  createdById String
+  createdBy   Admin  @relation(fields: [createdById], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  auditLogs   AuditLog[]
+  
+  @@map("events")
+}
+
+model Venue {
+  id       String   @id @default(uuid())
+  name     String
+  capacity Int
+  
+  address    String
+  city       String
+  country    String
+  postalCode String
+  
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  events    Event[]
+  
+  @@map("venues")
+}
+
+model AuditLog {
+  id       String   @id @default(uuid())
+  action   String
+  entity   String
+  entityId String
+  
+  oldData Json?
+  newData Json?
+  
+  adminId String
+  admin   Admin  @relation(fields: [adminId], references: [id])
+  
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id])
+  
+  ipAddress String?
+  userAgent String?
+  
+  createdAt DateTime @default(now())
+  
+  @@map("audit_logs")
+}
