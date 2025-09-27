@@ -59,6 +59,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   await server.register(cors, {
     origin: true,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   });
 
   await server.register(jwt, {

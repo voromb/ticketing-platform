@@ -176,19 +176,13 @@ Authorization: Bearer {{token}}
 **URL:** `{{base_url}}/api/events/stats`  
 **Headers:**
 ```
-Authorization: Bearer {{token}}
-```
-
 ## Venues Disponibles
 
 | Venue | ID | Capacidad | Uso |
-|-------|----|-----------|----|
-| **Recinto Ferial Valencia Rock** | `8d0df3a8-ca2b-4f0d-b76f-2f2c04dd50e9` | 15.000 | Festivales |
-| **Sala Rockstar Valencia** | `8d03b434-20a7-46a6-b5c9-76e98fe7e9a0` | 2.500 | Conciertos |
-| **Metal Underground Club** | `a09c3413-4b8e-4605-bf25-7601292e93c1` | 800 | Tributos/Acústicos |
-| **Teatro Principal Valencia** | `001baa5a-7e6c-4561-8aa3-d154f74b6503` | 1.500 | Eventos clásicos |
-| **Palau de les Arts** | `eedf995f-f060-4105-81b5-8b46dd58be37` | 1.800 | Eventos especiales |
-
+|-------|----|-----------|----
+{{#venues}}
+| **{{name}}** | {{id}} | {{capacity}} | {{usage}} |
+{{/venues}}
 ## Géneros Musicales Soportados
 
 | Género | Código |
@@ -1059,3 +1053,95 @@ Invoke-RestMethod -Uri "http://localhost:3003/api/events/public" -Method GET
 - **Usar Content-Type: application/json para métodos con body**
 - **Ambos servicios deben estar ejecutándose para que funcionen las API calls**
 - **Los servicios se comunican sin autenticación entre ellos (red interna)**
+
+---
+
+## 🔐 USUARIOS Y CREDENCIALES DEL SISTEMA
+
+### **👑 SUPER ADMINISTRADOR**
+```
+Email: voro.super@ticketing.com
+Password: Voro123!
+Rol: SUPER_ADMIN
+```
+**Permisos:**
+- ✅ Dashboard completo con estadísticas
+- ✅ Crear, editar y eliminar eventos
+- ✅ Gestión completa de venues
+- ✅ Promocionar usuarios a VIP
+- ✅ Gestión de usuarios
+- ✅ Acceso a configuración (Settings)
+- ✅ Todos los permisos del sistema
+
+### **👨‍💼 ADMINISTRADOR NORMAL**
+```
+Email: admin@ticketing.com
+Password: admin123
+Rol: ADMIN
+```
+**Permisos:**
+- ✅ Dashboard con estadísticas
+- ✅ Crear, editar y eliminar eventos
+- ✅ Gestión completa de venues
+- ✅ Ver usuarios (sin promoción VIP)
+- ❌ No acceso a configuración
+- ❌ No puede promocionar a VIP
+
+### **⭐ USUARIO VIP DE PRUEBA**
+```
+Email: xavi.vip@ticketing.com
+Password: Xavi123!
+Rol: VIP
+```
+**Características:**
+- ✅ Usuario promocionado a VIP
+- ✅ Acceso a beneficios especiales
+- ✅ Usado para pruebas de promoción
+- ✅ Registrado en MongoDB (User Service)
+
+### **👤 USUARIO NORMAL DE PRUEBA**
+```
+Email: usuario.normal@ticketing.com
+Password: User123!
+Rol: USER
+```
+**Características:**
+- ✅ Usuario estándar
+- ✅ Puede ser promocionado a VIP
+- ✅ Registrado en MongoDB (User Service)
+
+---
+
+## 🎯 FLUJO DE AUTENTICACIÓN
+
+### **Login Admin (PostgreSQL)**
+```http
+POST http://localhost:3003/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "voro.super@ticketing.com",
+  "password": "Voro123!"
+}
+```
+
+### **Login Usuario (MongoDB)**
+```http
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "xavi.vip@ticketing.com",
+  "password": "Xavi123!"
+}
+```
+
+### **Acceso al Dashboard**
+1. Ve a: `http://localhost:4200`
+2. Haz clic en "Login"
+3. Usa credenciales de SUPER_ADMIN o ADMIN
+4. Acceso automático al dashboard administrativo
+
+---
+
+**Desarrollado para la comunidad rock/metal** 🤘

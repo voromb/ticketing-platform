@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { AdminGuard } from './core/guards/admin.guard';
+import { SuperAdminGuard } from './core/guards/super-admin.guard';
 
 
 export const routes: Routes = [
@@ -28,14 +30,39 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./shared/components/profile/profile.component').then((m) => m.ProfileComponent),
   },
-  // { estan comentades perque encara no estan fets els components
-  //   path: 'admin',
-  //   loadComponent: () =>
-  //     import('./components/admin/admin.component').then((m) => m.AdminComponent),
-  // },
-  // {
-  //   path: 'company',
-  //   loadComponent: () =>
-  //     import('./components/company/company.component').then((m) => m.CompanyComponent),
-  // },
+  // Admin Dashboard Routes
+  {
+    path: 'admin-dashboard',
+    loadComponent: () =>
+      import('./pages/admin/admin-layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
+    canActivate: [AdminGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/admin/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+      },
+      {
+        path: 'events',
+        loadComponent: () =>
+          import('./pages/admin/events/events-list.component').then((m) => m.EventsListComponent),
+      },
+      {
+        path: 'venues',
+        loadComponent: () =>
+          import('./pages/admin/venues/venues-list.component').then((m) => m.VenuesListComponent),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/admin/users/users-list.component').then((m) => m.UsersListComponent),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./pages/admin/settings/settings.component').then((m) => m.SettingsComponent),
+        canActivate: [SuperAdminGuard],
+      }
+    ]
+  },
 ];

@@ -244,6 +244,9 @@ class SimpleEventController {
         try {
             const { id } = request.params;
             const updateData = request.body;
+            
+            console.log('📝 Actualizando evento ID:', id);
+            console.log('📤 Datos recibidos para actualizar:', updateData);
 
             const existingEvent = await prisma.event.findUnique({
                 where: { id }
@@ -269,49 +272,92 @@ class SimpleEventController {
                 }
             }
 
-            // Preparar datos para actualización, manejando fechas correctamente
-            const dataToUpdate: any = { ...updateData };
+            // Solo permitir campos que existen en el modelo de Prisma
+            const allowedFields = [
+                'name', 'slug', 'description', 'eventDate', 'saleStartDate', 'saleEndDate',
+                'status', 'category', 'subcategory', 'doorsOpenTime', 'availableTickets',
+                'reservedTickets', 'soldTickets', 'bannerImage', 'thumbnailImage'
+            ];
+            
+            const dataToUpdate: any = {};
+            
+            // Solo copiar campos permitidos
+            for (const field of allowedFields) {
+                if (updateData[field] !== undefined) {
+                    dataToUpdate[field] = updateData[field];
+                }
+            }
+            
+            // Informar sobre campos ignorados (para debug)
+            const ignoredFields = Object.keys(updateData).filter(field => !allowedFields.includes(field));
+            if (ignoredFields.length > 0) {
+                console.log('⚠️ Campos ignorados (se mantienen valores originales):', ignoredFields);
+            }
+            console.log('✅ Campos que se actualizarán:', Object.keys(dataToUpdate));
+            
+            // Validar status si existe
+            if (dataToUpdate.status && !['DRAFT', 'ACTIVE', 'CANCELLED', 'COMPLETED'].includes(dataToUpdate.status)) {
+                delete dataToUpdate.status;
+                console.log('⚠️ Status inválido removido:', dataToUpdate.status);
+            }
             
             // Convertir fechas si están presentes
-            if (updateData.eventDate) {
-                dataToUpdate.eventDate = new Date(updateData.eventDate);
+            if (dataToUpdate.eventDate) {
+                dataToUpdate.eventDate = new Date(dataToUpdate.eventDate);
             }
-            if (updateData.saleStartDate) {
-                dataToUpdate.saleStartDate = new Date(updateData.saleStartDate);
+            if (dataToUpdate.saleStartDate) {
+                dataToUpdate.saleStartDate = new Date(dataToUpdate.saleStartDate);
             }
-            if (updateData.saleEndDate) {
-                dataToUpdate.saleEndDate = new Date(updateData.saleEndDate);
+            if (dataToUpdate.saleEndDate) {
+                dataToUpdate.saleEndDate = new Date(dataToUpdate.saleEndDate);
             }
             
             dataToUpdate.updatedAt = new Date();
+            
+            console.log('📋 Datos finales para actualizar en BD:', dataToUpdate);
 
-            const updatedEvent = await prisma.event.update({
-                where: { id },
-                data: dataToUpdate,
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true
+            let updatedEvent;
+            try {
+                updatedEvent = await prisma.event.update({
+                    where: { id },
+                    data: dataToUpdate,
+                    include: {
+                        venue: {
+                            select: {
+                                id: true,
+                                name: true,
+                                city: true,
+                            }
                         }
                     }
-                }
-            });
+                });
+            } catch (dbError: any) {
+                console.error('❌ Error específico de base de datos:', dbError);
+                console.error('❌ DB Error code:', dbError.code);
+                console.error('❌ DB Error meta:', dbError.meta);
+                throw dbError;
+            }
 
             console.log(`Evento actualizado: ${updatedEvent.id}`);
+            console.log('📋 Datos del evento después de actualizar:', JSON.stringify(updatedEvent, null, 2));
 
             return reply.send({
                 success: true,
                 message: 'Evento actualizado exitosamente',
-                data: updatedEvent
+                data: updatedEvent,
+                updatedFields: Object.keys(dataToUpdate).filter(key => key !== 'updatedAt'),
+                ignoredFields: ignoredFields
             });
         } catch (error: any) {
-            console.error('Error updating rock event:', error);
+            console.error('❌ Error updating rock event:', error);
+            console.error('❌ Error message:', error.message);
+            console.error('❌ Error stack:', error.stack);
+            console.error('❌ Update data received:', request.body);
+            
             return reply.status(500).send({
                 success: false,
-                error: 'Error interno del servidor'
+                error: error.message || 'Error interno del servidor',
+                details: error.stack
             });
         }
     }

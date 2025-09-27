@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
 import { SocialLoginComponent } from '../social-login/social-login.component';
 import Swal from 'sweetalert2';
 
@@ -20,7 +20,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private authService: AuthService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -31,8 +31,11 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     // Si ya está logueado, redirigir
-    if (localStorage.getItem('token')) {
-      this.router.navigate(['/events']);
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUser();
+      if (user) {
+        this.redirectByRole(user.role);
+      }
     }
   }
 
@@ -49,30 +52,31 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     
-    this.http.post('http://localhost:3001/api/auth/login', this.loginForm.value).subscribe({
+    const { email, password } = this.loginForm.value;
+    
+    this.authService.login(email, password).subscribe({
       next: (response: any) => {
         this.loading = false;
-        if (response.success) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          
-          Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: `¡Bienvenido ${response.user.username || response.user.email}!`,
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => {
-            this.redirectByRole(response.user.role);
-          });
-        }
+        const user = this.authService.getCurrentUser();
+        
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: `¡Bienvenido ${user?.firstName || user?.email}!`,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          if (user) {
+            this.redirectByRole(user.role);
+          }
+        });
       },
       error: (error) => {
         this.loading = false;
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: error.error?.message || 'Credenciales incorrectas'
+          title: 'Error de autenticación',
+          text: error.error?.error || 'Credenciales incorrectas'
         });
       }
     });
@@ -80,14 +84,23 @@ export class LoginComponent implements OnInit {
 
   private redirectByRole(role: string) {
     switch(role) {
+      case 'ADMIN':
+      case 'SUPER_ADMIN':
+        this.router.navigate(['/admin-dashboard']);
+        break;
       case 'admin':
-        this.router.navigate(['/admin']);
+      case 'super_admin':
+        this.router.navigate(['/admin-dashboard']);
+        break;
+      case 'vip':
+      case 'user':
+        this.router.navigate(['/shop']);
         break;
       case 'company':
-        this.router.navigate(['/company']);
+        this.router.navigate(['/shop']); // Temporal, redirigir a shop
         break;
       default:
-        this.router.navigate(['/events']);
+        this.router.navigate(['/shop']); // Por defecto ir a shop (panel usuario)
     }
   }
 

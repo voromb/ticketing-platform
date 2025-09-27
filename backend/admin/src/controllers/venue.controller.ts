@@ -38,7 +38,7 @@ const updateVenueSchema = createVenueSchema.partial();
 
 const venueQuerySchema = z.object({
     page: z.string().optional().default('1').transform(Number),
-    limit: z.string().optional().default('10').transform(Number),
+    limit: z.string().optional().default('50').transform(Number),
     search: z.string().optional(),
     city: z.string().optional(),
     isActive: z
@@ -140,9 +140,10 @@ export class VenueController {
 
             const where: any = {};
 
-            if (typeof isActive === 'boolean') {
-                where.isActive = isActive;
-            }
+            // Comentado para mostrar todos los venues (activos e inactivos)
+            // if (typeof isActive === 'boolean') {
+            //     where.isActive = isActive;
+            // }
 
             if (city) {
                 where.city = { contains: city, mode: 'insensitive' };

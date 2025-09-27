@@ -157,3 +157,7 @@
 .dropdown-item {
   cursor: pointer;
 }
+
+.navbar-admin {
+  z-index: 50;
+}
