@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient, EventStatus } from '@prisma/client';
+import logger from '../utils/logger';
 
 const prisma = new PrismaClient();
 
@@ -52,6 +53,17 @@ class SimpleEventController {
                 });
             }
 
+            // Validar campos requeridos
+            const requiredFields = ['name', 'slug', 'eventDate', 'venueId', 'totalCapacity', 'genre', 'format', 'headliner'];
+            const missingFields = requiredFields.filter(field => !eventData[field]);
+            
+            if (missingFields.length > 0) {
+                return reply.code(400).send({
+                    success: false,
+                    error: `Campos requeridos faltantes: ${missingFields.join(', ')}`
+                });
+            }
+
             const venue = await prisma.venue.findUnique({
                 where: { id: eventData.venueId }
             });
@@ -91,7 +103,11 @@ class SimpleEventController {
                     availableTickets: eventData.totalCapacity,
                     category: 'ROCK_METAL_CONCERT',
                     subcategory: `${eventData.genre}|${eventData.format}`,
-                    tags: [eventData.genre.toLowerCase(), eventData.format.toLowerCase(), eventData.headliner.toLowerCase()],
+                    tags: [
+                        eventData.genre?.toLowerCase() || 'rock',
+                        eventData.format?.toLowerCase() || 'concert', 
+                        eventData.headliner?.toLowerCase() || 'unknown'
+                    ],
                     minPrice: eventData.minPrice,
                     maxPrice: eventData.maxPrice,
                     ageRestriction: eventData.ageRestriction || '+16',
@@ -110,7 +126,8 @@ class SimpleEventController {
 
         } catch (error) {
             console.error('Error creating rock/metal event:', error);
-            return reply.code(500).send({
+            return reply.status(500).send({
+                success: false,
                 error: 'Error al crear el evento de rock/metal'
             });
         }
@@ -122,7 +139,12 @@ class SimpleEventController {
                 where: { category: 'ROCK_METAL_CONCERT' },
                 include: {
                     venue: {
-                        select: { id: true, name: true, city: true }
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            capacity: true
+                        }
                     }
                 },
                 orderBy: { eventDate: 'asc' }
@@ -133,9 +155,10 @@ class SimpleEventController {
                 data: events
             });
         } catch (error) {
-            console.error('Error listing events:', error);
-            return reply.code(500).send({
-                error: 'Error al listar eventos'
+            console.error('Error listing rock events:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
             });
         }
     }
@@ -150,13 +173,21 @@ class SimpleEventController {
             const event = await prisma.event.findUnique({
                 where: { id },
                 include: {
-                    venue: true,
-                    priceCategories: true
+                    venue: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            capacity: true,
+                            address: true
+                        }
+                    }
                 }
             });
 
             if (!event) {
-                return reply.code(404).send({
+                return reply.status(404).send({
+                    success: false,
                     error: 'Evento no encontrado'
                 });
             }
@@ -166,9 +197,10 @@ class SimpleEventController {
                 data: event
             });
         } catch (error) {
-            console.error('Error getting event:', error);
-            return reply.code(500).send({
-                error: 'Error al obtener el evento'
+            console.error('Error getting rock event by id:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
             });
         }
     }
@@ -179,20 +211,148 @@ class SimpleEventController {
                 where: { category: 'ROCK_METAL_CONCERT' }
             });
 
+            const stats = {
+                totalEvents: events.length,
+                totalCapacity: events.reduce((sum, event) => sum + event.totalCapacity, 0),
+                averageCapacity: events.length > 0 
+                    ? Math.round(events.reduce((sum, event) => sum + event.totalCapacity, 0) / events.length)
+                    : 0,
+                upcomingEvents: events.filter(event => new Date(event.eventDate) > new Date()).length,
+                pastEvents: events.filter(event => new Date(event.eventDate) <= new Date()).length
+            };
+
             return reply.send({
                 success: true,
-                data: {
-                    totalEvents: events.length,
-                    totalCapacity: events.reduce((sum, e) => sum + e.totalCapacity, 0)
-                }
+                data: stats
             });
         } catch (error) {
-            console.error('Error getting stats:', error);
-            return reply.code(500).send({
-                error: 'Error al obtener estadísticas'
+            console.error('Error getting rock event stats:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
             });
         }
     }
+
+    async updateRockEvent(
+        request: FastifyRequest<{ 
+            Params: { id: string };
+            Body: Partial<CreateSimpleEventBody>;
+        }>,
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+            const updateData = request.body;
+
+            const existingEvent = await prisma.event.findUnique({
+                where: { id }
+            });
+
+            if (!existingEvent) {
+                return reply.status(404).send({
+                    success: false,
+                    error: 'Evento no encontrado'
+                });
+            }
+
+            if (updateData.slug && updateData.slug !== existingEvent.slug) {
+                const slugExists = await prisma.event.findUnique({
+                    where: { slug: updateData.slug }
+                });
+
+                if (slugExists) {
+                    return reply.status(400).send({
+                        success: false,
+                        error: 'Ya existe un evento con ese slug'
+                    });
+                }
+            }
+
+            // Preparar datos para actualización, manejando fechas correctamente
+            const dataToUpdate: any = { ...updateData };
+            
+            // Convertir fechas si están presentes
+            if (updateData.eventDate) {
+                dataToUpdate.eventDate = new Date(updateData.eventDate);
+            }
+            if (updateData.saleStartDate) {
+                dataToUpdate.saleStartDate = new Date(updateData.saleStartDate);
+            }
+            if (updateData.saleEndDate) {
+                dataToUpdate.saleEndDate = new Date(updateData.saleEndDate);
+            }
+            
+            dataToUpdate.updatedAt = new Date();
+
+            const updatedEvent = await prisma.event.update({
+                where: { id },
+                data: dataToUpdate,
+                include: {
+                    venue: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            capacity: true
+                        }
+                    }
+                }
+            });
+
+            console.log(`Evento actualizado: ${updatedEvent.id}`);
+
+            return reply.send({
+                success: true,
+                message: 'Evento actualizado exitosamente',
+                data: updatedEvent
+            });
+        } catch (error: any) {
+            console.error('Error updating rock event:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
+            });
+        }
+    }
+
+    async deleteRockEvent(
+        request: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+
+            const existingEvent = await prisma.event.findUnique({
+                where: { id }
+            });
+
+            if (!existingEvent) {
+                return reply.status(404).send({
+                    success: false,
+                    error: 'Evento no encontrado'
+                });
+            }
+
+            await prisma.event.delete({
+                where: { id }
+            });
+
+            console.log(`Evento eliminado: ${id}`);
+
+            return reply.send({
+                success: true,
+                message: 'Evento eliminado exitosamente'
+            });
+        } catch (error: any) {
+            console.error('Error deleting rock event:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
+            });
+        }
+    }
+
 }
 
 export default new SimpleEventController();

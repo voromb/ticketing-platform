@@ -2,12 +2,11 @@
 
 Documentación para usar las APIs en Postman e Insomnia.
 
-**Servidor:** `http://localhost:3003`
+**Health Check:** `http://localhost:3003/health`
 
-## Configuración en Postman/Insomnia
+## Ejemplos Completos para Insomnia
 
-### Paso 1: Crear Variables de Entorno
-En Postman o Insomnia, crea estas variables:
+### VENUES - Todos los métodos HTTP
 - `base_url`: `http://localhost:3003`
 - `token`: (se llenará después del login)
 
@@ -50,11 +49,13 @@ Content-Type: application/json
 
 ### 1. Listar Venues
 **Método:** GET  
-**URL:** `{{base_url}}/api/venues`  
+**URL:** `{{base_url}}/api/venues?isActive=true`  
 **Headers:**
 ```
 Authorization: Bearer {{token}}
 ```
+
+**Nota:** Es necesario usar el filtro `?isActive=true` para ver los venues activos.
 
 **Respuesta:**
 ```json
@@ -367,15 +368,28 @@ $evento = @{
     totalCapacity = 500
     genre = "HEAVY_METAL"
     format = "CONCERT"
-    headliner = "Mi Banda Favorita"
-    hasMoshpit = $true
-    hasVipMeetAndGreet = $false
-    merchandiseAvailable = $true
-    minPrice = 30.00
-    maxPrice = 80.00
-} | ConvertTo-Json
+   ## Comandos PowerShell Corregidos
 
-Invoke-RestMethod -Uri "http://localhost:3003/api/events" -Method POST -Body $evento -ContentType "application/json" -Headers $headers
+### Ver Venues (IMPORTANTE: usar filtro isActive=true)
+```powershell
+# Login
+$loginData = @{ email = "admin@ticketing.com"; password = "admin123" } | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:3003/api/auth/login" -Method POST -Body $loginData -ContentType "application/json"
+$headers = @{ Authorization = "Bearer $($response.token)" }
+
+# Ver venues (CON FILTRO OBLIGATORIO)
+$venues = Invoke-RestMethod -Uri "http://localhost:3003/api/venues?isActive=true" -Method GET -Headers $headers
+Write-Host " VENUES DISPONIBLES:" -ForegroundColor Green
+$venues.venues | ForEach-Object {
+    Write-Host "   📍 $($_.name) - Capacidad: $($_.capacity)" -ForegroundColor Yellow
+}
+
+# Ver eventos
+$eventos = Invoke-RestMethod -Uri "http://localhost:3003/api/events" -Method GET -Headers $headers
+Write-Host " EVENTOS:" -ForegroundColor Green
+$eventos.data | ForEach-Object {
+    Write-Host "   $($_.name) - Capacidad: $($_.totalCapacity)" -ForegroundColor Cyan
+}
 ```
 
 ## Estado del Sistema
@@ -383,8 +397,236 @@ Invoke-RestMethod -Uri "http://localhost:3003/api/events" -Method POST -Body $ev
 - Servidor: Funcionando en puerto 3003
 - Base de datos: PostgreSQL conectada
 - Autenticación: JWT funcionando
-- API Venues: CRUD completo
-- API Events: CRUD básico para rock/metal
+- API Venues: CRUD completo ✅ (usar ?isActive=true para listar)
+- API Events: CRUD completo ✅ (GET, POST, PUT, PATCH, DELETE + stats)
 - Validaciones: Capacidades, géneros, formatos
+- Manejo de errores: Implementado y funcionando
 
 **Health Check:** `http://localhost:3003/health`
+
+## Ejemplos Completos para Insomnia
+
+### 🏟️ VENUES - Todos los métodos HTTP
+
+#### 1. GET - Listar Venues
+**Método:** GET  
+**URL:** `{{base_url}}/api/venues?isActive=true`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 2. GET - Obtener Venue por ID
+**Método:** GET  
+**URL:** `{{base_url}}/api/venues/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 3. POST - Crear Venue
+**Método:** POST  
+**URL:** `{{base_url}}/api/venues`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "name": "Rock Stadium Madrid",
+  "slug": "rock-stadium-madrid-2025",
+  "capacity": 8000,
+  "address": "Avenida del Rock 100",
+  "city": "Madrid",
+  "state": "Madrid",
+  "country": "España",
+  "postalCode": "28001",
+  "description": "Estadio especializado en conciertos de rock y metal",
+  "amenities": ["parking", "bar", "merchandise", "vip-area", "food-court"]
+}
+```
+
+#### 4. PUT - Actualizar Venue Completo
+**Método:** PUT  
+**URL:** `{{base_url}}/api/venues/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "name": "Metal Underground Club - RENOVADO",
+  "capacity": 1000,
+  "address": "Nueva Calle Underground 20",
+  "city": "Valencia",
+  "state": "Valencia",
+  "country": "España",
+  "postalCode": "46003",
+  "description": "Club renovado con mejor sonido y capacidad ampliada",
+  "amenities": ["bar", "stage", "professional-sound", "led-lighting", "vip-lounge"]
+}
+```
+
+#### 5. PATCH - Actualizar Venue Parcial
+**Método:** PATCH  
+**URL:** `{{base_url}}/api/venues/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "capacity": 900,
+  "description": "Solo actualizo capacidad y descripción"
+}
+```
+
+#### 6. DELETE - Eliminar Venue
+**Método:** DELETE  
+**URL:** `{{base_url}}/api/venues/1156c683-d97e-4c3f-b5fe-70e28b5d9aaa`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+### 🎸 EVENTS - Todos los métodos HTTP
+
+#### 1. GET - Listar Eventos
+**Método:** GET  
+**URL:** `{{base_url}}/api/events`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 2. GET - Obtener Evento por ID
+**Método:** GET  
+**URL:** `{{base_url}}/api/events/1eadb7d9-3b10-4254-8d0f-74b9ae9cf8eb`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 3. GET - Estadísticas de Eventos
+**Método:** GET  
+**URL:** `{{base_url}}/api/events/stats`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 4. POST - Crear Evento
+**Método:** POST  
+**URL:** `{{base_url}}/api/events`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "name": "Slayer Farewell Tour Madrid",
+  "slug": "slayer-farewell-tour-madrid-2025",
+  "eventDate": "2025-03-15T21:00:00Z",
+  "saleStartDate": "2025-01-15T10:00:00Z",
+  "saleEndDate": "2025-03-14T23:59:59Z",
+  "venueId": "a09c3413-4b8e-4605-bf25-7601292e93c1",
+  "totalCapacity": 800,
+  "genre": "THRASH_METAL",
+  "format": "CONCERT",
+  "headliner": "Slayer",
+  "hasMoshpit": true,
+  "hasVipMeetAndGreet": true,
+  "merchandiseAvailable": true,
+  "minPrice": 75.00,
+  "maxPrice": 200.00,
+  "description": "Última gira de despedida de los reyes del thrash metal",
+  "ageRestriction": "+18"
+}
+```
+
+#### 5. PUT - Actualizar Evento Completo
+**Método:** PUT  
+**URL:** `{{base_url}}/api/events/1eadb7d9-3b10-4254-8d0f-74b9ae9cf8eb`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "name": "Valencia Metal Fest 2024 - ACTUALIZADO",
+  "eventDate": "2024-09-20T19:00:00Z",
+  "saleStartDate": "2024-07-01T10:00:00Z",
+  "saleEndDate": "2024-09-19T23:59:59Z",
+  "totalCapacity": 15000,
+  "genre": "HEAVY_METAL",
+  "format": "FESTIVAL",
+  "headliner": "Iron Maiden + Judas Priest",
+  "hasMoshpit": true,
+  "hasVipMeetAndGreet": true,
+  "merchandiseAvailable": true,
+  "minPrice": 85.00,
+  "maxPrice": 300.00,
+  "description": "Festival actualizado con más bandas y mayor capacidad",
+  "ageRestriction": "+16"
+}
+```
+
+#### 6. PATCH - Actualizar Evento Parcial
+**Método:** PATCH  
+**URL:** `{{base_url}}/api/events/1eadb7d9-3b10-4254-8d0f-74b9ae9cf8eb`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "totalCapacity": 13000,
+  "maxPrice": 250.00,
+  "description": "Ajuste de capacidad y precio máximo"
+}
+```
+
+#### 7. DELETE - Eliminar Evento
+**Método:** DELETE  
+**URL:** `{{base_url}}/api/events/1eadb7d9-3b10-4254-8d0f-74b9ae9cf8eb`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+## Respuestas Típicas
+
+### Éxito (200/201):
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": { ... }
+}
+```
+
+### Error (400/404/500):
+```json
+{
+  "success": false,
+  "error": "Descripción del error"
+}
+```
+
+## Notas Importantes
+- **Todos los métodos POST, PUT, PATCH, DELETE requieren autenticación**
+- **GET de venues requiere filtro ?isActive=true**
+- **Los IDs son UUIDs reales de la base de datos**
+- **Usar Content-Type: application/json para métodos con body**

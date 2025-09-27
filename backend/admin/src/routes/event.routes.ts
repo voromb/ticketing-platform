@@ -9,4 +9,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
   fastify.get('/', SimpleEventController.listRockEvents.bind(SimpleEventController));
   fastify.get('/stats', SimpleEventController.getRockEventStats.bind(SimpleEventController));
   fastify.get('/:id', SimpleEventController.getRockEventById.bind(SimpleEventController));
+  fastify.put('/:id', SimpleEventController.updateRockEvent.bind(SimpleEventController));
+  fastify.patch('/:id', SimpleEventController.updateRockEvent.bind(SimpleEventController));
+  fastify.delete('/:id', SimpleEventController.deleteRockEvent.bind(SimpleEventController));
 }

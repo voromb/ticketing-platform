@@ -545,4 +545,65 @@ export class VenueController {
             });
         }
     }
+
+    /**
+     * Eliminar un venue
+     */
+    async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+        try {
+            const { id } = request.params;
+
+            const existingVenue = await prisma.venue.findUnique({
+                where: { id },
+                include: {
+                    events: {
+                        where: {
+                            status: 'ACTIVE',
+                            eventDate: {
+                                gte: new Date()
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!existingVenue) {
+                return reply.status(404).send({
+                    error: 'Venue no encontrado'
+                });
+            }
+
+            if (existingVenue.events.length > 0) {
+                return reply.status(400).send({
+                    error: `No se puede eliminar el venue. Tiene ${existingVenue.events.length} eventos activos programados`
+                });
+            }
+
+            await prisma.venue.delete({
+                where: { id }
+            });
+
+            await this.rabbitmq.publishEvent('venue.deleted', {
+                venueId: id,
+                venueName: existingVenue.name,
+                adminId: request.user.id,
+                timestamp: new Date(),
+            });
+
+            logger.info(`Venue eliminado: ${id} por admin: ${request.user.id}`);
+
+            return reply.send({
+                message: 'Venue eliminado exitosamente',
+                venue: {
+                    id: existingVenue.id,
+                    name: existingVenue.name
+                }
+            });
+        } catch (error) {
+            logger.error('Error deleting venue:', error);
+            return reply.status(500).send({
+                error: 'Error interno del servidor'
+            });
+        }
+    }
 }
