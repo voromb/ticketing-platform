@@ -399,6 +399,7 @@ $eventos.data | ForEach-Object {
 - Autenticación: JWT funcionando
 - API Venues: CRUD completo ✅ (usar ?isActive=true para listar)
 - API Events: CRUD completo ✅ (GET, POST, PUT, PATCH, DELETE + stats)
+- API Admins: CRUD completo ✅ (GET, POST, PUT, PATCH + gestión de permisos)
 - Validaciones: Capacidades, géneros, formatos
 - Manejo de errores: Implementado y funcionando
 
@@ -625,8 +626,436 @@ Authorization: Bearer {{token}}
 }
 ```
 
-## Notas Importantes
+### 👤 ADMINS - Todos los métodos HTTP
+
+#### 1. GET - Listar Administradores
+**Método:** GET  
+**URL:** `{{base_url}}/api/admins?page=1&limit=10&isActive=true`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 2. GET - Perfil del Admin Actual
+**Método:** GET  
+**URL:** `{{base_url}}/api/admins/profile`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 3. GET - Estadísticas de Administradores
+**Método:** GET  
+**URL:** `{{base_url}}/api/admins/stats`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 4. GET - Obtener Admin por ID
+**Método:** GET  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 5. POST - Crear Nuevo Administrador
+**Método:** POST  
+**URL:** `{{base_url}}/api/admins`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "email": "nuevo.admin@rockplatform.com",
+  "password": "AdminRock2024!",
+  "firstName": "Carlos",
+  "lastName": "Administrador",
+  "role": "ADMIN"
+}
+```
+
+#### 6. PUT - Actualizar Admin Completo
+**Método:** PUT  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "email": "admin.actualizado@rockplatform.com",
+  "firstName": "Carlos Actualizado",
+  "lastName": "Super Admin",
+  "role": "SUPER_ADMIN",
+  "isActive": true
+}
+```
+
+#### 7. PATCH - Actualizar Admin Parcial
+**Método:** PATCH  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "firstName": "Carlos Modificado",
+  "isActive": false
+}
+```
+
+#### 8. POST - Cambiar Contraseña
+**Método:** POST  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1/change-password`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+**Body (JSON):**
+```json
+{
+  "currentPassword": "AdminRock2024!",
+  "newPassword": "NuevaPassword2024!",
+  "confirmPassword": "NuevaPassword2024!"
+}
+```
+
+#### 9. PATCH - Desactivar Administrador
+**Método:** PATCH  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1/deactivate`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+#### 10. PATCH - Activar Administrador
+**Método:** PATCH  
+**URL:** `{{base_url}}/api/admins/a09c3413-4b8e-4605-bf25-7601292e93c1/activate`  
+**Headers:**
+```
+Authorization: Bearer {{token}}
+```
+
+---
+
+# 🚀 MICROSERVICIOS Y COMUNICACIÓN ENTRE SERVICIOS
+
+## 📋 Arquitectura Implementada
+
+### **Admin-Service (PostgreSQL) - Puerto 3003**
+- **Base de datos:** PostgreSQL
+- **Funcionalidades:** CRUD Events, Venues, Admins + Gestión de usuarios
+- **Comunicación:** API calls hacia User-Service
+
+### **User-Service (MongoDB) - Puerto 3001**  
+- **Base de datos:** MongoDB
+- **Funcionalidades:** Gestión usuarios, roles VIP, consulta eventos
+- **Comunicación:** API calls hacia Admin-Service
+
+---
+
+## 🔄 API CALLS ENTRE SERVICIOS
+
+### **User-Service → Admin-Service (Consultar Eventos)**
+
+#### **Obtener eventos públicos para usuarios**
+```http
+GET http://localhost:3001/api/events
+```
+
+**Flujo interno:**
+1. User-service recibe petición
+2. Hace API call a `http://localhost:3003/api/events/public`
+3. Admin-service devuelve eventos ACTIVE con tickets disponibles
+4. User-service responde al cliente
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "1eadb7d9-3b10-4254-8d0f-74b9ae9cf8eb",
+      "name": "Valencia Metal Fest 2024",
+      "description": "El festival de heavy metal más grande de Valencia",
+      "eventDate": "2024-08-15T18:00:00.000Z",
+      "status": "ACTIVE",
+      "venue": {
+        "id": "8d0df3a8-ca2b-4f0d-b76f-2f2c04dd50e9",
+        "name": "Recinto Ferial Valencia Rock",
+        "city": "Valencia"
+      }
+    }
+  ],
+  "total": 6,
+  "source": "admin-service"
+}
+```
+
+---
+
+## 👤 GESTIÓN DE USUARIOS VIP
+
+### **Admin-Service → User-Service (Promoción a VIP)**
+
+#### **Listar todos los usuarios**
+```http
+GET http://localhost:3003/api/user-management
+Authorization: Bearer {{super_admin_token}}
+```
+
+#### **Ver estadísticas de usuarios**
+```http
+GET http://localhost:3003/api/user-management/stats
+Authorization: Bearer {{super_admin_token}}
+```
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "stats": {
+    "total": 3,
+    "active": 3,
+    "inactive": 0,
+    "byRole": {
+      "user": 2,
+      "vip": 1
+    },
+    "recentUsers": [...]
+  },
+  "source": "user-service"
+}
+```
+
+#### **Promocionar usuario a VIP**
+```http
+POST http://localhost:3003/api/user-management/{{user_id}}/promote
+Authorization: Bearer {{super_admin_token}}
+Content-Type: application/json
+
+{
+  "reason": "Usuario muy activo en la plataforma",
+  "notes": "Primera promoción de prueba - comunicación entre microservicios"
+}
+```
+
+**Flujo interno:**
+1. Admin-service recibe petición de SUPER_ADMIN
+2. Valida permisos y datos
+3. Hace API call a `http://localhost:3001/api/users/{{user_id}}/promote`
+4. User-service actualiza role de 'user' a 'vip' en MongoDB
+5. Admin-service responde con confirmación
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Usuario promocionado a VIP exitosamente",
+  "user": {
+    "_id": "68d17160c60cb0338f7819e3",
+    "username": "Xavi",
+    "email": "xaviperezcanada1@gmail.com",
+    "role": "vip",
+    "isActive": true,
+    "updatedAt": "2025-09-27T15:29:48.000Z"
+  },
+  "promotedBy": {
+    "adminId": "26fa8809-a1a4-4242-9d09-42e65e5ee368",
+    "adminEmail": "voro.super@ticketing.com"
+  },
+  "reason": "Usuario muy activo en la plataforma",
+  "notes": "Primera promoción de prueba - comunicación entre microservicios",
+  "timestamp": "2025-09-27T15:29:48.000Z"
+}
+```
+
+#### **Degradar usuario VIP a normal**
+```http
+POST http://localhost:3003/api/user-management/{{user_id}}/demote
+Authorization: Bearer {{super_admin_token}}
+Content-Type: application/json
+
+{
+  "reason": "Degradación por inactividad",
+  "notes": "Usuario no ha usado beneficios VIP"
+}
+```
+
+#### **Obtener usuario específico**
+```http
+GET http://localhost:3003/api/user-management/{{user_id}}
+Authorization: Bearer {{super_admin_token}}
+```
+
+---
+
+## 🔐 ROLES Y PERMISOS
+
+### **Niveles de Acceso:**
+
+#### **👁️ NO REGISTRADO (Público)**
+- ✅ **Ver eventos** - `GET /api/events` (via user-service)
+- ✅ **Ver detalles de evento** - `GET /api/events/:id` (via user-service)
+- ❌ **NO puede comprar tickets**
+
+#### **🔐 USER (Registrado)**
+- ✅ **Ver eventos** - Mismo acceso que público
+- ✅ **Comprar tickets** - `POST /api/tickets` (requiere JWT)
+- ✅ **Ver sus tickets** - `GET /api/tickets/my-tickets`
+
+#### **⭐ VIP (Usuario Premium)**
+- ✅ **Todos los permisos de USER**
+- ✅ **Acceso prioritario** a eventos
+- ✅ **Descuentos especiales**
+- ✅ **Meet & Greet** (si disponible)
+
+#### **👤 ADMIN (Administrador)**
+- ✅ **CRUD eventos, venues**
+- ✅ **Ver usuarios** (solo lectura)
+- ❌ **NO puede promocionar a VIP**
+
+#### **🔥 SUPER_ADMIN (Super Administrador)**
+- ✅ **Todos los permisos de ADMIN**
+- ✅ **CRUD admins**
+- ✅ **Promocionar/degradar usuarios VIP**
+- ✅ **Ver estadísticas de usuarios**
+- ✅ **Gestión completa del sistema**
+
+---
+
+## 🛠️ CONFIGURACIÓN DE SERVICIOS
+
+### **Variables de Entorno Admin-Service (.env)**
+```env
+# Server
+NODE_ENV=development
+PORT=3003
+
+# Database PostgreSQL
+DATABASE_URL=postgresql://admin:admin123@localhost:5432/ticketing?schema=public
+
+# JWT
+JWT_SECRET=tu_clave_secreta_super_segura_aqui
+JWT_EXPIRES_IN=7d
+
+# User Service URL (para API calls)
+USER_SERVICE_URL=http://localhost:3001
+```
+
+### **Variables de Entorno User-Service (.env)**
+```env
+# Server
+PORT=3001
+
+# Database MongoDB
+MONGODB_URI=mongodb://localhost:27017/ticketing-users
+
+# JWT (mismo secret para compatibilidad)
+JWT_SECRET=tu_clave_secreta_super_segura_aqui
+
+# Admin Service URL (para API calls)
+ADMIN_SERVICE_URL=http://localhost:3003
+```
+
+---
+
+## 🧪 COMANDOS DE PRUEBA POWERSHELL
+
+### **Crear SUPER_ADMIN**
+```powershell
+# 1. Login como admin normal
+$loginData = @{
+    email = "admin@ticketing.com"
+    password = "admin123"
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri "http://localhost:3003/api/auth/login" -Method POST -Body $loginData -ContentType "application/json"
+$token = $response.token
+
+# 2. Crear SUPER_ADMIN
+$newAdmin = @{
+    email = "voro.super@ticketing.com"
+    password = "Voro123!"
+    firstName = "Voro"
+    lastName = "SuperAdmin"
+    role = "SUPER_ADMIN"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:3003/api/admins" -Method POST -Body $newAdmin -Headers @{"Authorization"="Bearer $token"; "Content-Type"="application/json"}
+
+# 3. Login como SUPER_ADMIN
+$superLogin = @{
+    email = "voro.super@ticketing.com"
+    password = "Voro123!"
+} | ConvertTo-Json
+
+$superResponse = Invoke-RestMethod -Uri "http://localhost:3003/api/auth/login" -Method POST -Body $superLogin -ContentType "application/json"
+$superToken = $superResponse.token
+```
+
+### **Promocionar Usuario a VIP**
+```powershell
+# Ver usuarios disponibles
+Invoke-RestMethod -Uri "http://localhost:3003/api/user-management" -Method GET -Headers @{"Authorization"="Bearer $superToken"}
+
+# Promocionar usuario específico
+$promoteData = @{
+    reason = "Usuario muy activo en la plataforma"
+    notes = "Promoción por fidelidad y buen comportamiento"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:3003/api/user-management/USER_ID_AQUI/promote" -Method POST -Body $promoteData -Headers @{"Authorization"="Bearer $superToken"; "Content-Type"="application/json"}
+```
+
+### **Verificar Comunicación entre Servicios**
+```powershell
+# Eventos via user-service (debería hacer API call a admin-service)
+Invoke-RestMethod -Uri "http://localhost:3001/api/events" -Method GET
+
+# Eventos directamente desde admin-service
+Invoke-RestMethod -Uri "http://localhost:3003/api/events/public" -Method GET
+```
+
+---
+
+## 📊 LOGS DE COMUNICACIÓN
+
+### **En Admin-Service Console:**
+```
+[Admin->User API Call] PATCH /api/users/68d17160c60cb0338f7819e3/promote
+[Admin->User API Response] 200 - /api/users/68d17160c60cb0338f7819e3/promote
+```
+
+### **En User-Service Console:**
+```
+[User Service] Fetching events from admin service...
+[API Call] GET /api/events/public
+[API Response] 200 - /api/events/public
+[User Service] Promocionando usuario 68d17160c60cb0338f7819e3 a VIP por admin 26fa8809-a1a4-4242-9d09-42e65e5ee368
+[User Service] Usuario 68d17160c60cb0338f7819e3 promocionado a VIP exitosamente
+```
+
+---
+
+## ⚠️ Notas Importantes
 - **Todos los métodos POST, PUT, PATCH, DELETE requieren autenticación**
 - **GET de venues requiere filtro ?isActive=true**
+- **Solo SUPER_ADMIN puede crear, desactivar y ver estadísticas de otros admins**
+- **Solo SUPER_ADMIN puede promocionar/degradar usuarios VIP**
+- **Los admins solo pueden cambiar su propia contraseña**
 - **Los IDs son UUIDs reales de la base de datos**
 - **Usar Content-Type: application/json para métodos con body**
+- **Ambos servicios deben estar ejecutándose para que funcionen las API calls**
+- **Los servicios se comunican sin autenticación entre ellos (red interna)**

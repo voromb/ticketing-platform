@@ -7,6 +7,7 @@ import { eventRoutes } from './routes/event.routes';
 import { venueRoutes } from './routes/venue.routes';
 import { adminRoutes } from './routes/admin.routes';
 import { auditRoutes } from './routes/audit.routes';
+import { userManagementRoutes } from './routes/user-management.routes';
 import ENV from './config/env';
 import pino from 'pino';
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -93,6 +94,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     await server.register(eventRoutes, { prefix: '/api/events' });
     await server.register(venueRoutes, { prefix: '/api/venues' });
     await server.register(adminRoutes, { prefix: '/api/admins' });
+    await server.register(userManagementRoutes, { prefix: '/api/user-management' });
     await server.register(auditRoutes, { prefix: '/api/audit' });
   } catch (error) {
     logger.error('Error registrando rutas:', error);
@@ -120,6 +122,7 @@ export async function buildServer(): Promise<FastifyInstance> {
         events: '/api/events',
         venues: '/api/venues',
         admins: '/api/admins',
+        userManagement: '/api/user-management',
         audit: '/api/audit',
         health: '/health'
       }

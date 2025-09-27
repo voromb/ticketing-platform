@@ -16,6 +16,7 @@ import { connectRabbitMQ } from './config/rabbitmq';
 // Importar rutas
 import eventRoutes from './routes/event.routes';
 import ticketRoutes from './routes/ticket.routes';
+import userManagementRoutes from './routes/user-management.routes';
 
 class App {
   public app: Application;
@@ -55,6 +56,7 @@ class App {
     // API routes
     this.app.use('/api/events', eventRoutes);
     this.app.use('/api/tickets', ticketRoutes);
+    this.app.use('/api/users', userManagementRoutes);
   }
 
   private initializeErrorHandling(): void {

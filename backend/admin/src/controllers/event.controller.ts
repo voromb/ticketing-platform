@@ -353,6 +353,140 @@ class SimpleEventController {
         }
     }
 
+    // ==================== MÉTODOS PÚBLICOS (SIN AUTENTICACIÓN) ====================
+    
+    /**
+     * Listar eventos públicos para users (sin autenticación)
+     */
+    async listPublicEvents(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            const events = await prisma.event.findMany({
+                where: {
+                    status: EventStatus.ACTIVE,
+                    availableTickets: { gt: 0 }
+                    // Filtros de fecha opcionales (puedes activarlos después)
+                    // saleStartDate: { lte: new Date() },
+                    // saleEndDate: { gte: new Date() }
+                },
+                include: {
+                    venue: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            capacity: true,
+                            address: true
+                        }
+                    }
+                },
+                orderBy: {
+                    eventDate: 'asc'
+                }
+            });
+
+            // Formatear para user-service
+            const formattedEvents = events.map(event => ({
+                id: event.id,
+                name: event.name,
+                description: event.description,
+                eventDate: event.eventDate,
+                saleStartDate: event.saleStartDate,
+                saleEndDate: event.saleEndDate,
+                totalCapacity: event.totalCapacity,
+                availableTickets: event.availableTickets,
+                minPrice: event.minPrice,
+                maxPrice: event.maxPrice,
+                status: event.status,
+                category: event.genre,
+                subcategory: event.format,
+                venue: event.venue
+            }));
+
+            return reply.send({
+                success: true,
+                data: formattedEvents,
+                total: formattedEvents.length
+            });
+        } catch (error: any) {
+            logger.error('Error obteniendo eventos públicos:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
+            });
+        }
+    }
+
+    /**
+     * Obtener evento público por ID (sin autenticación)
+     */
+    async getPublicEventById(
+        request: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+
+            const event = await prisma.event.findUnique({
+                where: { 
+                    id,
+                    status: EventStatus.ACTIVE
+                    // Filtros de fecha opcionales (puedes activarlos después)
+                    // saleStartDate: { lte: new Date() },
+                    // saleEndDate: { gte: new Date() }
+                },
+                include: {
+                    venue: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            capacity: true,
+                            address: true,
+                            state: true,
+                            country: true
+                        }
+                    }
+                }
+            });
+
+            if (!event) {
+                return reply.status(404).send({
+                    success: false,
+                    error: 'Evento no encontrado o no disponible'
+                });
+            }
+
+            // Formatear para user-service
+            const formattedEvent = {
+                id: event.id,
+                name: event.name,
+                description: event.description,
+                eventDate: event.eventDate,
+                saleStartDate: event.saleStartDate,
+                saleEndDate: event.saleEndDate,
+                totalCapacity: event.totalCapacity,
+                availableTickets: event.availableTickets,
+                minPrice: event.minPrice,
+                maxPrice: event.maxPrice,
+                status: event.status,
+                category: event.genre,
+                subcategory: event.format,
+                venue: event.venue
+            };
+
+            return reply.send({
+                success: true,
+                data: formattedEvent
+            });
+        } catch (error: any) {
+            logger.error('Error obteniendo evento público:', error);
+            return reply.status(500).send({
+                success: false,
+                error: 'Error interno del servidor'
+            });
+        }
+    }
+
 }
 
 export default new SimpleEventController();
