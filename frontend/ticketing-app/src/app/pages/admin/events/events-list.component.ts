@@ -441,6 +441,7 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
             </div>
           </div>
 
+
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button"
                     (click)="closeModal()"
@@ -551,14 +552,14 @@ export class EventsListComponent implements OnInit {
       this.loadVenuesForModal();
     }
 
-    console.log('🏟️ Venues extraídos de eventos:', this.uniqueVenues);
+    // Venues extraídos de los eventos
   }
 
   loadVenuesForModal() {
     this.adminService.getVenues().subscribe({
       next: (response) => {
         this.uniqueVenues = response.venues || [];
-        console.log('🏟️ Venues cargados directamente:', this.uniqueVenues);
+        // Venues cargados desde la API
       },
       error: (error) => {
         console.error('Error loading venues for modal:', error);
@@ -647,20 +648,17 @@ export class EventsListComponent implements OnInit {
       isPublished: this.eventForm.isPublished
     };
 
-    console.log('📤 Datos del evento a enviar:', eventData);
-    console.log('🏟️ Venues disponibles:', this.uniqueVenues);
+    // Preparando datos del evento para enviar
 
     if (this.isEditing && this.eventForm.id) {
-      console.log('📝 Actualizando evento ID:', this.eventForm.id);
-      console.log('📤 Datos del evento a actualizar:', eventData);
+      // Actualizando evento existente
 
       this.adminService.updateEvent(this.eventForm.id, eventData).subscribe({
         next: (response: any) => {
-          console.log('✅ Evento actualizado exitosamente:', response);
+          // Evento actualizado exitosamente
 
           if (response.updatedFields && response.ignoredFields) {
-            console.log('✅ Campos actualizados:', response.updatedFields);
-            console.log('⚠️ Campos ignorados (mantienen valor original):', response.ignoredFields);
+            // Mostrar información de campos actualizados
           }
 
           this.closeModal();
@@ -692,7 +690,7 @@ export class EventsListComponent implements OnInit {
     } else {
       this.adminService.createEvent(eventData).subscribe({
         next: (response) => {
-          console.log('Evento creado:', response);
+          // Evento creado exitosamente
           this.closeModal();
           this.loadEvents();
           alert('Evento creado exitosamente');
@@ -729,8 +727,7 @@ export class EventsListComponent implements OnInit {
   editEvent(event: Event) {
     this.isEditing = true;
 
-    console.log('📝 Editando evento:', event);
-    console.log('📋 Campos disponibles:', Object.keys(event));
+    // Cargando datos del evento para editar
 
     this.eventForm = {
       id: event.id,
@@ -746,7 +743,7 @@ export class EventsListComponent implements OnInit {
       isPublished: event.publishedAt ? true : false
     };
 
-    console.log('📋 Formulario cargado:', this.eventForm);
+    // Formulario cargado con datos del evento
     this.showModal = true;
   }
 
@@ -759,7 +756,7 @@ export class EventsListComponent implements OnInit {
 
     this.adminService.updateEvent(event.id, { status: newStatus }).subscribe({
       next: (response) => {
-        console.log('Estado cambiado:', response);
+        // Estado del evento cambiado
         this.loadEvents();
         alert(`Evento ${newStatus === 'ACTIVE' ? 'activado' : 'desactivado'} exitosamente`);
       },
@@ -851,4 +848,5 @@ export class EventsListComponent implements OnInit {
         return status;
     }
   }
+
 }

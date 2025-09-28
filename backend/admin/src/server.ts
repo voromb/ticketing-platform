@@ -26,16 +26,7 @@ const logger = pino({
   }
 });
 
-// Extender FastifyRequest
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: {
-      id: string;
-      email: string;
-      role: string;
-    };
-  }
-}
+// FastifyRequest ya está extendido en auth.middleware.ts
 
 export async function buildServer(): Promise<FastifyInstance> {
   const server = fastify({
@@ -45,17 +36,12 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Inicializar servicios
   const prisma = new PrismaClient();
   registerAuditMiddleware(prisma);
-  
-  const rabbitmq = new RabbitMQService();
 
-  try {
-    await rabbitmq.connect();
-    logger.info('RabbitMQ conectado (mock)');
-  } catch (error) {
-    logger.warn('WARNING: RabbitMQ no disponible, continuando sin él');
-  }
-
-  // Registrar plugins
+  // Inicializar RabbitMQ (comentado temporalmente)
+  const rabbitmq = {
+    isConnected: () => false,
+    close: async () => {}
+  };
   await server.register(cors, {
     origin: true,
     credentials: true,
@@ -67,9 +53,9 @@ export async function buildServer(): Promise<FastifyInstance> {
     secret: ENV.JWT_SECRET,
   });
 
+
   // Decoradores
   server.decorate('prisma', prisma);
-  server.decorate('rabbitmq', rabbitmq);
 
   // Hooks globales
   server.addHook('onRequest', async (request, reply) => {
@@ -98,7 +84,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     await server.register(adminRoutes, { prefix: '/api/admins' });
     await server.register(userManagementRoutes, { prefix: '/api/user-management' });
     await server.register(auditRoutes, { prefix: '/api/audit' });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error registrando rutas:', error);
   }
   server.get('/health', async (request, reply) => {
@@ -110,7 +96,7 @@ export async function buildServer(): Promise<FastifyInstance> {
       status: dbHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       database: dbHealthy ? 'connected' : 'disconnected',
-      rabbitmq: rabbitmq.isConnected() ? 'connected' : 'disconnected'
+      rabbitmq: 'disconnected'
     });
   });
 

@@ -46,8 +46,6 @@ export class AuthService {
         console.error('Error decoding token:', error);
         this.logout();
       }
-    } else {
-      console.log('No hay token almacenado');
     }
   }
 

@@ -21,30 +21,13 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('🔄 Navbar inicializándose...');
-    
-    // Suscribirse a cambios en el usuario
     this.authService.currentUser$.subscribe(user => {
-      console.log('👤 Navbar - Usuario actualizado:', user);
       this.user = user;
     });
-    
-    // Verificar estado inicial
-    console.log('🔍 Navbar - Estado inicial:', {
-      isLoggedIn: this.isLoggedIn,
-      isAdmin: this.isAdmin,
-      user: this.user,
-      currentUrl: this.router.url
-    });
-    
-    // Si estamos en admin-dashboard pero no hay usuario, forzar verificación
     if (this.router.url.includes('/admin-dashboard') && !this.user) {
-      console.log('🔧 Forzando verificación de token...');
       setTimeout(() => {
         const token = localStorage.getItem('token');
         if (token) {
-          console.log('🔑 Token encontrado, reintentando...');
-          // Forzar re-verificación del AuthService
           this.authService.checkStoredToken();
         }
       }, 100);

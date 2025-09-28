@@ -21,10 +21,9 @@ export class AppComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    // Detectar ruta inicial
     this.isAdminRoute = this.router.url.startsWith('/admin-dashboard');
     
-    // Detectar cambios de ruta para ocultar navbar en admin
+    // Escuchar cambios de ruta
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {

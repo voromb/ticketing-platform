@@ -702,7 +702,7 @@ export class UsersListComponent implements OnInit {
   }
 
   viewUser(user: User) {
-    console.log('Ver usuario:', user);
+    // Ver detalles del usuario
   }
 
   openUserSearchModal() {
@@ -763,7 +763,7 @@ export class UsersListComponent implements OnInit {
 
     this.adminService.promoteToVip(this.selectedUser._id, data).subscribe({
       next: (response) => {
-        console.log('Usuario promocionado:', response);
+        // Usuario promocionado exitosamente
         this.closePromoteModal();
         this.refreshData();
         alert(`✅ ${this.selectedUser?.username} ha sido promocionado a VIP exitosamente`);
@@ -786,7 +786,7 @@ export class UsersListComponent implements OnInit {
 
       this.adminService.demoteFromVip(user._id, data).subscribe({
         next: (response) => {
-          console.log('Usuario degradado:', response);
+          // Usuario degradado exitosamente
           this.refreshData();
         },
         error: (error) => {
@@ -797,12 +797,12 @@ export class UsersListComponent implements OnInit {
   }
 
   activateUser(user: User) {
-    console.log('Activar usuario:', user);
+    // Activar usuario
   }
 
   deactivateUser(user: User) {
     if (confirm(`¿Estás seguro de que quieres desactivar a ${user.username}?`)) {
-      console.log('Desactivar usuario:', user);
+      // Desactivar usuario
     }
   }
 

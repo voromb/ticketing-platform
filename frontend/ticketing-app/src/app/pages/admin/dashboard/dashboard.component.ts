@@ -488,7 +488,7 @@ export class DashboardComponent implements OnInit {
   }
 
   navigateTo(route: string) {
-    console.log('Navigate to:', route);
+    // Navegar a la ruta especificada
 
     const routeMap: { [key: string]: { route: string; queryParams?: any } } = {
       '/admin-dashboard/events/new': {
@@ -599,7 +599,7 @@ export class DashboardComponent implements OnInit {
 
     this.adminService.promoteToVip(this.selectedUser._id, data).subscribe({
       next: (response) => {
-        console.log('Usuario promocionado:', response);
+        // Usuario promocionado exitosamente
         this.closePromoteModal();
         this.loadDashboardData();
         alert(`✅ ${userName} ha sido promocionado a VIP exitosamente`);

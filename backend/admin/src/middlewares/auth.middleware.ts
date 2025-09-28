@@ -39,12 +39,12 @@ export async function authMiddleware(
 
     // Verificar el token
     try {
-      const decoded = jwt.verify(token, ENV.JWT_SECRET) as any;
+      const decoded = jwt.verify(token, ENV.JWT_SECRET) as { id?: string; sub?: string; email?: string; role?: string; [key: string]: any };
       
       // Añadir el usuario al request
       request.user = {
-        id: decoded.id || decoded.sub,
-        email: decoded.email,
+        id: decoded.id || decoded.sub || '',
+        email: decoded.email || '',
         role: decoded.role || 'USER'
       };
       
@@ -88,10 +88,10 @@ export async function optionalAuthMiddleware(
       const token = parts[1];
       
       try {
-        const decoded = jwt.verify(token, ENV.JWT_SECRET) as any;
+        const decoded = jwt.verify(token, ENV.JWT_SECRET) as { id?: string; sub?: string; email?: string; role?: string; [key: string]: any };
         request.user = {
-          id: decoded.id || decoded.sub,
-          email: decoded.email,
+          id: decoded.id || decoded.sub || '',
+          email: decoded.email || '',
           role: decoded.role || 'USER'
         };
       } catch {

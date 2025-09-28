@@ -34,7 +34,6 @@ export interface Venue {
   _count?: {
     events: number;
   };
-  // Propiedades calculadas (añadidas en frontend)
   eventCount?: number;
   eventStatus?: string;
 }
@@ -68,7 +67,6 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  // ==================== EVENTS ====================
   getEvents(): Observable<{ success: boolean; data: Event[]; total: number }> {
     return this.http.get<{ success: boolean; data: Event[]; total: number }>(`${this.baseUrl}/events?isActive=true`);
   }
@@ -93,9 +91,7 @@ export class AdminService {
     return this.http.get(`${this.baseUrl}/events/stats`);
   }
 
-  // ==================== VENUES ====================
   getVenues(): Observable<{ venues: Venue[]; pagination: any }> {
-    // Sin filtro isActive - mostrar todos los venues (activos e inactivos)
     return this.http.get<{ venues: Venue[]; pagination: any }>(`${this.baseUrl}/venues?limit=50`);
   }
 
@@ -115,7 +111,6 @@ export class AdminService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/venues/${id}`);
   }
 
-  // ==================== USER MANAGEMENT ====================
   getUsers(): Observable<{ success: boolean; users: User[]; total: number }> {
     return this.http.get<{ success: boolean; users: User[]; total: number }>(`${this.baseUrl}/user-management`);
   }
@@ -136,7 +131,6 @@ export class AdminService {
     return this.http.post(`${this.baseUrl}/user-management/${userId}/demote`, data);
   }
 
-  // ==================== DASHBOARD STATS ====================
   getDashboardStats(): Observable<any> {
     return this.http.get(`${this.baseUrl}/dashboard/stats`);
   }

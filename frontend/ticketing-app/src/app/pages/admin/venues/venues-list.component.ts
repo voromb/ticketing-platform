@@ -449,7 +449,7 @@ export class VenuesListComponent implements OnInit {
     this.loading = true;
     this.adminService.getVenues().subscribe({
       next: (response) => {
-        console.log('📍 Venues cargados:', response.venues);
+        // Venues cargados desde la API
 
         this.venues = response.venues.map(venue => ({
           ...venue,
@@ -469,12 +469,7 @@ export class VenuesListComponent implements OnInit {
           this.cdr.detectChanges();
         }, 100);
 
-        console.log('📊 Estadísticas calculadas:', {
-          total: this.totalVenues,
-          active: this.activeVenues,
-          inactive: this.inactiveVenues,
-          capacity: this.totalCapacity
-        });
+        // Estadísticas calculadas
       },
       error: (error) => {
         console.error('❌ Error loading venues:', error);
@@ -574,11 +569,11 @@ export class VenuesListComponent implements OnInit {
         isActive: this.venueForm.isActive
       };
 
-      console.log('📤 Datos del venue a actualizar:', venueUpdateData);
+      // Preparando datos del venue para actualizar
 
       this.adminService.updateVenue(this.venueForm.id, venueUpdateData).subscribe({
         next: () => {
-          console.log('✅ Venue actualizado exitosamente');
+          // Venue actualizado exitosamente
           this.closeModal();
           this.loadVenues();
           alert('Venue actualizado exitosamente');
@@ -618,12 +613,11 @@ export class VenuesListComponent implements OnInit {
         isActive: true
       };
 
-      console.log('📤 Datos del venue a enviar:', venueData);
-      console.log('📋 Formulario actual:', this.venueForm);
+      // Preparando datos del venue para crear
 
       this.adminService.createVenue(venueData).subscribe({
         next: () => {
-          console.log('✅ Venue creado exitosamente');
+          // Venue creado exitosamente
           this.closeModal();
           this.loadVenues();
           alert('Venue creado exitosamente');
@@ -658,7 +652,7 @@ export class VenuesListComponent implements OnInit {
   }
 
   viewVenue(venue: Venue) {
-    console.log('Ver venue:', venue);
+    // Ver detalles del venue
   }
 
   activateVenue(venue: Venue) {

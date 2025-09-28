@@ -1,68 +1,58 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient, UserRole } from '@prisma/client';
-import { z } from 'zod';
-import bcrypt from 'bcryptjs';
-import { RabbitMQService } from '../services/rabbitmq.service';
-import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AdminController = void 0;
+const client_1 = require("@prisma/client");
+const zod_1 = require("zod");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const logger_1 = require("../utils/logger");
+const prisma = new client_1.PrismaClient();
 // ==================== SCHEMAS DE VALIDACIÓN ====================
-const createAdminSchema = z.object({
-    email: z.string().email('Email inválido'),
-    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-    firstName: z.string().min(2),
-    lastName: z.string().min(2),
-    role: z.nativeEnum(UserRole).default(UserRole.ADMIN),
+const createAdminSchema = zod_1.z.object({
+    email: zod_1.z.string().email('Email inválido'),
+    password: zod_1.z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    firstName: zod_1.z.string().min(2),
+    lastName: zod_1.z.string().min(2),
+    role: zod_1.z.nativeEnum(client_1.UserRole).default(client_1.UserRole.ADMIN),
 });
-
-const updateAdminSchema = z.object({
-    email: z.string().email().optional(),
-    firstName: z.string().min(2).optional(),
-    lastName: z.string().min(2).optional(),
-    role: z.nativeEnum(UserRole).optional(),
-    isActive: z.boolean().optional(),
+const updateAdminSchema = zod_1.z.object({
+    email: zod_1.z.string().email().optional(),
+    firstName: zod_1.z.string().min(2).optional(),
+    lastName: zod_1.z.string().min(2).optional(),
+    role: zod_1.z.nativeEnum(client_1.UserRole).optional(),
+    isActive: zod_1.z.boolean().optional(),
 });
-
-const changePasswordSchema = z
+const changePasswordSchema = zod_1.z
     .object({
-        currentPassword: z.string(),
-        newPassword: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-        confirmPassword: z.string(),
-    })
+    currentPassword: zod_1.z.string(),
+    newPassword: zod_1.z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    confirmPassword: zod_1.z.string(),
+})
     .refine(data => data.newPassword === data.confirmPassword, {
-        message: 'Las contraseñas no coinciden',
-        path: ['confirmPassword'],
-    });
-
-const adminQuerySchema = z.object({
-    page: z.string().optional().default('1').transform(Number),
-    limit: z.string().optional().default('10').transform(Number),
-    search: z.string().optional(),
-    role: z.nativeEnum(UserRole).optional(),
-    isActive: z
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+});
+const adminQuerySchema = zod_1.z.object({
+    page: zod_1.z.string().optional().default('1').transform(Number),
+    limit: zod_1.z.string().optional().default('10').transform(Number),
+    search: zod_1.z.string().optional(),
+    role: zod_1.z.nativeEnum(client_1.UserRole).optional(),
+    isActive: zod_1.z
         .string()
         .optional()
         .transform(val => val === 'true'),
 });
-
-// ==================== TYPES ====================
-type CreateAdminDTO = z.infer<typeof createAdminSchema>;
-type UpdateAdminDTO = z.infer<typeof updateAdminSchema>;
-type ChangePasswordDTO = z.infer<typeof changePasswordSchema>;
-type AdminQueryDTO = z.infer<typeof adminQuerySchema>;
-
-export class AdminController {
-    private rabbitmq: RabbitMQService;
-
-    constructor(rabbitmqService: RabbitMQService) {
+class AdminController {
+    rabbitmq;
+    constructor(rabbitmqService) {
         this.rabbitmq = rabbitmqService;
     }
-
     /**
      * Crear un nuevo administrador
      */
-    async create(request: FastifyRequest<{ Body: CreateAdminDTO }>, reply: FastifyReply) {
+    async create(request, reply) {
         try {
             // Solo SUPER_ADMIN puede crear otros admins
             if (request.user.role !== 'SUPER_ADMIN') {
@@ -70,23 +60,18 @@ export class AdminController {
                     error: 'No tienes permisos para crear administradores',
                 });
             }
-
             const validatedData = createAdminSchema.parse(request.body);
-
             // Verificar que el email no exista
             const existingAdmin = await prisma.admin.findUnique({
                 where: { email: validatedData.email },
             });
-
             if (existingAdmin) {
                 return reply.status(400).send({
                     error: 'Ya existe un administrador con ese email',
                 });
             }
-
             // Hashear password
-            const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-
+            const hashedPassword = await bcryptjs_1.default.hash(validatedData.password, 10);
             // Crear admin
             const admin = await prisma.admin.create({
                 data: {
@@ -103,7 +88,6 @@ export class AdminController {
                     createdAt: true,
                 },
             });
-
             // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('admin.created', {
                 adminId: admin.id,
@@ -112,15 +96,14 @@ export class AdminController {
                 createdBy: request.user.id,
                 timestamp: new Date(),
             });
-
-            logger.info(`Admin creado: ${admin.id} por: ${request.user.id}`);
-
+            logger_1.logger.info(`Admin creado: ${admin.id} por: ${request.user.id}`);
             return reply.status(201).send({
                 message: 'Administrador creado exitosamente',
                 admin,
             });
-        } catch (error) {
-            logger.error('Error creando admin:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error creando admin:', error);
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -132,11 +115,10 @@ export class AdminController {
             });
         }
     }
-
     /**
      * Obtener todos los administradores
      */
-    async getAll(request: FastifyRequest<{ Querystring: AdminQueryDTO }>, reply: FastifyReply) {
+    async getAll(request, reply) {
         try {
             // Solo SUPER_ADMIN y ADMIN pueden ver la lista
             if (!['SUPER_ADMIN', 'ADMIN'].includes(request.user.role)) {
@@ -144,21 +126,16 @@ export class AdminController {
                     error: 'No tienes permisos para ver administradores',
                 });
             }
-
             const query = adminQuerySchema.parse(request.query);
             const { page, limit, search, role, isActive } = query;
-
             // Construir filtros
-            const where: any = {};
-
+            const where = {};
             if (typeof isActive === 'boolean') {
                 where.isActive = isActive;
             }
-
             if (role) {
                 where.role = role;
             }
-
             if (search) {
                 where.OR = [
                     { email: { contains: search, mode: 'insensitive' } },
@@ -166,10 +143,8 @@ export class AdminController {
                     { lastName: { contains: search, mode: 'insensitive' } },
                 ];
             }
-
             // Obtener total
             const total = await prisma.admin.count({ where });
-
             // Obtener admins paginados
             const admins = await prisma.admin.findMany({
                 where,
@@ -195,7 +170,6 @@ export class AdminController {
                     createdAt: 'desc',
                 },
             });
-
             return reply.send({
                 admins,
                 pagination: {
@@ -205,18 +179,18 @@ export class AdminController {
                     totalPages: Math.ceil(total / limit),
                 },
             });
-        } catch (error) {
-            logger.error('Error obteniendo admins:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error obteniendo admins:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
-
     /**
      * Obtener perfil del admin actual
      */
-    async getProfile(request: FastifyRequest, reply: FastifyReply) {
+    async getProfile(request, reply) {
         try {
             const admin = await prisma.admin.findUnique({
                 where: { id: request.user.id },
@@ -238,13 +212,11 @@ export class AdminController {
                     },
                 },
             });
-
             if (!admin) {
                 return reply.status(404).send({
                     error: 'Administrador no encontrado',
                 });
             }
-
             // Obtener actividad reciente
             const recentActivity = await prisma.auditLog.findMany({
                 where: { adminId: request.user.id },
@@ -257,23 +229,22 @@ export class AdminController {
                     createdAt: true,
                 },
             });
-
             return reply.send({
                 admin,
                 recentActivity,
             });
-        } catch (error) {
-            logger.error('Error obteniendo perfil:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error obteniendo perfil:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
-
     /**
      * Obtener un administrador por ID
      */
-    async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    async getById(request, reply) {
         try {
             // Solo SUPER_ADMIN puede ver detalles de otros admins
             if (request.user.role !== 'SUPER_ADMIN' && request.user.id !== request.params.id) {
@@ -281,9 +252,7 @@ export class AdminController {
                     error: 'No tienes permisos para ver este administrador',
                 });
             }
-
             const { id } = request.params;
-
             const admin = await prisma.admin.findUnique({
                 where: { id },
                 select: {
@@ -327,74 +296,59 @@ export class AdminController {
                     },
                 },
             });
-
             if (!admin) {
                 return reply.status(404).send({
                     error: 'Administrador no encontrado',
                 });
             }
-
             return reply.send({ admin });
-        } catch (error) {
-            logger.error('Error obteniendo admin:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error obteniendo admin:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
-
     /**
      * Actualizar un administrador
      */
-    async update(
-        request: FastifyRequest<{
-            Params: { id: string };
-            Body: UpdateAdminDTO;
-        }>,
-        reply: FastifyReply
-    ) {
+    async update(request, reply) {
         try {
             const { id } = request.params;
             const validatedData = updateAdminSchema.parse(request.body);
-
             // Verificar permisos
             if (request.user.role !== 'SUPER_ADMIN' && request.user.id !== id) {
                 return reply.status(403).send({
                     error: 'No tienes permisos para actualizar este administrador',
                 });
             }
-
             // No permitir que un admin cambie su propio rol
             if (request.user.id === id && validatedData.role) {
                 return reply.status(400).send({
                     error: 'No puedes cambiar tu propio rol',
                 });
             }
-
             // Verificar que el admin existe
             const existingAdmin = await prisma.admin.findUnique({
                 where: { id },
             });
-
             if (!existingAdmin) {
                 return reply.status(404).send({
                     error: 'Administrador no encontrado',
                 });
             }
-
             // Si se está actualizando el email, verificar que no exista
             if (validatedData.email && validatedData.email !== existingAdmin.email) {
                 const emailExists = await prisma.admin.findUnique({
                     where: { email: validatedData.email },
                 });
-
                 if (emailExists) {
                     return reply.status(400).send({
                         error: 'Ya existe un administrador con ese email',
                     });
                 }
             }
-
             // Actualizar admin
             const admin = await prisma.admin.update({
                 where: { id },
@@ -409,7 +363,6 @@ export class AdminController {
                     updatedAt: true,
                 },
             });
-
             // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('admin.updated', {
                 adminId: admin.id,
@@ -417,15 +370,14 @@ export class AdminController {
                 changes: Object.keys(validatedData),
                 timestamp: new Date(),
             });
-
-            logger.info(`Admin actualizado: ${admin.id} por: ${request.user.id}`);
-
+            logger_1.logger.info(`Admin actualizado: ${admin.id} por: ${request.user.id}`);
             return reply.send({
                 message: 'Administrador actualizado exitosamente',
                 admin,
             });
-        } catch (error) {
-            logger.error('Error actualizando admin:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error actualizando admin:', error);
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -437,73 +389,54 @@ export class AdminController {
             });
         }
     }
-
     /**
      * Cambiar contraseña
      */
-    async changePassword(
-        request: FastifyRequest<{
-            Params: { id: string };
-            Body: ChangePasswordDTO;
-        }>,
-        reply: FastifyReply
-    ) {
+    async changePassword(request, reply) {
         try {
             const { id } = request.params;
             const validatedData = changePasswordSchema.parse(request.body);
-
             // Solo puedes cambiar tu propia contraseña
             if (request.user.id !== id) {
                 return reply.status(403).send({
                     error: 'Solo puedes cambiar tu propia contraseña',
                 });
             }
-
             // Obtener admin actual
             const admin = await prisma.admin.findUnique({
                 where: { id },
             });
-
             if (!admin) {
                 return reply.status(404).send({
                     error: 'Administrador no encontrado',
                 });
             }
-
             // Verificar contraseña actual
-            const validPassword = await bcrypt.compare(
-                validatedData.currentPassword,
-                admin.password
-            );
-
+            const validPassword = await bcryptjs_1.default.compare(validatedData.currentPassword, admin.password);
             if (!validPassword) {
                 return reply.status(400).send({
                     error: 'Contraseña actual incorrecta',
                 });
             }
-
             // Hashear nueva contraseña
-            const hashedPassword = await bcrypt.hash(validatedData.newPassword, 10);
-
+            const hashedPassword = await bcryptjs_1.default.hash(validatedData.newPassword, 10);
             // Actualizar contraseña
             await prisma.admin.update({
                 where: { id },
                 data: { password: hashedPassword },
             });
-
             // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('admin.password_changed', {
                 adminId: id,
                 timestamp: new Date(),
             });
-
-            logger.info(`Contraseña cambiada para admin: ${id}`);
-
+            logger_1.logger.info(`Contraseña cambiada para admin: ${id}`);
             return reply.send({
                 message: 'Contraseña actualizada exitosamente',
             });
-        } catch (error) {
-            logger.error('Error cambiando contraseña:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error cambiando contraseña:', error);
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -515,11 +448,10 @@ export class AdminController {
             });
         }
     }
-
     /**
      * Desactivar un administrador
      */
-    async deactivate(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    async deactivate(request, reply) {
         try {
             // Solo SUPER_ADMIN puede desactivar admins
             if (request.user.role !== 'SUPER_ADMIN') {
@@ -527,16 +459,13 @@ export class AdminController {
                     error: 'No tienes permisos para desactivar administradores',
                 });
             }
-
             const { id } = request.params;
-
             // No permitir auto-desactivación
             if (request.user.id === id) {
                 return reply.status(400).send({
                     error: 'No puedes desactivar tu propia cuenta',
                 });
             }
-
             // Verificar que no sea el último SUPER_ADMIN activo
             const superAdminCount = await prisma.admin.count({
                 where: {
@@ -545,17 +474,14 @@ export class AdminController {
                     id: { not: id },
                 },
             });
-
             const adminToDeactivate = await prisma.admin.findUnique({
                 where: { id },
             });
-
             if (adminToDeactivate?.role === 'SUPER_ADMIN' && superAdminCount === 0) {
                 return reply.status(400).send({
                     error: 'No se puede desactivar el último SUPER_ADMIN activo',
                 });
             }
-
             // Desactivar admin
             const admin = await prisma.admin.update({
                 where: { id },
@@ -567,31 +493,28 @@ export class AdminController {
                     lastName: true,
                 },
             });
-
             // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('admin.deactivated', {
                 adminId: admin.id,
                 deactivatedBy: request.user.id,
                 timestamp: new Date(),
             });
-
-            logger.info(`Admin desactivado: ${admin.id} por: ${request.user.id}`);
-
+            logger_1.logger.info(`Admin desactivado: ${admin.id} por: ${request.user.id}`);
             return reply.send({
                 message: 'Administrador desactivado exitosamente',
             });
-        } catch (error) {
-            logger.error('Error desactivando admin:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error desactivando admin:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
-
     /**
      * Activar un administrador
      */
-    async activate(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    async activate(request, reply) {
         try {
             // Solo SUPER_ADMIN puede activar admins
             if (request.user.role !== 'SUPER_ADMIN') {
@@ -599,9 +522,7 @@ export class AdminController {
                     error: 'No tienes permisos para activar administradores',
                 });
             }
-
             const { id } = request.params;
-
             const admin = await prisma.admin.update({
                 where: { id },
                 data: { isActive: true },
@@ -612,32 +533,29 @@ export class AdminController {
                     lastName: true,
                 },
             });
-
             // Publicar evento en RabbitMQ
             await this.rabbitmq.publishEvent('admin.activated', {
                 adminId: admin.id,
                 activatedBy: request.user.id,
                 timestamp: new Date(),
             });
-
-            logger.info(`Admin activado: ${admin.id} por: ${request.user.id}`);
-
+            logger_1.logger.info(`Admin activado: ${admin.id} por: ${request.user.id}`);
             return reply.send({
                 message: 'Administrador activado exitosamente',
                 admin,
             });
-        } catch (error) {
-            logger.error('Error activando admin:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error activando admin:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
-
     /**
      * Obtener estadísticas de administradores
      */
-    async getStats(request: FastifyRequest, reply: FastifyReply) {
+    async getStats(request, reply) {
         try {
             // Solo SUPER_ADMIN puede ver estadísticas
             if (request.user.role !== 'SUPER_ADMIN') {
@@ -645,7 +563,6 @@ export class AdminController {
                     error: 'No tienes permisos para ver estadísticas',
                 });
             }
-
             const [total, active, byRole, recentLogins] = await Promise.all([
                 prisma.admin.count(),
                 prisma.admin.count({ where: { isActive: true } }),
@@ -668,7 +585,6 @@ export class AdminController {
                     },
                 }),
             ]);
-
             // Admins más activos (por eventos creados)
             const mostActive = await prisma.admin.findMany({
                 where: { isActive: true },
@@ -692,7 +608,6 @@ export class AdminController {
                 },
                 take: 5,
             });
-
             return reply.send({
                 stats: {
                     total,
@@ -701,16 +616,18 @@ export class AdminController {
                     byRole: byRole.reduce((acc, curr) => {
                         acc[curr.role] = curr._count;
                         return acc;
-                    }, {} as Record<string, number>),
+                    }, {}),
                 },
                 recentLogins,
                 mostActive,
             });
-        } catch (error) {
-            logger.error('Error obteniendo estadísticas:', error);
+        }
+        catch (error) {
+            logger_1.logger.error('Error obteniendo estadísticas:', error);
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
         }
     }
 }
+exports.AdminController = AdminController;
