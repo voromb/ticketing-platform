@@ -26,6 +26,7 @@ model Admin {
   auditLogs     AuditLog[]
   
   @@index([email])
+  @@map("admins")
 }
 
 // ==================== VENUES ====================
@@ -177,12 +178,14 @@ enum UserRole {
   SUPER_ADMIN
   ADMIN
   MANAGER
+  MODERATOR   // Legacy role
   VIEWER
 }
 
 enum EventStatus {
   DRAFT       // Borrador, no visible
   ACTIVE      // Publicado y en venta
+  PUBLISHED   // Publicado (legacy)
   SOLD_OUT    // Entradas agotadas
   CANCELLED   // Evento cancelado
   COMPLETED   // Evento finalizado
