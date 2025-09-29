@@ -8,6 +8,10 @@ import { ListCard } from "../../shared/components/list-card/list-card";
   templateUrl: './home.html',
 })
 export class Home {
+  ngOnInit() {
+
+  console.log('Concerts en OnInit:', this.concerts);
+}
 
     //tenim que tirar a un servei per agafar els concerts en el component de carrousel
     concerts = [

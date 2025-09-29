@@ -109,7 +109,7 @@ export class EventService {
 //   status: string;
 //   imageUrl?: string;
 // }
-
+//* Esto hi ha que activaro despres */
 // @Injectable({
 //   providedIn: 'root'
 // })
