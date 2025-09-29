@@ -246,6 +246,58 @@ export class VenueController {
         }
     }
 
+    /**Buscar por Slug
+     */
+//     async getBySlug(
+//   request: FastifyRequest<{ Params: { slug: string } }>,
+//   reply: FastifyReply
+// ) {
+//   try {
+//     const { slug } = request.params;
+
+//     const venue = await prisma.venue.findUnique({
+//       where: { slug }, 
+//       include: {
+//         sections: true,
+//         createdBy: {
+//           select: {
+//             id: true,
+//             email: true,
+//             firstName: true,
+//             lastName: true,
+//           },
+//         },
+//         events: {
+//           where: {
+//             status: 'ACTIVE',
+//             eventDate: {
+//               gte: new Date(),
+//             },
+//           },
+//           orderBy: {
+//             eventDate: 'asc',
+//           },
+//           take: 10,
+//         },
+//       },
+//     });
+
+//     if (!venue) {
+//       return reply.status(404).send({
+//         error: 'Venue no encontrado',
+//       });
+//     }
+
+//     return reply.send({ venue });
+//   } catch (error) {
+//     logger.error('Error obteniendo venue por slug:', error);
+//     return reply.status(500).send({
+//       error: 'Error interno del servidor',
+//     });
+//   }
+// }
+
+
     /**
      * Actualizar un venue
      */
