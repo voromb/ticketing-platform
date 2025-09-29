@@ -3,6 +3,7 @@ import { AdminGuard } from './core/guards/admin.guard';
 import { SuperAdminGuard } from './core/guards/super-admin.guard';
 
 
+
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' }, //*Hi ha que cambiar a futur al home */
    {
@@ -24,6 +25,10 @@ export const routes: Routes = [
     path: 'shop',
     loadComponent: () =>
       import('./pages/shop/shop').then((m) => m.Shop),
+  },
+    {
+    path: 'venues/:id',
+    loadComponent: () => import('./pages/venue-detail/venue-detail').then(m => m.VenueDetail),
   },
   {
     path: 'profile',
