@@ -1,15 +1,21 @@
-<div *ngFor="let venue of venues" class="bg-white rounded-2xl shadow-md ...">
-   <!-- <a [routerLink]="['/venues', venue.id]" class="text-blue-600 hover:underline">
-        {{ venue.name }}
-      </a> -->
-  <p>{{ venue.description }}</p>
-  <p><strong>Dirección:</strong> {{ venue.address }}, {{ venue.city }}</p>
-  <p><strong>Capacidad:</strong> {{ venue.capacity }}</p>
-  <p><strong>Estado:</strong> {{ venue.isActive ? 'Activo ✅' : 'Inactivo ❌' }}</p>
+<a *ngIf="venue"
+   class="card h-100 shadow-sm text-decoration-none text-dark"
+   >
+  <div class="card-body">
+    <h5 class="card-title">{{ venue.name }}</h5>
 
-  <div class="flex flex-wrap gap-2 mt-2">
-    <span *ngFor="let amenity of venue.amenities" class="px-3 py-1 ...">
-      {{ amenity }}
-    </span>
+    <p class="card-text">
+      {{ venue.address }},
+      {{ venue.city }}
+      <span *ngIf="venue.state">, {{ venue.state }}</span>
+      - {{ venue.country }}
+    </p>
+    <p class="text-muted">Capacidad: {{ venue.capacity }}</p>
+
+    <p *ngIf="venue.description" class="mt-2">
+      {{ venue.description }}
+    </p>
   </div>
-</div>
+</a>
+<!-- hAY QUE PONERLO EN LA PRIMERA CLASS CARD H 100 SHADO, PARA HACER TODA LA TARGETA CLICKABLE Y HACER EL SALTO-->
+<!-- [routerLink]="['/venues', venue.id, 'events']"> -->

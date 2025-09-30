@@ -1,0 +1,9 @@
+.card {
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+}
+.card-title{
+ color: #cc2323;   
+}

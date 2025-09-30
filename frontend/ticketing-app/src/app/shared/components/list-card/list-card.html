@@ -1,12 +1,12 @@
 <div class="container py-5">
-  <h2 class="text-center mb-4">Sección de Categorías</h2>
+  <h2 class="text-center mb-4">Lugares de evento</h2>
 
-<div class="row">
-  @for (cat of categories; track cat.slug) {
-    <div class="col-md-4 mb-4">
-      <app-card-categories [category]="cat"></app-card-categories>
-    </div>
-  }
+  <div class="row">
+    @for (venue of venues; track venue.slug) {
+      <div class="col-md-4 mb-4">
+        <app-venues-list [venue]="venue"></app-venues-list>
+      </div>
+    }
+  </div>
 </div>
 
-</div>

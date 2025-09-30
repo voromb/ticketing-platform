@@ -133,35 +133,74 @@ class SimpleEventController {
         }
     }
 
-    async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
-        try {
-            const events = await prisma.event.findMany({
-                where: { category: 'ROCK_METAL_CONCERT' },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true
-                        }
-                    }
-                },
-                orderBy: { eventDate: 'asc' }
-            });
+    // async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
+    //     try {
+    //         const events = await prisma.event.findMany({
+    //             where: { category: 'ROCK_METAL_CONCERT' },
+    //             include: {
+    //                 venue: {
+    //                     select: {
+    //                         id: true,
+    //                         name: true,
+    //                         city: true,
+    //                         capacity: true
+    //                     }
+    //                 }
+    //             },
+    //             orderBy: { eventDate: 'asc' }
+    //         });
 
-            return reply.send({
-                success: true,
-                data: events
-            });
-        } catch (error) {
-            console.error('Error listing rock events:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
+    //         return reply.send({
+    //             success: true,
+    //             data: events
+    //         });
+    //     } catch (error) {
+    //         console.error('Error listing rock events:', error);
+    //         return reply.status(500).send({
+    //             success: false,
+    //             error: 'Error interno del servidor'
+    //         });
+    //     }
+    // }
+async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
+    try {
+        const { venueId } = request.query as { venueId?: string };
+
+        const where: any = {
+            category: 'ROCK_METAL_CONCERT'
+        };
+
+        if (venueId) {
+            where.venueId = venueId;
         }
+
+        const events = await prisma.event.findMany({
+            where,
+            include: {
+                venue: {
+                    select: {
+                        id: true,
+                        name: true,
+                        city: true,
+                        capacity: true
+                    }
+                }
+            },
+            orderBy: { eventDate: 'asc' }
+        });
+
+        return reply.send({
+            success: true,
+            data: events
+        });
+    } catch (error) {
+        console.error('Error listing rock events:', error);
+        return reply.status(500).send({
+            success: false,
+            error: 'Error interno del servidor'
+        });
     }
+}
 
     async getRockEventById(
         request: FastifyRequest<{ Params: { id: string } }>,

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Event } from '~/app/core/models/Event.model';
+import { IEvent } from '~/app/core/models/Event.model';
 import { CarouselComponent } from '~/app/shared/components/list-carousel/carousel.component';
 
 @Component({
@@ -9,7 +9,7 @@ import { CarouselComponent } from '~/app/shared/components/list-carousel/carouse
 })
 export class DetailEvent {
 
-  events: Event[] = [];
+  events: IEvent[] = [];
 concerts = [
   { imageUrl: 'assets/metal1.jpg', title: 'Concierto Metallica' },
   { imageUrl: 'assets/rock1.jpg', title: 'Festival Rock Nacional' },

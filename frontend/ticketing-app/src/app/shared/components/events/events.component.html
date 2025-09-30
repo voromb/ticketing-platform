@@ -1,10 +1,10 @@
-
 <div class="container py-5">
   <div class="text-center mb-5">
     <h1 class="display-4 fw-bold text-dark">🤘 {{ title }}</h1>
     <p class="lead text-muted">Los mejores festivales de rock y metal del mundo</p>
   </div>
-  
+
+
   <!-- Loading -->
   <div class="text-center" *ngIf="loading">
     <div class="spinner-border text-danger" role="status">
@@ -19,38 +19,31 @@
   </div>
 
   <!-- Eventos -->
-  <div class="row" *ngIf="!loading && !error">
+  <div class="row" *ngIf="!loading && !error && events.length > 0">
     <div class="col-lg-6 mb-4" *ngFor="let event of events">
       <div class="card h-100 shadow-sm border-0">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <h4 class="card-title fw-bold text-dark mb-0">{{ event.name }}</h4>
-            <span class="badge bg-danger fs-6">{{ event.basePrice }}€</span>
+            <span class="badge bg-danger fs-6">{{ event.minPrice }}€ - {{ event.maxPrice }}€</span>
           </div>
           
-          <div class="mb-3">
+          <div class="mb-3"><p *ngIf="event.eventDate" class="text-muted mb-2">
+  <i class="fas fa-calendar me-2"></i>{{ event.eventDate | date:'dd/MM/yyyy' }}
+</p>
             <p class="text-muted mb-2">
-              <i class="fas fa-map-marker-alt me-2"></i>{{ event.venue.name }}
-            </p>
-            <p class="text-muted mb-2">
-              <i class="fas fa-calendar me-2"></i>{{ event.date | date:'dd/MM/yyyy' }} - {{ event.date | date:'HH:mm' }}h
+              <i class="fas fa-clock me-2"></i>{{ event.eventDate | date:'HH:mm' }}h
             </p>
             <p class="text-muted mb-0">
-              <i class="fas fa-users me-2"></i>{{ event.venue.capacity | number }} personas
+              <i class="fas fa-users me-2"></i>{{ event.totalCapacity | number }} personas
             </p>
           </div>
           
-          <p class="card-text text-secondary mb-4">{{ event.description }}</p>
+          <p class="card-text text-secondary mb-4" *ngIf="event.description">{{ event.description }}</p>
           
           <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <small class="text-success fw-semibold">
-                <i class="fas fa-ticket-alt me-1"></i>{{ event.availableSeats | number }} disponibles
-              </small>
-            </div>
-            <button class="btn btn-danger btn-lg px-4" [disabled]="event.availableSeats === 0">
-              <i class="fas fa-shopping-cart me-2"></i>
-              {{ event.availableSeats > 0 ? 'Comprar' : 'Agotado' }}
+            <button class="btn btn-danger btn-lg px-4">
+              <i class="fas fa-shopping-cart me-2"></i>Comprar
             </button>
           </div>
         </div>

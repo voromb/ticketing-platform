@@ -1,22 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CardCategories } from '../card-categories/card-categories';
-import { Category } from '../../../core/models/Categories.model';
-import { MOCK_CATEGORIES } from '../../../core/mocks/Categories';
+import { VenuesListComponent } from '../venue/venue.component';
+import { Venue } from '~/app/core/models/Venue.model';
+import { VenuesService, VenuesResponse } from '~/app/core/services/venues.service';
 
 @Component({
   selector: 'app-list-card',
-  standalone: true, 
-  imports: [CommonModule, CardCategories], 
+  standalone: true,
+  imports: [CommonModule, VenuesListComponent],
   templateUrl: './list-card.html',
   styleUrls: ['./list-card.css']
 })
 export class ListCard implements OnInit {
-  categories: Category[] = [];
+  venues: Venue[] = [];
+
+  constructor(private venuesService: VenuesService) {}
 
   ngOnInit(): void {
-    // Por ahora cargamos las categorías mock
-    this.categories = MOCK_CATEGORIES;
+    this.venuesService.getActiveVenues(1, 10).subscribe({
+      next: (res: VenuesResponse) => {
+        this.venues = res.venues;
+        console.log('📦 Venues recibidos en ListCard:', this.venues);
+      },
+      error: (err) => console.error('❌ Error cargando venues:', err)
+    });
   }
 }
-

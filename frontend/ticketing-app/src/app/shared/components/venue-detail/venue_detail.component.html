@@ -1,5 +1,9 @@
 <div *ngIf="venue" class="p-6 bg-white rounded-2xl shadow-md max-w-2xl mx-auto">
-  <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ venue.name }}</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ venue.name }}
+    <!-- <a [routerLink]="['/venues', venue.id]" class="text-blue-600 hover:underline">
+      {{ venue.name }}
+    </a> -->
+  </h2>
   <p class="text-gray-600 mb-4">{{ venue.description }}</p>
 
   <p><strong>Dirección:</strong> {{ venue.address }}, {{ venue.city }} ({{ venue.country }})</p>

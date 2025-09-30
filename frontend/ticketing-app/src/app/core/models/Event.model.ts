@@ -1,21 +1,24 @@
-    
-    /** Separem les direccións (Venue) */
-    export interface Venue {
-        name: string;
-        address: string;
-        capacity: number;
-    }
-    /** Representa un esdeveniment */
-    export interface Event {
-        _id: string;
-        name: string;
-        slug: string;
-        description: string;
-        date: Date;
-        venue: Venue;
-        totalCapacity: number;
-        availableSeats: number;
-        basePrice: number;
-        status: 'published' | 'draft' | 'cancelled';
-        imageUrl: string;
-    }
+// src/app/models/event.model.ts
+
+export interface IEvent {
+  id?: string;           // opcional, por si lo recibes del backend
+  name: string;
+  description?: string;
+  slug: string;
+  eventDate: string;      // puedes usar Date si quieres convertirlo en frontend
+  saleStartDate: string;
+  saleEndDate: string;
+  venueId: string;
+  totalCapacity: number;
+  category: string;
+  minPrice: number;
+  maxPrice: number;
+}
+
+// Para queries de paginación y búsqueda
+export interface EventQuery {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}

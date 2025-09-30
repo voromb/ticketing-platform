@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventService } from '../../../core/services/event.service';
-import { Event } from '../../../core/models/Event.model';
+import { IEvent } from '../../../core/models/Event.model';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-events',
@@ -11,23 +12,32 @@ import { Event } from '../../../core/models/Event.model';
 })
 export class EventsComponent implements OnInit {
   title = 'Ticketing Platform';
-  events: Event[] = [];
-  loading = false;
+  events: IEvent[] = [];
+  loading = true;
   error = '';
 
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.loading = true;
-    this.eventService.getEvents().subscribe({
-      next: (data) => {
-        this.events = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Error al cargar eventos';
-        this.loading = false;
+  this.loading = true;
+  this.eventService.getEvents().subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.events = response.data;
+      } else {
+        this.error = 'No se pudieron cargar los eventos';
       }
-    });
-  }
+      this.loading = false;
+      this.cdr.detectChanges(); // 👈 fuerza la actualización del template
+    },
+    error: () => {
+      this.error = 'Error al cargar eventos';
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 }
