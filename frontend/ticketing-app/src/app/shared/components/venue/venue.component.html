@@ -1,21 +1,15 @@
 <a *ngIf="venue"
    class="card h-100 shadow-sm text-decoration-none text-dark"
-   >
+   [routerLink]="['/shop']"
+   [queryParams]="{ venueId: venue.id }">
   <div class="card-body">
     <h5 class="card-title">{{ venue.name }}</h5>
-
     <p class="card-text">
-      {{ venue.address }},
-      {{ venue.city }}
+      {{ venue.address }}, {{ venue.city }}
       <span *ngIf="venue.state">, {{ venue.state }}</span>
       - {{ venue.country }}
     </p>
     <p class="text-muted">Capacidad: {{ venue.capacity }}</p>
-
-    <p *ngIf="venue.description" class="mt-2">
-      {{ venue.description }}
-    </p>
+    <p *ngIf="venue.description" class="mt-2">{{ venue.description }}</p>
   </div>
 </a>
-<!-- hAY QUE PONERLO EN LA PRIMERA CLASS CARD H 100 SHADO, PARA HACER TODA LA TARGETA CLICKABLE Y HACER EL SALTO-->
-<!-- [routerLink]="['/venues', venue.id, 'events']"> -->

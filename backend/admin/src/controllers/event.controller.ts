@@ -165,14 +165,12 @@ class SimpleEventController {
 async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
     try {
         const { venueId } = request.query as { venueId?: string };
+        
+            const where: any = {};
 
-        const where: any = {
-            category: 'ROCK_METAL_CONCERT'
-        };
-
-        if (venueId) {
+            if (venueId) {
             where.venueId = venueId;
-        }
+            }
 
         const events = await prisma.event.findMany({
             where,
@@ -443,63 +441,107 @@ async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
     /**
      * Listar eventos públicos para users (sin autenticación)
      */
-    async listPublicEvents(request: FastifyRequest, reply: FastifyReply) {
-        try {
-            const events = await prisma.event.findMany({
-                where: {
-                    status: EventStatus.ACTIVE,
-                    availableTickets: { gt: 0 }
-                    // Filtros de fecha opcionales (puedes activarlos después)
-                    // saleStartDate: { lte: new Date() },
-                    // saleEndDate: { gte: new Date() }
-                },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true,
-                            address: true
-                        }
-                    }
-                },
-                orderBy: {
-                    eventDate: 'asc'
-                }
-            });
+    // async listPublicEvents(request: FastifyRequest, reply: FastifyReply) {
+    //     try {
+    //         const events = await prisma.event.findMany({
+    //             where: {
+    //                 status: EventStatus.ACTIVE,
+    //                 availableTickets: { gt: 0 }
+    //                 // Filtros de fecha opcionales (puedes activarlos después)
+    //                 // saleStartDate: { lte: new Date() },
+    //                 // saleEndDate: { gte: new Date() }
+    //             },
+    //             include: {
+    //                 venue: {
+    //                     select: {
+    //                         id: true,
+    //                         name: true,
+    //                         city: true,
+    //                         capacity: true,
+    //                         address: true
+    //                     }
+    //                 }
+    //             },
+    //             orderBy: {
+    //                 eventDate: 'asc'
+    //             }
+    //         });
 
-            // Formatear para user-service
-            const formattedEvents = events.map(event => ({
-                id: event.id,
-                name: event.name,
-                description: event.description,
-                eventDate: event.eventDate,
-                saleStartDate: event.saleStartDate,
-                saleEndDate: event.saleEndDate,
-                totalCapacity: event.totalCapacity,
-                availableTickets: event.availableTickets,
-                minPrice: event.minPrice,
-                maxPrice: event.maxPrice,
-                status: event.status,
-                category: event.genre,
-                subcategory: event.format,
-                venue: event.venue
-            }));
+    //         // Formatear para user-service
+    //         const formattedEvents = events.map(event => ({
+    //             id: event.id,
+    //             name: event.name,
+    //             description: event.description,
+    //             eventDate: event.eventDate,
+    //             saleStartDate: event.saleStartDate,
+    //             saleEndDate: event.saleEndDate,
+    //             totalCapacity: event.totalCapacity,
+    //             availableTickets: event.availableTickets,
+    //             minPrice: event.minPrice,
+    //             maxPrice: event.maxPrice,
+    //             status: event.status,
+    //             category: event.genre,
+    //             subcategory: event.format,
+    //             venue: event.venue
+    //         }));
 
-            return reply.send({
-                success: true,
-                data: formattedEvents,
-                total: formattedEvents.length
-            });
-        } catch (error: any) {
-            logger.error('Error obteniendo eventos públicos:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
-        }
+    //         return reply.send({
+    //             success: true,
+    //             data: formattedEvents,
+    //             total: formattedEvents.length
+    //         });
+    //     } catch (error: any) {
+    //         logger.error('Error obteniendo eventos públicos:', error);
+    //         return reply.status(500).send({
+    //             success: false,
+    //             error: 'Error interno del servidor'
+    //         });
+    //     }
+    // }
+async listPublicEvents(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const { venueId } = request.query as { venueId?: string };
+
+    const where: any = {
+      status: EventStatus.ACTIVE,
+      availableTickets: { gt: 0 }
+    };
+
+    if (venueId) {
+      where.venueId = venueId;
     }
+
+    const events = await prisma.event.findMany({
+      where,
+      include: {
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            capacity: true,
+            address: true
+          }
+        }
+      },
+      orderBy: {
+        eventDate: 'asc'
+      }
+    });
+
+    return reply.send({
+      success: true,
+      data: events,
+      total: events.length
+    });
+  } catch (error) {
+    console.error('Error obteniendo eventos públicos:', error);
+    return reply.status(500).send({
+      success: false,
+      error: 'Error interno del servidor'
+    });
+  }
+}
 
     /**
      * Obtener evento público por ID (sin autenticación)
