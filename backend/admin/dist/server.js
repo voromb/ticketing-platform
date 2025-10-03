@@ -38,7 +38,7 @@ async function buildServer() {
     // Inicializar servicios
     const prisma = new client_1.PrismaClient();
     (0, audit_middleware_1.registerAuditMiddleware)(prisma);
-    // Inicializar RabbitMQ (comentado temporalmente)
+    // Inicializar RabbitMQ
     const rabbitmq = {
         isConnected: () => false,
         close: async () => { }

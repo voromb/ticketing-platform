@@ -13,7 +13,7 @@ class EventController {
     reply: FastifyReply
   ) {
     try {
-      const { user } = request;
+      const user = (request as any).user;
       const data = request.body;
 
       if (!user?.id) return reply.code(403).send({ error: 'Usuario no autenticado' });
@@ -68,6 +68,7 @@ class EventController {
         message: `Evento ${category.name} - ${subcategory.name} creado exitosamente!`
       });
 
+    } catch (error: any) {
       logger.error('Error creating event:', error);
       return reply.status(500).send({ success: false, error: error.message || 'Error interno' });
     }

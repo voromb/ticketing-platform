@@ -16,7 +16,7 @@ npx prisma studio
 # 3. Backend Admin (Puerto 3003)
 npm run dev
 
-# 4. Backend User (Puerto 3001)  
+# 4. Backend User (Puerto 3001)
 cd ../user-service
 npm run dev
 
@@ -89,7 +89,7 @@ docker-compose ps
 ## 📊 Herramientas de Desarrollo
 
 - **Prisma Studio**: Gestión PostgreSQL
-- **Mongo Express**: Gestión MongoDB  
+- **Mongo Express**: Gestión MongoDB
 - **RabbitMQ Management**: Cola de mensajes
 
 ## 🗄️ Base de Datos

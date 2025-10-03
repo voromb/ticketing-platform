@@ -3,452 +3,161 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const logger_1 = require("../utils/logger");
 const prisma = new client_1.PrismaClient();
-var MusicGenre;
-(function (MusicGenre) {
-    MusicGenre["HEAVY_METAL"] = "HEAVY_METAL";
-    MusicGenre["THRASH_METAL"] = "THRASH_METAL";
-    MusicGenre["DEATH_METAL"] = "DEATH_METAL";
-    MusicGenre["HARD_ROCK"] = "HARD_ROCK";
-    MusicGenre["PUNK_ROCK"] = "PUNK_ROCK";
-})(MusicGenre || (MusicGenre = {}));
-var EventFormat;
-(function (EventFormat) {
-    EventFormat["FESTIVAL"] = "FESTIVAL";
-    EventFormat["CONCERT"] = "CONCERT";
-    EventFormat["TRIBUTE"] = "TRIBUTE";
-})(EventFormat || (EventFormat = {}));
-class SimpleEventController {
-    async createRockEvent(request, reply) {
+class EventController {
+    // ==================== CREAR EVENTO ====================
+    async createEvent(request, reply) {
         try {
-            const { user } = request;
-            const eventData = request.body;
-            if (!user || !user.id) {
-                return reply.code(403).send({
-                    error: 'Usuario no autenticado'
-                });
-            }
-            // Validar campos requeridos
-            const requiredFields = ['name', 'slug', 'eventDate', 'venueId', 'totalCapacity', 'genre', 'format', 'headliner'];
-            const missingFields = requiredFields.filter(field => !eventData[field]);
-            if (missingFields.length > 0) {
+            const user = request.user;
+            const data = request.body;
+            if (!user?.id)
+                return reply.code(403).send({ error: 'Usuario no autenticado' });
+            // Validaciones de venue
+            const venue = await prisma.venue.findUnique({ where: { id: data.venueId } });
+            if (!venue)
+                return reply.code(404).send({ error: 'Venue no encontrado' });
+            if (data.totalCapacity > venue.capacity) {
                 return reply.code(400).send({
-                    success: false,
-                    error: `Campos requeridos faltantes: ${missingFields.join(', ')}`
+                    error: `Capacidad total (${data.totalCapacity}) excede la del venue (${venue.capacity})`
                 });
             }
-            const venue = await prisma.venue.findUnique({
-                where: { id: eventData.venueId }
-            });
-            if (!venue) {
-                return reply.code(404).send({
-                    error: 'El venue especificado no existe'
-                });
-            }
-            if (eventData.totalCapacity > venue.capacity) {
-                return reply.code(400).send({
-                    error: `La capacidad total (${eventData.totalCapacity}) no puede exceder la capacidad del venue (${venue.capacity})`
-                });
-            }
-            const existingEvent = await prisma.event.findUnique({
-                where: { slug: eventData.slug }
-            });
-            if (existingEvent) {
-                return reply.code(400).send({
-                    error: 'Ya existe un evento con este slug'
-                });
-            }
+            // Validar slug
+            const existingEvent = await prisma.event.findUnique({ where: { slug: data.slug } });
+            if (existingEvent)
+                return reply.code(400).send({ error: 'Slug ya existe' });
+            // Validar categoría y subcategoría
+            const category = await prisma.eventCategory.findUnique({ where: { id: data.categoryId } });
+            if (!category)
+                return reply.code(400).send({ error: 'Categoría no encontrada' });
+            const subcategory = await prisma.eventSubcategory.findUnique({ where: { id: data.subcategoryId } });
+            if (!subcategory)
+                return reply.code(400).send({ error: 'Subcategoría no encontrada' });
+            // Crear evento
             const event = await prisma.event.create({
                 data: {
-                    name: eventData.name,
-                    description: eventData.description || `${eventData.format} de ${eventData.genre} con ${eventData.headliner}`,
-                    slug: eventData.slug,
+                    name: data.name,
+                    description: data.description || `${category.name} - ${subcategory.name}`,
+                    slug: data.slug,
                     status: client_1.EventStatus.DRAFT,
-                    eventDate: new Date(eventData.eventDate),
-                    saleStartDate: new Date(eventData.saleStartDate),
-                    saleEndDate: new Date(eventData.saleEndDate),
-                    venueId: eventData.venueId,
-                    totalCapacity: eventData.totalCapacity,
-                    availableTickets: eventData.totalCapacity,
-                    category: 'ROCK_METAL_CONCERT',
-                    subcategory: `${eventData.genre}|${eventData.format}`,
-                    tags: [
-                        eventData.genre?.toLowerCase() || 'rock',
-                        eventData.format?.toLowerCase() || 'concert',
-                        eventData.headliner?.toLowerCase() || 'unknown'
-                    ],
-                    minPrice: eventData.minPrice,
-                    maxPrice: eventData.maxPrice,
-                    ageRestriction: eventData.ageRestriction || '+16',
+                    eventDate: new Date(data.eventDate),
+                    saleStartDate: new Date(data.saleStartDate),
+                    saleEndDate: new Date(data.saleEndDate),
+                    venueId: data.venueId,
+                    totalCapacity: data.totalCapacity,
+                    availableTickets: data.totalCapacity,
+                    categoryId: category.id,
+                    subcategoryId: subcategory.id,
+                    tags: [category.name.toLowerCase(), subcategory.name.toLowerCase()],
+                    minPrice: data.minPrice,
+                    maxPrice: data.maxPrice,
+                    ageRestriction: data.ageRestriction || '+16',
                     createdById: user.id
                 },
-                include: {
-                    venue: true
-                }
+                include: { venue: true, category: true, subcategory: true }
             });
             return reply.code(201).send({
                 success: true,
                 data: event,
-                message: `🤘 Evento de ${eventData.genre.replace('_', ' ').toLowerCase()} creado exitosamente!`
+                message: `Evento ${category.name} - ${subcategory.name} creado exitosamente!`
             });
         }
         catch (error) {
-            console.error('Error creating rock/metal event:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error al crear el evento de rock/metal'
-            });
+            logger_1.logger.error('Error creating event:', error);
+            return reply.status(500).send({ success: false, error: error.message || 'Error interno' });
         }
     }
+    // Métodos públicos (sin autenticación)
     async listRockEvents(request, reply) {
         try {
-            const events = await prisma.event.findMany({
-                where: { category: 'ROCK_METAL_CONCERT' },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true
-                        }
-                    }
-                },
-                orderBy: { eventDate: 'asc' }
-            });
-            return reply.send({
-                success: true,
-                data: events
-            });
+            const events = await prisma.$queryRaw `
+        SELECT 
+          e.*,
+          v.name as venue_name,
+          v.city as venue_city,
+          v.capacity as venue_capacity,
+          v.address as venue_address
+        FROM "Event" e
+        LEFT JOIN "Venue" v ON e."venueId" = v.id
+        ORDER BY e."eventDate" ASC
+      `;
+            return reply.send({ success: true, data: events });
         }
         catch (error) {
-            console.error('Error listing rock events:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
+            logger_1.logger.error('Error listing events:', error);
+            return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
-    async getRockEventById(request, reply) {
+    // ==================== GET EVENTO POR ID ====================
+    async getEventById(request, reply) {
         try {
             const { id } = request.params;
             const event = await prisma.event.findUnique({
                 where: { id },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true,
-                            address: true
-                        }
-                    }
-                }
+                include: { venue: true }
             });
-            if (!event) {
-                return reply.status(404).send({
-                    success: false,
-                    error: 'Evento no encontrado'
-                });
-            }
-            return reply.send({
-                success: true,
-                data: event
-            });
+            if (!event)
+                return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
+            return reply.send({ success: true, data: event });
         }
         catch (error) {
-            console.error('Error getting rock event by id:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
+            logger_1.logger.error('Error getting event by ID:', error);
+            return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
-    async getRockEventStats(request, reply) {
-        try {
-            const events = await prisma.event.findMany({
-                where: { category: 'ROCK_METAL_CONCERT' }
-            });
-            const stats = {
-                totalEvents: events.length,
-                totalCapacity: events.reduce((sum, event) => sum + event.totalCapacity, 0),
-                averageCapacity: events.length > 0
-                    ? Math.round(events.reduce((sum, event) => sum + event.totalCapacity, 0) / events.length)
-                    : 0,
-                upcomingEvents: events.filter(event => new Date(event.eventDate) > new Date()).length,
-                pastEvents: events.filter(event => new Date(event.eventDate) <= new Date()).length
-            };
-            return reply.send({
-                success: true,
-                data: stats
-            });
-        }
-        catch (error) {
-            console.error('Error getting rock event stats:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
-        }
-    }
-    async updateRockEvent(request, reply) {
+    // ==================== ACTUALIZAR EVENTO ====================
+    async updateEvent(request, reply) {
         try {
             const { id } = request.params;
             const updateData = request.body;
-            console.log('📝 Actualizando evento ID:', id);
-            console.log('📤 Datos recibidos para actualizar:', updateData);
-            const existingEvent = await prisma.event.findUnique({
-                where: { id }
-            });
-            if (!existingEvent) {
-                return reply.status(404).send({
-                    success: false,
-                    error: 'Evento no encontrado'
-                });
-            }
+            const existingEvent = await prisma.event.findUnique({ where: { id } });
+            if (!existingEvent)
+                return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
             if (updateData.slug && updateData.slug !== existingEvent.slug) {
-                const slugExists = await prisma.event.findUnique({
-                    where: { slug: updateData.slug }
-                });
-                if (slugExists) {
-                    return reply.status(400).send({
-                        success: false,
-                        error: 'Ya existe un evento con ese slug'
-                    });
-                }
+                const slugExists = await prisma.event.findUnique({ where: { slug: updateData.slug } });
+                if (slugExists)
+                    return reply.status(400).send({ success: false, error: 'Slug ya existe' });
             }
-            // Solo permitir campos que existen en el modelo de Prisma
-            const allowedFields = [
-                'name', 'slug', 'description', 'eventDate', 'saleStartDate', 'saleEndDate',
-                'status', 'category', 'subcategory', 'doorsOpenTime', 'availableTickets',
-                'reservedTickets', 'soldTickets', 'bannerImage', 'thumbnailImage'
-            ];
-            const dataToUpdate = {};
-            // Solo copiar campos permitidos
-            for (const field of allowedFields) {
-                if (updateData[field] !== undefined) {
-                    dataToUpdate[field] = updateData[field];
-                }
+            if (updateData.categoryId) {
+                const cat = await prisma.eventCategory.findUnique({ where: { id: updateData.categoryId } });
+                if (!cat)
+                    return reply.status(400).send({ error: 'Categoría inválida' });
             }
-            // Informar sobre campos ignorados (para debug)
-            const ignoredFields = Object.keys(updateData).filter(field => !allowedFields.includes(field));
-            if (ignoredFields.length > 0) {
-                console.log('⚠️ Campos ignorados (se mantienen valores originales):', ignoredFields);
+            if (updateData.subcategoryId) {
+                const sub = await prisma.eventSubcategory.findUnique({ where: { id: updateData.subcategoryId } });
+                if (!sub)
+                    return reply.status(400).send({ error: 'Subcategoría inválida' });
             }
-            console.log('✅ Campos que se actualizarán:', Object.keys(dataToUpdate));
-            // Validar status si existe
-            if (dataToUpdate.status && !['DRAFT', 'ACTIVE', 'CANCELLED', 'COMPLETED'].includes(dataToUpdate.status)) {
-                delete dataToUpdate.status;
-                console.log('⚠️ Status inválido removido:', dataToUpdate.status);
-            }
-            // Convertir fechas si están presentes
-            if (dataToUpdate.eventDate) {
-                dataToUpdate.eventDate = new Date(dataToUpdate.eventDate);
-            }
-            if (dataToUpdate.saleStartDate) {
-                dataToUpdate.saleStartDate = new Date(dataToUpdate.saleStartDate);
-            }
-            if (dataToUpdate.saleEndDate) {
-                dataToUpdate.saleEndDate = new Date(dataToUpdate.saleEndDate);
-            }
-            dataToUpdate.updatedAt = new Date();
-            console.log('📋 Datos finales para actualizar en BD:', dataToUpdate);
-            let updatedEvent;
-            try {
-                updatedEvent = await prisma.event.update({
-                    where: { id },
-                    data: dataToUpdate,
-                    include: {
-                        venue: {
-                            select: {
-                                id: true,
-                                name: true,
-                                city: true,
-                            }
-                        }
-                    }
-                });
-            }
-            catch (dbError) {
-                console.error('❌ Error específico de base de datos:', dbError);
-                console.error('❌ DB Error code:', dbError.code);
-                console.error('❌ DB Error meta:', dbError.meta);
-                throw dbError;
-            }
-            console.log(`Evento actualizado: ${updatedEvent.id}`);
-            console.log('📋 Datos del evento después de actualizar:', JSON.stringify(updatedEvent, null, 2));
-            return reply.send({
-                success: true,
-                message: 'Evento actualizado exitosamente',
-                data: updatedEvent,
-                updatedFields: Object.keys(dataToUpdate).filter(key => key !== 'updatedAt'),
-                ignoredFields: ignoredFields
+            if (updateData.eventDate)
+                updateData.eventDate = new Date(updateData.eventDate);
+            if (updateData.saleStartDate)
+                updateData.saleStartDate = new Date(updateData.saleStartDate);
+            if (updateData.saleEndDate)
+                updateData.saleEndDate = new Date(updateData.saleEndDate);
+            const updatedEvent = await prisma.event.update({
+                where: { id },
+                data: { ...updateData, updatedAt: new Date() },
+                include: { venue: true, category: true, subcategory: true }
             });
+            return reply.send({ success: true, data: updatedEvent, message: 'Evento actualizado exitosamente' });
         }
         catch (error) {
-            console.error('❌ Error updating rock event:', error);
-            console.error('❌ Error message:', error.message);
-            console.error('❌ Error stack:', error.stack);
-            console.error('❌ Update data received:', request.body);
-            return reply.status(500).send({
-                success: false,
-                error: error.message || 'Error interno del servidor',
-                details: error.stack
-            });
+            logger_1.logger.error('Error updating event:', error);
+            return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
-    async deleteRockEvent(request, reply) {
+    // ==================== ELIMINAR EVENTO ====================
+    async deleteEvent(request, reply) {
         try {
             const { id } = request.params;
-            const existingEvent = await prisma.event.findUnique({
-                where: { id }
-            });
-            if (!existingEvent) {
-                return reply.status(404).send({
-                    success: false,
-                    error: 'Evento no encontrado'
-                });
-            }
-            await prisma.event.delete({
-                where: { id }
-            });
-            console.log(`Evento eliminado: ${id}`);
-            return reply.send({
-                success: true,
-                message: 'Evento eliminado exitosamente'
-            });
+            const existingEvent = await prisma.event.findUnique({ where: { id } });
+            if (!existingEvent)
+                return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
+            await prisma.event.delete({ where: { id } });
+            return reply.send({ success: true, message: 'Evento eliminado exitosamente' });
         }
         catch (error) {
-            console.error('Error deleting rock event:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
-        }
-    }
-    // ==================== MÉTODOS PÚBLICOS (SIN AUTENTICACIÓN) ====================
-    /**
-     * Listar eventos públicos para users (sin autenticación)
-     */
-    async listPublicEvents(request, reply) {
-        try {
-            const events = await prisma.event.findMany({
-                where: {
-                    status: client_1.EventStatus.ACTIVE,
-                    availableTickets: { gt: 0 }
-                    // Filtros de fecha opcionales (puedes activarlos después)
-                    // saleStartDate: { lte: new Date() },
-                    // saleEndDate: { gte: new Date() }
-                },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true,
-                            address: true
-                        }
-                    }
-                },
-                orderBy: {
-                    eventDate: 'asc'
-                }
-            });
-            // Formatear para user-service
-            const formattedEvents = events.map(event => ({
-                id: event.id,
-                name: event.name,
-                description: event.description,
-                eventDate: event.eventDate,
-                saleStartDate: event.saleStartDate,
-                saleEndDate: event.saleEndDate,
-                totalCapacity: event.totalCapacity,
-                availableTickets: event.availableTickets,
-                minPrice: event.minPrice,
-                maxPrice: event.maxPrice,
-                status: event.status,
-                category: event.genre,
-                subcategory: event.format,
-                venue: event.venue
-            }));
-            return reply.send({
-                success: true,
-                data: formattedEvents,
-                total: formattedEvents.length
-            });
-        }
-        catch (error) {
-            logger_1.logger.error('Error obteniendo eventos públicos:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
-        }
-    }
-    /**
-     * Obtener evento público por ID (sin autenticación)
-     */
-    async getPublicEventById(request, reply) {
-        try {
-            const { id } = request.params;
-            const event = await prisma.event.findUnique({
-                where: {
-                    id,
-                    status: client_1.EventStatus.ACTIVE
-                    // Filtros de fecha opcionales (puedes activarlos después)
-                    // saleStartDate: { lte: new Date() },
-                    // saleEndDate: { gte: new Date() }
-                },
-                include: {
-                    venue: {
-                        select: {
-                            id: true,
-                            name: true,
-                            city: true,
-                            capacity: true,
-                            address: true,
-                            state: true,
-                            country: true
-                        }
-                    }
-                }
-            });
-            if (!event) {
-                return reply.status(404).send({
-                    success: false,
-                    error: 'Evento no encontrado o no disponible'
-                });
-            }
-            // Formatear para user-service
-            const formattedEvent = {
-                id: event.id,
-                name: event.name,
-                description: event.description,
-                eventDate: event.eventDate,
-                saleStartDate: event.saleStartDate,
-                saleEndDate: event.saleEndDate,
-                totalCapacity: event.totalCapacity,
-                availableTickets: event.availableTickets,
-                minPrice: event.minPrice,
-                maxPrice: event.maxPrice,
-                status: event.status,
-                category: event.genre,
-                subcategory: event.format,
-                venue: event.venue
-            };
-            return reply.send({
-                success: true,
-                data: formattedEvent
-            });
-        }
-        catch (error) {
-            logger_1.logger.error('Error obteniendo evento público:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno del servidor'
-            });
+            logger_1.logger.error('Error deleting event:', error);
+            return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
 }
-exports.default = new SimpleEventController();
+exports.default = new EventController();
