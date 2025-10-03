@@ -9,17 +9,21 @@ export const createEventSchema = z.object({
   saleEndDate: z.string(),
   venueId: z.string(),
   totalCapacity: z.number(),
-  category: z.string(),
+  categoryId: z.number(),       // ← aquí
+  subcategoryId: z.number().optional(), // ← si puede ser nula
   minPrice: z.number(),
   maxPrice: z.number()
 });
 
 export const updateEventSchema = createEventSchema.partial();
+
 export const eventQuerySchema = z.object({
   page: z.string().optional().default('1').transform(Number),
   limit: z.string().optional().default('10').transform(Number),
   status: z.string().optional(),
-  search: z.string().optional()
+  search: z.string().optional(),
+  categoryId: z.string().optional().transform(Number),
+  subcategoryId: z.string().optional().transform(Number)
 });
 
 export type CreateEventDTO = z.infer<typeof createEventSchema>;

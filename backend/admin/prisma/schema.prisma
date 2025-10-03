@@ -130,6 +130,7 @@ model Event {
   @@index([eventDate])
   @@index([categoryId])
   @@index([subcategoryId])
+  @@map("Event")
 }
 
 // ==================== CATEGORÍAS DE PRECIO ====================

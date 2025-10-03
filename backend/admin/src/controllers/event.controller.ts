@@ -1,30 +1,17 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient, EventStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
+import { CreateEventDTO, UpdateEventDTO, EventQueryDTO } from '../dto/event.dto';
 
 const prisma = new PrismaClient();
-
-export interface CreateEventBody {
-  name: string;
-  slug: string;
-  eventDate: string;
-  saleStartDate: string;
-  saleEndDate: string;
-  venueId: string;
-  totalCapacity: number;
-  categoryId: number;
-  subcategoryId: number;
-  headliner: string;
-  minPrice: number;
-  maxPrice: number;
-  description?: string;
-  ageRestriction?: string;
-}
 
 class EventController {
 
   // ==================== CREAR EVENTO ====================
-  async createEvent(request: FastifyRequest<{ Body: CreateEventBody }>, reply: FastifyReply) {
+  async createEvent(
+    request: FastifyRequest<{ Body: CreateEventDTO }>,
+    reply: FastifyReply
+  ) {
     try {
       const { user } = request;
       const data = request.body;
@@ -55,7 +42,7 @@ class EventController {
       const event = await prisma.event.create({
         data: {
           name: data.name,
-          description: data.description || `${category.name} - ${subcategory.name} con ${data.headliner}`,
+          description: data.description || `${category.name} - ${subcategory.name}`,
           slug: data.slug,
           status: EventStatus.DRAFT,
           eventDate: new Date(data.eventDate),
@@ -66,17 +53,13 @@ class EventController {
           availableTickets: data.totalCapacity,
           categoryId: category.id,
           subcategoryId: subcategory.id,
-          tags: [category.name.toLowerCase(), subcategory.name.toLowerCase(), data.headliner.toLowerCase()],
+          tags: [category.name.toLowerCase(), subcategory.name.toLowerCase()],
           minPrice: data.minPrice,
           maxPrice: data.maxPrice,
           ageRestriction: data.ageRestriction || '+16',
           createdById: user.id
         },
-        include: {
-          venue: true,
-          category: true,
-          subcategory: true
-        }
+        include: { venue: true, category: true, subcategory: true }
       });
 
       return reply.code(201).send({
@@ -84,20 +67,20 @@ class EventController {
         data: event,
         message: `Evento ${category.name} - ${subcategory.name} creado exitosamente!`
       });
+
     } catch (error: any) {
       logger.error('Error creating event:', error);
       return reply.status(500).send({ success: false, error: error.message || 'Error interno' });
     }
   }
 
-  // ==================== LISTAR EVENTOS ROCK/METAL ====================
-  async listRockEvents(request: FastifyRequest, reply: FastifyReply) {
+  // ==================== LISTAR EVENTOS ====================
+  async listRockEvents(
+    request: FastifyRequest<{ Querystring: EventQueryDTO }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { venueId, categoryId, subcategoryId } = request.query as {
-        venueId?: string;
-        categoryId?: number;
-        subcategoryId?: number;
-      };
+      const { venueId, categoryId, subcategoryId } = request.query;
 
       const where: any = {};
       if (venueId) where.venueId = venueId;
@@ -112,7 +95,7 @@ class EventController {
 
       return reply.send({ success: true, data: events });
     } catch (error: any) {
-      logger.error('Error listing rock/metal events:', error);
+      logger.error('Error listing events:', error);
       return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
     }
   }
@@ -136,7 +119,7 @@ class EventController {
 
   // ==================== ACTUALIZAR EVENTO ====================
   async updateEvent(
-    request: FastifyRequest<{ Params: { id: string }; Body: Partial<CreateEventBody> }>,
+    request: FastifyRequest<{ Params: { id: string }; Body: UpdateEventDTO }>,
     reply: FastifyReply
   ) {
     try {

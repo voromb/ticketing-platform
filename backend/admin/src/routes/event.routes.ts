@@ -1,29 +1,20 @@
 import { FastifyInstance } from 'fastify';
-import SimpleEventController from '../controllers/event.controller';
+import EventController from '../controllers/event.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 export async function eventRoutes(fastify: FastifyInstance) {
-  // ==================== RUTAS PÚBLICAS (SIN AUTENTICACIÓN) ====================
-  // Para que user-service pueda consultar eventos
-  
-  // GET /api/events/public - Listar eventos públicos para users
-  fastify.get('/public', SimpleEventController.listPublicEvents.bind(SimpleEventController));
-  
-  // GET /api/events/public/:id - Obtener evento público por ID
-  fastify.get('/public/:id', SimpleEventController.getPublicEventById.bind(SimpleEventController));
+  // ==================== RUTAS PÚBLICAS ====================
+  fastify.get('/public/:id', EventController.getEventById.bind(EventController));
 
-  // ==================== RUTAS PRIVADAS (CON AUTENTICACIÓN) ====================
-  // Para administradores - Registrar rutas con middleware específico
-  
+  // ==================== RUTAS PRIVADAS ====================
   fastify.register(async function (fastify) {
     fastify.addHook('preHandler', authMiddleware);
 
-    fastify.post('/', SimpleEventController.createRockEvent.bind(SimpleEventController));
-    fastify.get('/', SimpleEventController.listRockEvents.bind(SimpleEventController));
-    fastify.get('/stats', SimpleEventController.getRockEventStats.bind(SimpleEventController));
-    fastify.get('/:id', SimpleEventController.getRockEventById.bind(SimpleEventController));
-    fastify.put('/:id', SimpleEventController.updateRockEvent.bind(SimpleEventController));
-    fastify.patch('/:id', SimpleEventController.updateRockEvent.bind(SimpleEventController));
-    fastify.delete('/:id', SimpleEventController.deleteRockEvent.bind(SimpleEventController));
+    fastify.post('/', EventController.createEvent.bind(EventController));
+    fastify.get('/', EventController.listRockEvents.bind(EventController)); // lista filtrando por rock/metal
+    fastify.get('/:id', EventController.getEventById.bind(EventController));
+    fastify.put('/:id', EventController.updateEvent.bind(EventController));
+    fastify.patch('/:id', EventController.updateEvent.bind(EventController));
+    fastify.delete('/:id', EventController.deleteEvent.bind(EventController));
   });
 }
