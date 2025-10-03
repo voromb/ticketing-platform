@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import UserManagementController from '../controllers/user-management.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 const controller = new UserManagementController();
@@ -9,6 +10,12 @@ const controller = new UserManagementController();
 
 // GET /api/users - Obtener todos los usuarios
 router.get('/', controller.getAllUsers);
+
+// GET /api/users/profile - Obtener perfil del usuario autenticado (ANTES de /:id)
+router.get('/profile', authMiddleware, controller.getProfile);
+
+// PUT /api/users/profile - Actualizar perfil del usuario autenticado
+router.put('/profile', authMiddleware, controller.updateProfile);
 
 // GET /api/users/:id - Obtener usuario por ID
 router.get('/:id', controller.getUserById);

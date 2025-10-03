@@ -2,11 +2,9 @@ import { Routes } from '@angular/router';
 import { AdminGuard } from './core/guards/admin.guard';
 import { SuperAdminGuard } from './core/guards/super-admin.guard';
 
-
-
 export const routes: Routes = [
-  { path: '', redirectTo: 'home', pathMatch: 'full' }, //*Hi ha que cambiar a futur al home */
-   {
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  {
     path: 'home',
     loadComponent: () =>
       import('./pages/home/home').then((m) => m.Home),
@@ -21,7 +19,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./shared/components/register/register.component').then((m) => m.RegisterComponent),
   },
-   {
+  {
     path: 'details',
     loadComponent: () =>
      import('./pages/detail-event/detail-event').then((m) => m.DetailEvent),
@@ -31,7 +29,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/shop/shop').then((m) => m.Shop),
   },
-    {
+  {
     path: 'venues/:id',
     loadComponent: () => import('./pages/venue-detail/venue-detail').then(m => m.VenueDetail),
   },
@@ -39,6 +37,11 @@ export const routes: Routes = [
     path: 'profile',
     loadComponent: () =>
       import('./shared/components/profile/profile.component').then((m) => m.ProfileComponent),
+  },
+  {
+    path: 'vip-info',
+    loadComponent: () =>
+      import('./pages/vip-info/vip-info.component').then((m) => m.VipInfoComponent),
   },
   // Admin Dashboard Routes
   {

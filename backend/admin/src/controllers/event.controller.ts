@@ -80,18 +80,18 @@ class EventController {
     reply: FastifyReply
   ) {
     try {
-      const { venueId, categoryId, subcategoryId } = request.query;
-
-      const where: any = {};
-      if (venueId) where.venueId = venueId;
-      if (categoryId) where.categoryId = categoryId;
-      if (subcategoryId) where.subcategoryId = subcategoryId;
-
-      const events = await prisma.event.findMany({
-        where,
-        include: { venue: true, category: true, subcategory: true },
-        orderBy: { eventDate: 'asc' }
-      });
+      // Consulta SQL directa para evitar problemas con Prisma
+      const events = await prisma.$queryRaw`
+        SELECT 
+          e.*,
+          v.name as venue_name,
+          v.city as venue_city,
+          v.capacity as venue_capacity,
+          v.address as venue_address
+        FROM "Event" e
+        LEFT JOIN "Venue" v ON e."venueId" = v.id
+        ORDER BY e."eventDate" ASC
+      `;
 
       return reply.send({ success: true, data: events });
     } catch (error: any) {
@@ -106,7 +106,7 @@ class EventController {
       const { id } = request.params;
       const event = await prisma.event.findUnique({
         where: { id },
-        include: { venue: true, category: true, subcategory: true }
+        include: { venue: true }
       });
 
       if (!event) return reply.status(404).send({ success: false, error: 'Evento no encontrado' });

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventService } from '../../../core/services/event.service';
 import { IEvent } from '../../../core/models/Event.model';
@@ -19,7 +19,8 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -46,10 +47,17 @@ export class EventsComponent implements OnInit {
           this.error = 'No se pudieron cargar los eventos';
         }
         this.loading = false;
+        
+        // Forzar detección de cambios
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 100);
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error al cargar eventos:', error);
         this.error = 'Error al cargar eventos';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

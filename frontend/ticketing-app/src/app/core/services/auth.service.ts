@@ -28,18 +28,25 @@ export class AuthService {
 
   public checkStoredToken() {
     const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
     
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         
-        const user: User = {
+        let user: User = {
           id: payload.id,
           email: payload.email,
           firstName: payload.firstName,
           lastName: payload.lastName,
           role: payload.role
         };
+        
+        // Si hay datos actualizados en localStorage, usarlos
+        if (storedUser) {
+          const parsedStoredUser = JSON.parse(storedUser);
+          user = { ...user, ...parsedStoredUser };
+        }
         
         this.currentUserSubject.next(user);
       } catch (error) {
@@ -126,6 +133,11 @@ export class AuthService {
 
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  updateCurrentUser(user: User): void {
+    this.currentUserSubject.next(user);
+    localStorage.setItem('user', JSON.stringify(user));
   }
 
   hasRole(roles: string[]): boolean {
