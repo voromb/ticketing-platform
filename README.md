@@ -27,21 +27,23 @@ ng serve
 
 ## 🌐 URLs Disponibles
 
-- **Frontend**: http://localhost:4200
-- **Admin API**: http://localhost:3003
-- **User API**: http://localhost:3001
-- **Prisma Studio**: http://localhost:5555
-- **Mongo Express**: http://localhost:8081
-- **RabbitMQ**: http://localhost:15672
+- **Frontend**: `http://localhost:4200`
+- **Admin API**: `http://localhost:3003`
+- **User API**: `http://localhost:3001`
+- **Prisma Studio**: `http://localhost:5555`
+- **Mongo Express**: `http://localhost:8081`
+- **RabbitMQ**: `http://localhost:15672`
 
 ## 🏗️ Arquitectura
 
 ### Microservicios
+
 - **Admin Service** (3003): PostgreSQL - Eventos, venues, admins
 - **User Service** (3001): MongoDB - Usuarios, VIP, autenticación
 - **Frontend Angular** (4200): Dashboard admin + interfaz usuario
 
 ### Tecnologías
+
 - **Backend**: Node.js, Express, Fastify, PostgreSQL, MongoDB
 - **Frontend**: Angular 17+, TypeScript, Tailwind CSS
 - **Auth**: JWT + interceptores
@@ -58,6 +60,7 @@ ng serve
 ## ✨ Funcionalidades
 
 ### Dashboard Administrativo
+
 - Estadísticas en tiempo real
 - Gestión completa de eventos (CRUD)
 - Gestión de usuarios con promoción VIP/Admin
@@ -65,6 +68,7 @@ ng serve
 - Sistema de auditoría
 
 ### Sistema VIP
+
 - Promoción automática por mérito
 - Descuentos del 10%
 - Acceso prioritario
@@ -83,9 +87,6 @@ docker-compose logs -f
 docker-compose restart mongodb
 
 # Estado de contenedores
-docker-compose ps
-```
-
 ## 📊 Herramientas de Desarrollo
 
 - **Prisma Studio**: Gestión PostgreSQL
@@ -95,6 +96,7 @@ docker-compose ps
 ## 🗄️ Base de Datos
 
 ### Backup
+
 - Ubicación: `docker/bd_backup/`
 - PostgreSQL: `postgres_admin_backup.sql`
 - MongoDB: `users.json`, `events.json`
@@ -102,9 +104,11 @@ docker-compose ps
 ## 🔑 Credenciales
 
 ### Super Admin
+
 - Email: `voro.super@ticketing.com`
 - Password: `Voro123!`
 
 ### Usuario VIP
+
 - Email: `xavi.vip@ticketing.com`
 - Password: `Xavi123!`
