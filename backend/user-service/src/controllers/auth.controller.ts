@@ -2,8 +2,6 @@ import { Request, Response } from 'express';
 import AuthService from '../services/auth.service';
 
 class AuthController {
-  private authService: AuthService;
-
   constructor() {
     this.authService = new AuthService();
   }
@@ -15,10 +13,11 @@ class AuthController {
       if (!email || !password) {
         return res.status(400).json({
           success: false,
-          message: 'Email y contraseña son requeridos'
+          message: 'Email/Usuario y contraseña son requeridos'
         });
       }
 
+      // Permitir login con email o username
       const result = await this.authService.login(email, password);
       res.json(result);
     } catch (error: any) {
@@ -32,7 +31,6 @@ class AuthController {
   register = async (req: Request, res: Response) => {
     try {
       const result = await this.authService.register(req.body);
-      res.status(201).json(result);
     } catch (error: any) {
       res.status(400).json({
         success: false,

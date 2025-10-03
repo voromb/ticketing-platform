@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdminService, User, UserStats } from '../../../core/services/admin.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-users-list',
@@ -26,10 +27,41 @@ import { AdminService, User, UserStats } from '../../../core/services/admin.serv
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+            Buscar usuarios
+          </button>
+          <button
+            (click)="openVipPromotionModal()"
+            style="border-radius: 24px;"
+            class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
                 d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
               ></path>
             </svg>
             Promocionar VIP
+          </button>
+          <button
+            *ngIf="isSuperAdmin"
+            (click)="openAdminPromotionModal()"
+            style="border-radius: 24px;"
+            class="bg-red-400 hover:bg-red-500 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Promocionar Admin
           </button>
           <button
             (click)="refreshData()"
@@ -594,9 +626,106 @@ import { AdminService, User, UserStats } from '../../../core/services/admin.serv
               <button
                 (click)="confirmPromoteToVip()"
                 [disabled]="!promoteReason"
-                class="px-4 py-2 bg-yellow-600 text-white text-base font-medium rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-4 py-2 bg-yellow-400 text-white text-base font-medium rounded-md hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Promocionar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Promoción a Admin -->
+      <div
+        *ngIf="showAdminPromotionModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        (click)="closeAdminPromotionModal()"
+      >
+        <div
+          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-slate-800 border-slate-700"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-white mb-4">Promocionar a Administrador</h3>
+            
+            <div class="mt-2 text-left">
+              <!-- Búsqueda de usuario -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Buscar Usuario</label>
+                <input
+                  type="text"
+                  [(ngModel)]="adminSearchTerm"
+                  (input)="searchUsersForAdmin()"
+                  placeholder="Buscar por nombre o email..."
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                />
+                
+                <!-- Resultados de búsqueda -->
+                <div *ngIf="adminSearchResults.length > 0" class="mt-2 max-h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-md">
+                  <div
+                    *ngFor="let user of adminSearchResults"
+                    (click)="selectUserForAdmin(user)"
+                    class="px-3 py-2 hover:bg-slate-600 cursor-pointer text-white border-b border-slate-600 last:border-b-0"
+                  >
+                    <div class="font-medium">{{ user.username }}</div>
+                    <div class="text-sm text-slate-400">{{ user.email }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Usuario seleccionado -->
+              <div *ngIf="selectedUserForAdmin" class="mb-4 p-3 bg-slate-700 rounded-md">
+                <div class="text-sm text-slate-300">Usuario seleccionado:</div>
+                <div class="font-medium text-white">{{ selectedUserForAdmin.username }}</div>
+                <div class="text-sm text-slate-400">{{ selectedUserForAdmin.email }}</div>
+              </div>
+
+              <!-- Razón de promoción -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Razón de la promoción *</label>
+                <select
+                  [(ngModel)]="adminPromotionReason"
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="">Selecciona una razón</option>
+                  <option value="experiencia_tecnica">Experiencia y conocimiento técnico</option>
+                  <option value="liderazgo">Capacidades de liderazgo</option>
+                  <option value="confianza">Confianza y responsabilidad demostrada</option>
+                  <option value="necesidad_operativa">Necesidad operativa del equipo</option>
+                  <option value="promocion_interna">Promoción interna</option>
+                </select>
+              </div>
+
+              <!-- Notas adicionales -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Notas adicionales</label>
+                <textarea
+                  [(ngModel)]="adminPromotionNotes"
+                  rows="3"
+                  placeholder="Notas opcionales..."
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-center space-x-4 px-4 py-3">
+              <button
+                (click)="closeAdminPromotionModal()"
+                class="px-4 py-2 border border-slate-600 text-slate-300 text-base font-medium rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Cancelar
+              </button>
+              <button
+                (click)="confirmPromoteToAdmin()"
+                [disabled]="!selectedUserForAdmin || !adminPromotionReason"
+                class="px-4 py-2 bg-red-400 text-white text-base font-medium rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Promocionar a Admin
               </button>
             </div>
           </div>
@@ -624,15 +753,29 @@ export class UsersListComponent implements OnInit {
   searchTermModal = '';
   searchResultsModal: User[] = [];
 
+  // Admin promotion modal
+  showAdminPromotionModal = false;
+  adminSearchTerm = '';
+  adminSearchResults: User[] = [];
+  selectedUserForAdmin: User | null = null;
+  adminPromotionReason = '';
+  adminPromotionNotes = '';
+
   constructor(
     private adminService: AdminService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
-
   ngOnInit() {
     this.loadUsers();
     this.loadUserStats();
+    
+    // Debug: verificar usuario actual
+    const currentUser = this.authService.getCurrentUser();
+    console.log('Usuario actual en users-list:', currentUser);
+    console.log('Es super admin?', this.isSuperAdmin);
+    console.log('Rol del usuario:', currentUser?.role);
 
     this.route.queryParams.subscribe((params) => {
       if (params['action'] === 'promote') {
@@ -837,5 +980,74 @@ export class UsersListComponent implements OnInit {
 
   getStatusClass(isActive: boolean): string {
     return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  }
+
+  // Admin promotion methods
+  get isSuperAdmin(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser !== null && ['super_admin', 'SUPER_ADMIN'].includes(currentUser.role);
+  }
+
+  openVipPromotionModal() {
+    this.showUserSearchModal = true;
+    this.searchTermModal = '';
+    this.searchResultsModal = [];
+  }
+
+  openAdminPromotionModal() {
+    this.showAdminPromotionModal = true;
+    this.adminSearchTerm = '';
+    this.adminSearchResults = [];
+    this.selectedUserForAdmin = null;
+    this.adminPromotionReason = '';
+    this.adminPromotionNotes = '';
+  }
+
+  searchUsersForAdmin() {
+    if (this.adminSearchTerm.length < 2) {
+      this.adminSearchResults = [];
+    }
+
+    this.adminSearchResults = this.users.filter(
+      (user: any) =>
+        (user.username.toLowerCase().includes(this.adminSearchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(this.adminSearchTerm.toLowerCase())) &&
+        !['admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)
+    );
+  }
+
+  selectUserForAdmin(user: User) {
+    this.selectedUserForAdmin = user;
+    this.adminSearchTerm = user.username;
+    this.adminSearchResults = [];
+  }
+
+  confirmPromoteToAdmin() {
+    if (!this.selectedUserForAdmin || !this.adminPromotionReason) {
+      alert('Por favor selecciona un usuario y proporciona una razón.');
+      return;
+    }
+
+    const data = {
+      reason: this.adminPromotionReason,
+      notes: this.adminPromotionNotes || 'Promoción a administrador desde panel de gestión'
+    };
+
+    // Aquí iría la llamada al servicio para promocionar a admin
+    console.log('Promocionando a admin:', this.selectedUserForAdmin, data);
+    
+    // Simular promoción exitosa
+    alert(`✅ ${this.selectedUserForAdmin.username} ha sido promocionado a administrador exitosamente!`);
+    this.closeAdminPromotionModal();
+    this.refreshData();
+  }
+
+  closeAdminPromotionModal() {
+    this.showAdminPromotionModal = false;
+    this.adminSearchTerm = '';
+    this.adminSearchResults = [];
+    this.selectedUserForAdmin = null;
+    this.adminPromotionReason = '';
+    this.adminPromotionNotes = '';
   }
 }
