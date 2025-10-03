@@ -68,19 +68,17 @@ class EventController {
         message: `Evento ${category.name} - ${subcategory.name} creado exitosamente!`
       });
 
-    } catch (error: any) {
       logger.error('Error creating event:', error);
       return reply.status(500).send({ success: false, error: error.message || 'Error interno' });
     }
   }
 
-  // ==================== LISTAR EVENTOS ====================
+  // Métodos públicos (sin autenticación)
   async listRockEvents(
     request: FastifyRequest<{ Querystring: EventQueryDTO }>,
     reply: FastifyReply
   ) {
     try {
-      // Consulta SQL directa para evitar problemas con Prisma
       const events = await prisma.$queryRaw`
         SELECT 
           e.*,

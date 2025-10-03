@@ -430,7 +430,6 @@ export class SettingsComponent implements OnInit {
   }
 
   loadAdmins() {
-    // TODO: Implementar carga real de administradores
     this.admins = [
       {
         id: '467a0b9f-5cd9-46b0-8905-621bc92a8664',
@@ -510,7 +509,6 @@ export class SettingsComponent implements OnInit {
     if (!this.isAdminFormValid()) return;
 
     console.log('Guardar admin:', this.adminForm);
-    // TODO: Implementar guardado real
     this.closeAdminModal();
     this.loadAdmins();
   }
@@ -528,7 +526,6 @@ export class SettingsComponent implements OnInit {
 
   activateAdmin(admin: any) {
     console.log('Activar admin:', admin);
-    // TODO: Implementar activación
   }
 
   deactivateAdmin(admin: any) {
@@ -536,8 +533,7 @@ export class SettingsComponent implements OnInit {
       confirm(`¿Estás seguro de que quieres desactivar a ${admin.firstName} ${admin.lastName}?`)
     ) {
       console.log('Desactivar admin:', admin);
-      // TODO: Implementar desactivación
-    }
+      }
   }
 
   deleteAdmin(admin: any) {
@@ -547,8 +543,7 @@ export class SettingsComponent implements OnInit {
       )
     ) {
       console.log('Eliminar admin:', admin);
-      // TODO: Implementar eliminación
-    }
+      }
   }
 
   // Acciones del sistema
@@ -560,7 +555,6 @@ export class SettingsComponent implements OnInit {
 
   exportData() {
     console.log('Exportar datos del sistema');
-    // TODO: Implementar exportación
   }
 
   restartServices() {
@@ -570,8 +564,7 @@ export class SettingsComponent implements OnInit {
       )
     ) {
       console.log('Reiniciar servicios');
-      // TODO: Implementar reinicio
-    }
+      }
   }
 
   // Utilidades

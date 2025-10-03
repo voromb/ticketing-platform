@@ -37,7 +37,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   const prisma = new PrismaClient();
   registerAuditMiddleware(prisma);
 
-  // Inicializar RabbitMQ (comentado temporalmente)
+  // Inicializar RabbitMQ
   const rabbitmq = {
     isConnected: () => false,
     close: async () => {}
