@@ -24,9 +24,9 @@ export class VenuesService {
 
   getActiveVenues(page: number = 1, limit: number = 10): Observable<VenuesResponse> {
     const params = new HttpParams()
-      .set('isActive', 'true') // ✅ si tu API lo requiere
-      .set('page', page.toString()) // ✅ convertir a string
-      .set('limit', limit.toString()); // ✅ convertir a string
+      .set('isActive', 'true') 
+      .set('page', page.toString())
+      .set('limit', limit.toString()); 
     
     return this.http.get<VenuesResponse>(`${this.baseUrl}/api/venues`, { params });
   }

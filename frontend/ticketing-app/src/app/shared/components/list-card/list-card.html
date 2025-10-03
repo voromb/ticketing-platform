@@ -1,4 +1,9 @@
-<div class="container py-5">
+<div class="container py-5"
+     infinite-scroll
+     [infiniteScrollDistance]="1"
+     [infiniteScrollThrottle]="50"
+     (scrolled)="onScroll()">
+
   <h2 class="text-center mb-4">Lugares de evento</h2>
 
   <div class="row">
@@ -8,5 +13,6 @@
       </div>
     }
   </div>
-</div>
 
+  <p *ngIf="loading" class="text-center">Cargando más venues...</p>
+</div>
