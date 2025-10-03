@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+              url('/assets/events/Rayo.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white; /* Si quieres texto visible sobre la imagen */
+  padding: 16px;
+
+}

@@ -180,15 +180,17 @@ export class VenueController {
                 },
             });
 
-            return reply.send({
-                venues,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    totalPages: Math.ceil(total / limit),
-                },
-            });
+                    return reply
+                .header('Content-Type', 'application/json; charset=utf-8')
+                .send({
+                    venues,
+                    pagination: {
+                        total,
+                        page,
+                        limit,
+                        totalPages: Math.ceil(total / limit),
+                    },
+                });
         } catch (error) {
             logger.error('Error obteniendo venues:', error);
             return reply.status(500).send({

@@ -75,46 +75,48 @@ model VenueSection {
 
 // ==================== EVENTOS ====================
 model Event {
-  id               String      @id @default(uuid())
+  id               String           @id @default(uuid())
   name             String
   description      String?
-  slug             String      @unique
-  status           EventStatus @default(DRAFT)
+  slug             String           @unique
+  status           EventStatus      @default(DRAFT)
   eventDate        DateTime
-  doorsOpenTime    DateTime?   // Hora de apertura de puertas
+  doorsOpenTime    DateTime?        // Hora de apertura de puertas
   saleStartDate    DateTime
   saleEndDate      DateTime
   venueId          String
-  venue            Venue       @relation(fields: [venueId], references: [id])
+  venue            Venue            @relation(fields: [venueId], references: [id])
   
   // Capacidad y tickets
   totalCapacity    Int
   availableTickets Int
-  reservedTickets  Int         @default(0)
-  soldTickets      Int         @default(0)
+  reservedTickets  Int              @default(0)
+  soldTickets      Int              @default(0)
   
   // Categorización
-  category         String      // "Concierto", "Teatro", "Deporte", etc
-  subcategory      String?     // "Rock", "Comedia", "Fútbol", etc
+  categoryId       Int?
+  category         EventCategory?   @relation(fields: [categoryId], references: [id])
+  subcategoryId    Int?
+  subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id])
   tags             String[]
   
   // Imágenes y media
-  bannerImage      String?     // Imagen principal
-  thumbnailImage   String?     // Miniatura
-  images           String[]    // Galería de imágenes
+  bannerImage      String?          // Imagen principal
+  thumbnailImage   String?          // Miniatura
+  images           String[]         // Galería de imágenes
   
   // Precios (se maneja en detalle en PriceCategory)
-  minPrice         Decimal     @db.Decimal(10, 2)
-  maxPrice         Decimal     @db.Decimal(10, 2)
+  minPrice         Decimal          @db.Decimal(10, 2)
+  maxPrice         Decimal          @db.Decimal(10, 2)
   
   // Restricciones
-  ageRestriction   String?     // "+18", "+16", "Todos los públicos"
+  ageRestriction   String?          // "+18", "+16", "Todos los públicos"
   
   // Metadatos
   createdById      String
-  createdBy        Admin       @relation(fields: [createdById], references: [id])
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdBy        Admin            @relation(fields: [createdById], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   publishedAt      DateTime?
   cancelledAt      DateTime?
   completedAt      DateTime?
@@ -126,7 +128,8 @@ model Event {
   @@index([slug])
   @@index([status])
   @@index([eventDate])
-  @@index([category])
+  @@index([categoryId])
+  @@index([subcategoryId])
 }
 
 // ==================== CATEGORÍAS DE PRECIO ====================
@@ -191,3 +194,21 @@ enum EventStatus {
   COMPLETED   // Evento finalizado
   SUSPENDED   // Venta suspendida temporalmente
 }
+// ==================== Categorias ====================
+model EventCategory {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  subcategories EventSubcategory[]
+  events      Event[] // Campo opuesto de la relación
+}
+
+model EventSubcategory {
+  id         Int          @id @default(autoincrement())
+  name       String
+  category   EventCategory @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  events     Event[]       // Campo opuesto de la relación
+
+  @@unique([categoryId, name])
+}
+

@@ -15,7 +15,7 @@ import { InfiniteScrollDirective } from 'ngx-infinite-scroll';
 export class ListCard implements OnInit {
   venues: Venue[] = [];
   page = 1;
-  limit = 3; // si tu API devuelve totalPages
+  limit = 4; 
   loading = false;
 
 
@@ -31,8 +31,8 @@ loadVenues() {
 
   this.venuesService.getActiveVenues(this.page, this.limit).subscribe({
     next: (res: VenuesResponse) => {
-      this.venues = [...this.venues, ...res.venues]; // concatenar nuevos venues
-      this.page++; // siguiente página
+      this.venues = [...this.venues, ...res.venues]; 
+      this.page++; 
       this.loading = false;
     },
     error: () => {
