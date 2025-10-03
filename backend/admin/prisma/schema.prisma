@@ -7,209 +7,182 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== USUARIOS ADMIN ====================
 model Admin {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  password     String
-  firstName    String
-  lastName     String
-  role         UserRole @default(ADMIN)
-  isActive     Boolean  @default(true)
-  lastLogin    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relaciones
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          UserRole   @default(ADMIN)
+  isActive      Boolean    @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  auditLogs     AuditLog[]
   eventsCreated Event[]
   venuesCreated Venue[]
-  auditLogs     AuditLog[]
-  
+
   @@index([email])
   @@map("admins")
 }
 
-// ==================== VENUES ====================
 model Venue {
-  id           String   @id @default(uuid())
-  name         String
-  slug         String   @unique
-  capacity     Int
-  address      String
-  city         String
-  state        String?
-  country      String   @default("España")
-  postalCode   String
-  latitude     Float?
-  longitude    Float?
-  description  String?
-  amenities    String[] // ["parking", "wifi", "accesibilidad", etc]
-  images       String[] // URLs de imágenes
-  isActive     Boolean  @default(true)
-  createdById  String?
-  createdBy    Admin?   @relation(fields: [createdById], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relaciones
-  events       Event[]
-  sections     VenueSection[]
-  
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  capacity    Int
+  address     String
+  city        String
+  state       String?
+  country     String         @default("Espa??a")
+  postalCode  String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  amenities   String[]
+  images      String[]
+  isActive    Boolean        @default(true)
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  events      Event[]
+  createdBy   Admin?         @relation(fields: [createdById], references: [id])
+  sections    VenueSection[]
+
   @@index([slug])
   @@index([city])
 }
 
-// ==================== SECCIONES DE VENUES ====================
 model VenueSection {
-  id          String   @id @default(uuid())
-  venueId     String
-  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  name        String   // "Platea", "Tribuna", "VIP"
-  capacity    Int
-  rowCount    Int?     // Número de filas
-  seatsPerRow Int?     // Asientos por fila
-  
+  id            String          @id @default(uuid())
+  venueId       String
+  name          String
+  capacity      Int
+  rowCount      Int?
+  seatsPerRow   Int?
+  PriceCategory PriceCategory[]
+  venue         Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
   @@unique([venueId, name])
   @@index([venueId])
 }
 
-// ==================== EVENTOS ====================
 model Event {
-  id               String           @id @default(uuid())
+  id               String            @id @default(uuid())
   name             String
   description      String?
-  slug             String           @unique
-  status           EventStatus      @default(DRAFT)
+  slug             String            @unique
+  status           EventStatus       @default(DRAFT)
   eventDate        DateTime
-  doorsOpenTime    DateTime?        // Hora de apertura de puertas
+  doorsOpenTime    DateTime?
   saleStartDate    DateTime
   saleEndDate      DateTime
   venueId          String
-  venue            Venue            @relation(fields: [venueId], references: [id])
-  
-  // Capacidad y tickets
   totalCapacity    Int
   availableTickets Int
-  reservedTickets  Int              @default(0)
-  soldTickets      Int              @default(0)
-  
-  // Categorización
-  categoryId       Int?
-  category         EventCategory?   @relation(fields: [categoryId], references: [id])
-  subcategoryId    Int?
-  subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id])
+  reservedTickets  Int               @default(0)
+  soldTickets      Int               @default(0)
   tags             String[]
-  
-  // Imágenes y media
-  bannerImage      String?          // Imagen principal
-  thumbnailImage   String?          // Miniatura
-  images           String[]         // Galería de imágenes
-  
-  // Precios (se maneja en detalle en PriceCategory)
-  minPrice         Decimal          @db.Decimal(10, 2)
-  maxPrice         Decimal          @db.Decimal(10, 2)
-  
-  // Restricciones
-  ageRestriction   String?          // "+18", "+16", "Todos los públicos"
-  
-  // Metadatos
+  bannerImage      String?
+  thumbnailImage   String?
+  images           String[]
+  minPrice         Decimal           @db.Decimal(10, 2)
+  maxPrice         Decimal           @db.Decimal(10, 2)
+  ageRestriction   String?
   createdById      String
-  createdBy        Admin            @relation(fields: [createdById], references: [id])
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   publishedAt      DateTime?
   cancelledAt      DateTime?
   completedAt      DateTime?
-  
-  // Relaciones
-  priceCategories  PriceCategory[]
+  metadata         Json?
+  category_id      Int
+  subcategory_id   Int?
   auditLogs        AuditLog[]
-  
+  createdBy        Admin             @relation(fields: [createdById], references: [id])
+  venue            Venue             @relation(fields: [venueId], references: [id])
+  EventCategory    EventCategory     @relation(fields: [category_id], references: [id], map: "fk_event_category")
+  EventSubcategory EventSubcategory? @relation(fields: [subcategory_id], references: [id], map: "fk_event_subcategory")
+  priceCategories  PriceCategory[]
+
   @@index([slug])
   @@index([status])
   @@index([eventDate])
-  @@index([categoryId])
-  @@index([subcategoryId])
   @@map("Event")
 }
 
-// ==================== CATEGORÍAS DE PRECIO ====================
 model PriceCategory {
-  id               String   @id @default(uuid())
+  id               String        @id @default(uuid())
   eventId          String
-  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  name             String   // "General", "VIP", "Estudiante"
+  name             String
   description      String?
-  price            Decimal  @db.Decimal(10, 2)
+  price            Decimal       @db.Decimal(10, 2)
   totalTickets     Int
   availableTickets Int
-  isActive         Boolean  @default(true)
-  
+  isActive         Boolean       @default(true)
+  capacity         Int
+  createdAt        DateTime      @default(now())
+  metadata         Json?
+  sectionId        String?
+  updatedAt        DateTime
+  event            Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  VenueSection     VenueSection? @relation(fields: [sectionId], references: [id])
+
   @@unique([eventId, name])
   @@index([eventId])
 }
 
-// ==================== LOGS DE AUDITORÍA ====================
 model AuditLog {
-  id          String   @id @default(uuid())
-  tableName   String   // "Event", "Venue", "Admin"
-  recordId    String   // UUID del registro
-  action      String   // "CREATE", "UPDATE", "DELETE", "PUBLISH", "CANCEL"
-  fieldName   String?  // Campo específico modificado
-  oldValue    Json?    @db.JsonB
-  newValue    Json?    @db.JsonB
-  
-  // Contexto
-  adminId     String
-  admin       Admin    @relation(fields: [adminId], references: [id])
-  eventId     String?
-  event       Event?   @relation(fields: [eventId], references: [id])
-  
-  // Metadata
-  ipAddress   String?
-  userAgent   String?
-  sessionId   String?
-  
-  createdAt   DateTime @default(now())
-  
+  id        String   @id @default(uuid())
+  tableName String
+  recordId  String
+  action    String
+  fieldName String?
+  oldValue  Json?
+  newValue  Json?
+  adminId   String
+  eventId   String?
+  ipAddress String?
+  userAgent String?
+  sessionId String?
+  createdAt DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  event     Event?   @relation(fields: [eventId], references: [id])
+
   @@index([tableName, recordId])
   @@index([adminId])
   @@index([createdAt])
 }
 
-// ==================== ENUMS ====================
+model EventCategory {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  Event            Event[]
+  EventSubcategory EventSubcategory[]
+}
+
+model EventSubcategory {
+  id            Int           @id @default(autoincrement())
+  category_id   Int
+  name          String
+  Event         Event[]
+  EventCategory EventCategory @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([category_id, name])
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN
   MANAGER
-  MODERATOR   // Legacy role
   VIEWER
 }
 
 enum EventStatus {
-  DRAFT       // Borrador, no visible
-  ACTIVE      // Publicado y en venta
-  PUBLISHED   // Publicado (legacy)
-  SOLD_OUT    // Entradas agotadas
-  CANCELLED   // Evento cancelado
-  COMPLETED   // Evento finalizado
-  SUSPENDED   // Venta suspendida temporalmente
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  CANCELLED
+  COMPLETED
+  SUSPENDED
 }
-// ==================== Categorias ====================
-model EventCategory {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
-  subcategories EventSubcategory[]
-  events      Event[] // Campo opuesto de la relación
-}
-
-model EventSubcategory {
-  id         Int          @id @default(autoincrement())
-  name       String
-  category   EventCategory @relation(fields: [categoryId], references: [id])
-  categoryId Int
-  events     Event[]       // Campo opuesto de la relación
-
-  @@unique([categoryId, name])
-}
-

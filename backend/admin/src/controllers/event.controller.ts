@@ -74,32 +74,89 @@ class EventController {
     }
   }
 
-  // ==================== LISTAR EVENTOS ====================
-  async listRockEvents(
-    request: FastifyRequest<{ Querystring: EventQueryDTO }>,
-    reply: FastifyReply
-  ) {
+    // ==================== LISTAR categorias ====================
+
+  async listCategories(req, reply) {
     try {
-      const { venueId, categoryId, subcategoryId } = request.query;
-
-      const where: any = {};
-      if (venueId) where.venueId = venueId;
-      if (categoryId) where.categoryId = categoryId;
-      if (subcategoryId) where.subcategoryId = subcategoryId;
-
-      const events = await prisma.event.findMany({
-        where,
-        include: { venue: true, category: true, subcategory: true },
-        orderBy: { eventDate: 'asc' }
+      const categories = await prisma.eventCategory.findMany({
+        include: {
+          EventSubcategory: true, // incluir subcategorías
+        },
       });
 
-      return reply.send({ success: true, data: events });
-    } catch (error: any) {
-      logger.error('Error listing events:', error);
-      return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
+      return reply.send(categories);
+    } catch (error) {
+      console.error(error);
+      return reply.status(500).send({ message: 'Error fetching categories' });
     }
   }
 
+  // Opcional: solo categorías que tienen al menos un evento activo
+   async listAvailableCategories(req, reply) {
+    try {
+      const categories = await prisma.eventCategory.findMany({
+        where: {
+          Event: {
+            some: { status: 'ACTIVE' }, // solo categorías con eventos activos
+          },
+        },
+        include: {
+          EventSubcategory: {
+            where: { Event: { some: { status: 'ACTIVE' } } }, // solo subcategorías con eventos activos
+          },
+        },
+      });
+
+      return reply.send(categories);
+    } catch (error) {
+      console.error(error);
+      return reply.status(500).send({ message: 'Error fetching available categories' });
+    }
+  }
+
+
+  // ==================== LISTAR EVENTOS ====================
+ async listRockEvents(
+  request: FastifyRequest<{ Querystring: EventQueryDTO }>,
+  reply: FastifyReply
+) {
+  try {
+    // Log para depuración
+    console.log('Query params:', request.query);
+
+    const { venueId, categoryId, subcategoryId } = request.query;
+
+    // Construir filtro dinámico
+    const where: any = {};
+    if (venueId) where.venueId = venueId;
+    if (categoryId) where.categoryId = categoryId;
+    if (subcategoryId) where.subcategoryId = subcategoryId;
+
+    // Obtener eventos
+    const events = await prisma.event.findMany({
+      where,
+      include: {
+        venue: true,
+        EventCategory: true,       // nombre exacto del modelo en schema.prisma
+        EventSubcategory: true     // nombre exacto del modelo en schema.prisma
+      },
+      orderBy: {
+        eventDate: 'asc'
+      }
+    });
+
+    // Respuesta
+    return reply.send({ success: true, data: events });
+  } catch (error: any) {
+    console.error('Error listing events:', error);
+
+    // Responder sin exponer detalles de Prisma
+    return reply.status(500).send({
+      success: false,
+      error: 'Error interno al listar eventos'
+    });
+  }
+}
   // ==================== GET EVENTO POR ID ====================
   async getEventById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
