@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { AdminService, type Category, type Subcategory, type CategoryStats } from '../../../core/services/admin.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-categories-list',
@@ -19,19 +20,33 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
           </p>
         </div>
         <div class="mt-4 sm:mt-0 flex space-x-3">
-          <button (click)="openCreateCategoryModal()"
-                  style="border-radius: 24px;"
-                  class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-gray-700 hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          <button
+            (click)="openCreateCategoryModal()"
+            style="border-radius: 24px;"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-gray-700 hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
             </svg>
             Nueva Categoría
           </button>
-          <button (click)="openCreateSubcategoryModal()"
-                  style="border-radius: 24px;"
-                  class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          <button
+            (click)="openCreateSubcategoryModal()"
+            style="border-radius: 24px;"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              ></path>
             </svg>
             Nueva Subcategoría
           </button>
@@ -40,11 +55,23 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
 
       <!-- Estadísticas -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6">
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6"
+        >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              <svg
+                class="w-8 h-8 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                ></path>
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
@@ -56,11 +83,23 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
           </div>
         </div>
 
-        <div class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6">
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6"
+        >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              <svg
+                class="w-8 h-8 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                ></path>
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
@@ -72,11 +111,23 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
           </div>
         </div>
 
-        <div class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6">
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6"
+        >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              <svg
+                class="w-8 h-8 text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
@@ -96,18 +147,33 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
       </div>
 
       <!-- Tabs y contenido -->
-      <div *ngIf="!loading" class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50">
+      <div
+        *ngIf="!loading"
+        class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50"
+      >
         <!-- Tabs -->
         <div class="border-b border-slate-700">
           <nav class="-mb-px flex space-x-8 px-8 pt-6">
-            <button (click)="switchTab('categories')"
-                    [class]="activeTab === 'categories' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-300'"
-                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            <button
+              (click)="switchTab('categories')"
+              [class]="
+                activeTab === 'categories'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-300'
+              "
+              class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+            >
               Categorías ({{ totalCategories }})
             </button>
-            <button (click)="switchTab('subcategories')"
-                    [class]="activeTab === 'subcategories' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-300'"
-                    class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
+            <button
+              (click)="switchTab('subcategories')"
+              [class]="
+                activeTab === 'subcategories'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-300'
+              "
+              class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+            >
               Subcategorías ({{ totalSubcategories }})
             </button>
           </nav>
@@ -117,36 +183,42 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
         <div class="p-8 border-b border-slate-700">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-white mb-2">
-                Buscar
-              </label>
-              <input [(ngModel)]="searchTerm"
-                     (input)="onSearch()"
-                     type="text"
-                     [placeholder]="activeTab === 'categories' ? 'Nombre de categoría...' : 'Nombre de subcategoría...'"
-                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <label class="block text-sm font-medium text-white mb-2"> Buscar </label>
+              <input
+                [(ngModel)]="searchTerm"
+                (input)="onSearch()"
+                type="text"
+                [placeholder]="
+                  activeTab === 'categories'
+                    ? 'Nombre de categoría...'
+                    : 'Nombre de subcategoría...'
+                "
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-white mb-2">
-                Ordenar por
-              </label>
-              <select [(ngModel)]="sortBy"
-                      (change)="onSort(sortBy)"
-                      class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <label class="block text-sm font-medium text-white mb-2"> Ordenar por </label>
+              <select
+                [(ngModel)]="sortBy"
+                (change)="onSort(sortBy)"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="name">Nombre</option>
                 <option value="events">Eventos</option>
-                <option *ngIf="activeTab === 'categories'" value="subcategories">Subcategorías</option>
+                <option *ngIf="activeTab === 'categories'" value="subcategories">
+                  Subcategorías
+                </option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-white mb-2">
-                Orden
-              </label>
-              <select [(ngModel)]="sortOrder"
-                      (change)="activeTab === 'categories' ? applyFilters() : applySubcategoryFilters()"
-                      class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <label class="block text-sm font-medium text-white mb-2"> Orden </label>
+              <select
+                [(ngModel)]="sortOrder"
+                (change)="activeTab === 'categories' ? applyFilters() : applySubcategoryFilters()"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="asc">Ascendente</option>
                 <option value="desc">Descendente</option>
               </select>
@@ -160,27 +232,42 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
             <table class="min-w-full divide-y divide-slate-700">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Categoría
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Subcategorías
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Eventos
                   </th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-right text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Acciones
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-700">
-                <tr *ngFor="let category of filteredCategories" class="hover:bg-slate-700/50 transition-colors duration-200">
+                <tr
+                  *ngFor="let category of filteredCategories"
+                  class="hover:bg-slate-700/50 transition-colors duration-200"
+                >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-8 w-8">
-                        <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                          <span class="text-sm font-medium text-white">{{ category.name.charAt(0).toUpperCase() }}</span>
+                        <div
+                          class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center"
+                        >
+                          <span class="text-sm font-medium text-white">{{
+                            category.name.charAt(0).toUpperCase()
+                          }}</span>
                         </div>
                       </div>
                       <div class="ml-4">
@@ -189,37 +276,67 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-600 text-slate-200">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-600 text-slate-200"
+                    >
                       {{ category._count?.subcategories || 0 }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-green-100">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-green-100"
+                    >
                       {{ category._count?.events || 0 }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
-                      <button (click)="viewCategoryDetails(category)"
-                              class="text-green-400 hover:text-green-300 transition-colors duration-200"
-                              title="Ver detalles">
+                      <button
+                        (click)="viewCategoryDetails(category)"
+                        class="text-violet-600 hover:text-violet-900 transition-colors duration-200"
+                        title="Ver detalles"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          ></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          ></path>
                         </svg>
                       </button>
-                      <button (click)="openEditCategoryModal(category)"
-                              class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                              title="Editar">
+                      <button
+                        (click)="openEditCategoryModal(category)"
+                        class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                        title="Editar"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          ></path>
                         </svg>
                       </button>
-                      <button (click)="openDeleteModal('category', category)"
-                              class="text-red-400 hover:text-red-300 transition-colors duration-200"
-                              title="Eliminar">
+                      <button
+                        (click)="openDeleteModal('category', category)"
+                        class="text-red-400 hover:text-red-300 transition-colors duration-200"
+                        title="Eliminar"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          ></path>
                         </svg>
                       </button>
                     </div>
@@ -227,10 +344,20 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
                 </tr>
               </tbody>
             </table>
-            
+
             <div *ngIf="filteredCategories.length === 0" class="text-center py-12">
-              <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              <svg
+                class="mx-auto h-12 w-12 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                ></path>
               </svg>
               <h3 class="mt-2 text-sm font-medium text-slate-300">No hay categorías</h3>
               <p class="mt-1 text-sm text-slate-400">Comienza creando una nueva categoría.</p>
@@ -242,34 +369,50 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
         <div *ngIf="activeTab === 'subcategories'" class="p-8">
           <!-- Debug info -->
           <div class="mb-4 text-xs text-slate-400">
-            Debug: {{ filteredSubcategories.length }} subcategorías filtradas de {{ subcategories.length }} totales
+            Debug: {{ filteredSubcategories.length }} subcategorías filtradas de
+            {{ subcategories.length }} totales
           </div>
-          
+
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-700">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Subcategoría
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Categoría Padre
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Eventos
                   </th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
+                  <th
+                    class="px-6 py-3 text-right text-xs font-medium text-slate-300 uppercase tracking-wider"
+                  >
                     Acciones
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-700">
-                <tr *ngFor="let subcategory of filteredSubcategories; let i = index" class="hover:bg-slate-700/50 transition-colors duration-200">
+                <tr
+                  *ngFor="let subcategory of filteredSubcategories; let i = index"
+                  class="hover:bg-slate-700/50 transition-colors duration-200"
+                >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-8 w-8">
-                        <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center">
-                          <span class="text-sm font-medium text-white">{{ subcategory.name.charAt(0).toUpperCase() }}</span>
+                        <div
+                          class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center"
+                        >
+                          <span class="text-sm font-medium text-white">{{
+                            subcategory.name.charAt(0).toUpperCase()
+                          }}</span>
                         </div>
                       </div>
                       <div class="ml-4">
@@ -278,37 +421,67 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-blue-100">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-blue-100"
+                    >
                       {{ subcategory.category?.name }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-green-100">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-green-100"
+                    >
                       {{ subcategory._count?.events || 0 }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex justify-end space-x-2">
-                      <button (click)="viewSubcategoryDetails(subcategory)"
-                              class="text-green-400 hover:text-green-300 transition-colors duration-200"
-                              title="Ver detalles">
+                      <button
+                        (click)="viewSubcategoryDetails(subcategory)"
+                        class="text-violet-600 hover:text-violet-900 transition-colors duration-200"
+                        title="Ver detalles"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          ></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          ></path>
                         </svg>
                       </button>
-                      <button (click)="openEditSubcategoryModal(subcategory)"
-                              class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                              title="Editar">
+                      <button
+                        (click)="openEditSubcategoryModal(subcategory)"
+                        class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                        title="Editar"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          ></path>
                         </svg>
                       </button>
-                      <button (click)="openDeleteModal('subcategory', subcategory)"
-                              class="text-red-400 hover:text-red-300 transition-colors duration-200"
-                              title="Eliminar">
+                      <button
+                        (click)="openDeleteModal('subcategory', subcategory)"
+                        class="text-red-400 hover:text-red-300 transition-colors duration-200"
+                        title="Eliminar"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          ></path>
                         </svg>
                       </button>
                     </div>
@@ -316,10 +489,20 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
                 </tr>
               </tbody>
             </table>
-            
+
             <div *ngIf="filteredSubcategories.length === 0" class="text-center py-12">
-              <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              <svg
+                class="mx-auto h-12 w-12 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                ></path>
               </svg>
               <h3 class="mt-2 text-sm font-medium text-slate-300">No hay subcategorías</h3>
               <p class="mt-1 text-sm text-slate-400">Comienza creando una nueva subcategoría.</p>
@@ -330,21 +513,34 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
 
       <!-- Modales -->
       <!-- Modal Crear Categoría -->
-      <div *ngIf="showCreateCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        *ngIf="showCreateCategoryModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
           <h3 class="text-lg font-medium text-white mb-4">Nueva Categoría</h3>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-white mb-2">Nombre</label>
-              <input [(ngModel)]="categoryForm.name" type="text" placeholder="Nombre de la categoría"
-                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <input
+                [(ngModel)]="categoryForm.name"
+                type="text"
+                placeholder="Nombre de la categoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
-            <button (click)="closeModals()" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+            <button
+              (click)="closeModals()"
+              class="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
               Cancelar
             </button>
-            <button (click)="createCategory()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+            <button
+              (click)="createCategory()"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
               Crear
             </button>
           </div>
@@ -352,21 +548,34 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
       </div>
 
       <!-- Modal Editar Categoría -->
-      <div *ngIf="showEditCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        *ngIf="showEditCategoryModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
           <h3 class="text-lg font-medium text-white mb-4">Editar Categoría</h3>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-white mb-2">Nombre</label>
-              <input [(ngModel)]="categoryForm.name" type="text" placeholder="Nombre de la categoría"
-                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <input
+                [(ngModel)]="categoryForm.name"
+                type="text"
+                placeholder="Nombre de la categoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
-            <button (click)="closeModals()" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+            <button
+              (click)="closeModals()"
+              class="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
               Cancelar
             </button>
-            <button (click)="updateCategory()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+            <button
+              (click)="updateCategory()"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
               Actualizar
             </button>
           </div>
@@ -374,29 +583,46 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
       </div>
 
       <!-- Modal Crear Subcategoría -->
-      <div *ngIf="showCreateSubcategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        *ngIf="showCreateSubcategoryModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
           <h3 class="text-lg font-medium text-white mb-4">Nueva Subcategoría</h3>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-white mb-2">Categoría Padre</label>
-              <select [(ngModel)]="subcategoryForm.categoryId"
-                      class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <select
+                [(ngModel)]="subcategoryForm.categoryId"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option [value]="0">Seleccionar categoría</option>
-                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-white mb-2">Nombre</label>
-              <input [(ngModel)]="subcategoryForm.name" type="text" placeholder="Nombre de la subcategoría"
-                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <input
+                [(ngModel)]="subcategoryForm.name"
+                type="text"
+                placeholder="Nombre de la subcategoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
-            <button (click)="closeModals()" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+            <button
+              (click)="closeModals()"
+              class="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
               Cancelar
             </button>
-            <button (click)="createSubcategory()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors">
+            <button
+              (click)="createSubcategory()"
+              class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+            >
               Crear
             </button>
           </div>
@@ -404,28 +630,45 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
       </div>
 
       <!-- Modal Editar Subcategoría -->
-      <div *ngIf="showEditSubcategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        *ngIf="showEditSubcategoryModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
           <h3 class="text-lg font-medium text-white mb-4">Editar Subcategoría</h3>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-white mb-2">Categoría Padre</label>
-              <select [(ngModel)]="subcategoryForm.categoryId"
-                      class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              <select
+                [(ngModel)]="subcategoryForm.categoryId"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-white mb-2">Nombre</label>
-              <input [(ngModel)]="subcategoryForm.name" type="text" placeholder="Nombre de la subcategoría"
-                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <input
+                [(ngModel)]="subcategoryForm.name"
+                type="text"
+                placeholder="Nombre de la subcategoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
-            <button (click)="closeModals()" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+            <button
+              (click)="closeModals()"
+              class="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
               Cancelar
             </button>
-            <button (click)="updateSubcategory()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors">
+            <button
+              (click)="updateSubcategory()"
+              class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+            >
               Actualizar
             </button>
           </div>
@@ -433,25 +676,187 @@ import { AdminService, type Category, type Subcategory, type CategoryStats } fro
       </div>
 
       <!-- Modal Eliminar -->
-      <div *ngIf="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        *ngIf="showDeleteModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
         <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
           <h3 class="text-lg font-medium text-white mb-4">Confirmar Eliminación</h3>
           <p class="text-slate-300 mb-6">
-            ¿Estás seguro de que quieres eliminar esta {{ deleteTarget?.type === 'category' ? 'categoría' : 'subcategoría' }}?
+            ¿Estás seguro de que quieres eliminar esta
+            {{ deleteTarget?.type === 'category' ? 'categoría' : 'subcategoría' }}?
           </p>
           <div class="flex justify-end space-x-3">
-            <button (click)="closeModals()" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">
+            <button
+              (click)="closeModals()"
+              class="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
               Cancelar
             </button>
-            <button (click)="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors">
+            <button
+              (click)="confirmDelete()"
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+            >
               Eliminar
             </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal de Detalles de Categoría -->
+    <div
+      *ngIf="showCategoryDetailsModal && selectedCategory"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
+      >
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Detalles de la Categoría</h3>
+            <p class="text-sm text-slate-300">{{ selectedCategory.name }}</p>
+          </div>
+          <button (click)="closeCategoryDetailsModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <!-- Información Principal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Información de la Categoría</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Nombre:</span>
+                  <span class="text-white">{{ selectedCategory.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">ID:</span>
+                  <span class="text-white text-xs">{{ selectedCategory.id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Estadísticas</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Subcategorías:</span>
+                  <span class="text-white font-bold">{{
+                    selectedCategory._count?.subcategories || 0
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Eventos:</span>
+                  <span class="text-white font-bold">{{ selectedCategory._count?.events || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button
+            (click)="closeCategoryDetailsModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Detalles de Subcategoría -->
+    <div
+      *ngIf="showSubcategoryDetailsModal && selectedSubcategory"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
+      >
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Detalles de la Subcategoría</h3>
+            <p class="text-sm text-slate-300">{{ selectedSubcategory.name }}</p>
+          </div>
+          <button (click)="closeSubcategoryDetailsModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <!-- Información Principal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">
+                Información de la Subcategoría
+              </h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Nombre:</span>
+                  <span class="text-white">{{ selectedSubcategory.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Categoría Padre:</span>
+                  <span class="text-white">{{
+                    selectedSubcategory.category?.name || 'Sin categoría'
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">ID:</span>
+                  <span class="text-white text-xs">{{ selectedSubcategory.id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Estadísticas</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Eventos:</span>
+                  <span class="text-white font-bold">{{
+                    selectedSubcategory._count?.events || 0
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button
+            (click)="closeSubcategoryDetailsModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   `,
-  styles: []
+  styles: [],
 })
 export class CategoriesListComponent implements OnInit {
   // ============= PROPIEDADES PRINCIPALES =============
@@ -459,44 +864,46 @@ export class CategoriesListComponent implements OnInit {
   subcategories: Subcategory[] = [];
   filteredCategories: Category[] = [];
   filteredSubcategories: Subcategory[] = [];
-  
+
   // ============= ESTADOS =============
   loading = false;
   activeTab: 'categories' | 'subcategories' = 'categories';
-  
+
   // ============= ESTADÍSTICAS =============
   totalCategories = 0;
   totalSubcategories = 0;
   categoriesWithEvents = 0;
-  
+
   // ============= FILTROS Y BÚSQUEDA =============
   searchTerm = '';
   sortBy: 'name' | 'events' | 'subcategories' = 'name';
   sortOrder: 'asc' | 'desc' = 'asc';
-  
+
   // ============= MODALES =============
   showCreateCategoryModal = false;
   showEditCategoryModal = false;
   showCreateSubcategoryModal = false;
   showEditSubcategoryModal = false;
   showDeleteModal = false;
-  
+  showCategoryDetailsModal = false;
+  showSubcategoryDetailsModal = false;
+
   // ============= FORMULARIOS =============
   categoryForm = {
     id: 0,
-    name: ''
+    name: '',
   };
-  
+
   subcategoryForm = {
     id: 0,
     categoryId: 0,
-    name: ''
+    name: '',
   };
-  
+
   // ============= ITEM SELECCIONADO =============
   selectedCategory: Category | null = null;
   selectedSubcategory: Subcategory | null = null;
-  deleteTarget: { type: 'category' | 'subcategory', item: any } | null = null;
+  deleteTarget: { type: 'category' | 'subcategory'; item: any } | null = null;
 
   constructor(
     private adminService: AdminService,
@@ -522,7 +929,7 @@ export class CategoriesListComponent implements OnInit {
         this.categories = response.data;
         this.filteredCategories = [...this.categories];
         this.applyFilters();
-        
+
         setTimeout(() => {
           this.cdr.detectChanges();
         }, 100);
@@ -530,7 +937,7 @@ export class CategoriesListComponent implements OnInit {
       error: (error) => {
         console.error('Error al cargar categorías:', error);
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -545,7 +952,7 @@ export class CategoriesListComponent implements OnInit {
         console.log('Subcategorías asignadas:', this.subcategories);
         console.log('Subcategorías filtradas:', this.filteredSubcategories);
         this.applySubcategoryFilters();
-        
+
         setTimeout(() => {
           this.cdr.detectChanges();
         }, 100);
@@ -555,7 +962,7 @@ export class CategoriesListComponent implements OnInit {
         this.subcategories = [];
         this.filteredSubcategories = [];
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -567,7 +974,7 @@ export class CategoriesListComponent implements OnInit {
         this.totalSubcategories = stats.totalSubcategories;
         this.categoriesWithEvents = stats.categoriesWithEvents;
         this.loading = false;
-        
+
         setTimeout(() => {
           this.cdr.detectChanges();
         }, 100);
@@ -576,7 +983,7 @@ export class CategoriesListComponent implements OnInit {
         console.error('Error al cargar estadísticas:', error);
         this.loading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -586,7 +993,7 @@ export class CategoriesListComponent implements OnInit {
 
     // Filtro por búsqueda
     if (this.searchTerm) {
-      filtered = filtered.filter(category =>
+      filtered = filtered.filter((category) =>
         category.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
@@ -594,7 +1001,7 @@ export class CategoriesListComponent implements OnInit {
     // Ordenación
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-      
+
       switch (this.sortBy) {
         case 'name':
           aValue = a.name.toLowerCase();
@@ -627,16 +1034,17 @@ export class CategoriesListComponent implements OnInit {
 
     // Filtro por búsqueda
     if (this.searchTerm) {
-      filtered = filtered.filter(subcategory =>
-        subcategory.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        subcategory.category?.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (subcategory) =>
+          subcategory.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          subcategory.category?.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
 
     // Ordenación
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-      
+
       switch (this.sortBy) {
         case 'name':
           aValue = a.name.toLowerCase();
@@ -675,7 +1083,7 @@ export class CategoriesListComponent implements OnInit {
       this.sortBy = field;
       this.sortOrder = 'asc';
     }
-    
+
     if (this.activeTab === 'categories') {
       this.applyFilters();
     } else {
@@ -690,7 +1098,7 @@ export class CategoriesListComponent implements OnInit {
     this.searchTerm = '';
     this.sortBy = 'name';
     this.sortOrder = 'asc';
-    
+
     if (tab === 'categories') {
       this.applyFilters();
     } else {
@@ -718,10 +1126,10 @@ export class CategoriesListComponent implements OnInit {
   }
 
   openEditSubcategoryModal(subcategory: Subcategory) {
-    this.subcategoryForm = { 
-      id: subcategory.id, 
-      categoryId: subcategory.categoryId, 
-      name: subcategory.name 
+    this.subcategoryForm = {
+      id: subcategory.id,
+      categoryId: subcategory.categoryId,
+      name: subcategory.name,
     };
     this.selectedSubcategory = subcategory;
     this.showEditSubcategoryModal = true;
@@ -738,6 +1146,8 @@ export class CategoriesListComponent implements OnInit {
     this.showCreateSubcategoryModal = false;
     this.showEditSubcategoryModal = false;
     this.showDeleteModal = false;
+    this.showCategoryDetailsModal = false;
+    this.showSubcategoryDetailsModal = false;
     this.selectedCategory = null;
     this.selectedSubcategory = null;
     this.deleteTarget = null;
@@ -758,32 +1168,34 @@ export class CategoriesListComponent implements OnInit {
         this.showCreateCategoryModal = false;
         this.categoryForm = { id: 0, name: '' };
         this.loadData();
-        
+
         setTimeout(() => {
           this.cdr.detectChanges();
         }, 100);
       },
       error: (error) => {
         console.error('Error al crear categoría:', error);
-      }
+      },
     });
   }
 
   updateCategory() {
     if (!this.categoryForm.name.trim() || !this.selectedCategory) return;
 
-    this.adminService.updateCategory(this.selectedCategory.id, { 
-      name: this.categoryForm.name 
-    }).subscribe({
-      next: (response) => {
-        console.log('Categoría actualizada:', response.message);
-        this.closeModals();
-        this.loadData();
-      },
-      error: (error) => {
-        console.error('Error al actualizar categoría:', error);
-      }
-    });
+    this.adminService
+      .updateCategory(this.selectedCategory.id, {
+        name: this.categoryForm.name,
+      })
+      .subscribe({
+        next: (response) => {
+          console.log('Categoría actualizada:', response.message);
+          this.closeModals();
+          this.loadData();
+        },
+        error: (error) => {
+          console.error('Error al actualizar categoría:', error);
+        },
+      });
   }
 
   createSubcategory() {
@@ -795,7 +1207,7 @@ export class CategoriesListComponent implements OnInit {
 
     const subcategoryData = {
       categoryId: Number(this.subcategoryForm.categoryId), // Asegurar que es número
-      name: this.subcategoryForm.name.trim()
+      name: this.subcategoryForm.name.trim(),
     };
 
     console.log('Datos a enviar:', subcategoryData);
@@ -807,7 +1219,7 @@ export class CategoriesListComponent implements OnInit {
         this.showCreateSubcategoryModal = false;
         this.subcategoryForm = { id: 0, categoryId: 0, name: '' };
         this.loadData(); // Esto recarga todo incluyendo subcategorías
-        
+
         setTimeout(() => {
           this.cdr.detectChanges();
         }, 100);
@@ -815,26 +1227,28 @@ export class CategoriesListComponent implements OnInit {
       error: (error) => {
         console.error('Error al crear subcategoría:', error);
         console.error('Detalles del error:', error.error);
-      }
+      },
     });
   }
 
   updateSubcategory() {
     if (!this.subcategoryForm.name.trim() || !this.selectedSubcategory) return;
 
-    this.adminService.updateSubcategory(this.selectedSubcategory.id, {
-      categoryId: this.subcategoryForm.categoryId,
-      name: this.subcategoryForm.name
-    }).subscribe({
-      next: (response) => {
-        console.log('Subcategoría actualizada:', response.message);
-        this.closeModals();
-        this.loadData();
-      },
-      error: (error) => {
-        console.error('Error al actualizar subcategoría:', error);
-      }
-    });
+    this.adminService
+      .updateSubcategory(this.selectedSubcategory.id, {
+        categoryId: this.subcategoryForm.categoryId,
+        name: this.subcategoryForm.name,
+      })
+      .subscribe({
+        next: (response) => {
+          console.log('Subcategoría actualizada:', response.message);
+          this.closeModals();
+          this.loadData();
+        },
+        error: (error) => {
+          console.error('Error al actualizar subcategoría:', error);
+        },
+      });
   }
 
   confirmDelete() {
@@ -849,7 +1263,7 @@ export class CategoriesListComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al eliminar categoría:', error);
-        }
+        },
       });
     } else {
       this.adminService.deleteSubcategory(this.deleteTarget.item.id).subscribe({
@@ -860,20 +1274,44 @@ export class CategoriesListComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al eliminar subcategoría:', error);
-        }
+        },
       });
     }
   }
 
   // ============= VER DETALLES =============
   viewCategoryDetails(category: Category) {
-    console.log('Ver detalles de categoría:', category);
-    alert(`Categoría: ${category.name}\nSubcategorías: ${category._count?.subcategories || 0}\nEventos: ${category._count?.events || 0}`);
+    console.log('🔍 Abriendo modal de categoría:', category);
+    this.selectedCategory = category;
+    this.showCategoryDetailsModal = true;
+    console.log('🔍 Estado del modal:', this.showCategoryDetailsModal);
+    
+    // Forzar detección de cambios
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
   }
 
   viewSubcategoryDetails(subcategory: Subcategory) {
-    console.log('Ver detalles de subcategoría:', subcategory);
-    alert(`Subcategoría: ${subcategory.name}\nCategoría padre: ${subcategory.category?.name}\nEventos: ${subcategory._count?.events || 0}`);
+    console.log('🔍 Abriendo modal de subcategoría:', subcategory);
+    this.selectedSubcategory = subcategory;
+    this.showSubcategoryDetailsModal = true;
+    console.log('🔍 Estado del modal:', this.showSubcategoryDetailsModal);
+    
+    // Forzar detección de cambios
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
+  }
+
+  closeCategoryDetailsModal() {
+    this.showCategoryDetailsModal = false;
+    this.selectedCategory = null;
+  }
+
+  closeSubcategoryDetailsModal() {
+    this.showSubcategoryDetailsModal = false;
+    this.selectedSubcategory = null;
   }
 
   // ============= TRACK BY FUNCTIONS =============

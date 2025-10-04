@@ -210,14 +210,18 @@ export class AdminService {
   updateSubcategory(id: number, subcategory: Partial<Subcategory>): Observable<{ success: boolean; data: Subcategory; message: string }> {
     return this.http.put<{ success: boolean; data: Subcategory; message: string }>(`${this.baseUrl}/categories/subcategories/${id}`, subcategory, { headers: this.getAuthHeaders() });
   }
-
   deleteSubcategory(id: number): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/categories/subcategories/${id}`, { headers: this.getAuthHeaders() });
   }
 
-  // ============= ESTADÍSTICAS DE CATEGORÍAS =============
+  // ============= LOCALIDADES =============
+
+  getEventLocalities(eventId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/events/${eventId}/localities`, { headers: this.getAuthHeaders() });
+  }
+
+}  // ============= ESTADÍSTICAS DE CATEGORÍAS =============
 
   getCategoryStats(): Observable<{ success: boolean; data: CategoryStats }> {
     return this.http.get<{ success: boolean; data: CategoryStats }>(`${this.baseUrl}/categories/stats`);
   }
-}

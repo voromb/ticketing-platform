@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # 📊 Script de Backup Completo - Ticketing Platform
 # Autor: Sistema de Backup Automático
 # Fecha: 2025-10-04
@@ -6,22 +7,23 @@
 echo "🚀 Iniciando Backup Completo de Bases de Datos..."
 
 # Variables
-timestamp=$(date +"%Y-%m-%d_%H-%M")
-backup_dir="backup"
-commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+date=$(date +"%Y-%m-%d")
+timestamp=$(date +"%H-%M")
+backupDir="backups/$date"
+commitHash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-echo "📅 Timestamp: $timestamp"
-echo "📁 Directorio: $backup_dir"
-echo "🔗 Commit: $commit_hash"
+echo "📅 Fecha: $date"
+echo "🕒 Hora: $timestamp"
+echo "📁 Directorio: $backupDir"
+echo "🔗 Commit: $commitHash"
 
-# Crear directorio si no existe
-if [ ! -d "$backup_dir" ]; then
-    mkdir -p "$backup_dir"
+# Crear directorio por fecha si no existe
+if [ ! -d "$backupDir" ]; then
+    mkdir -p "$backupDir"
     echo "📁 Directorio de backup creado"
 fi
 
 echo ""
-echo "🐘 Creando backup de PostgreSQL..."
 
 # Backup PostgreSQL - Dump completo
 if docker exec ticketing-postgres pg_dump -U admin -d ticketing > "$backup_dir/postgres_full_backup_$timestamp.sql"; then

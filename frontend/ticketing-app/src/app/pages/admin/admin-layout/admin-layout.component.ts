@@ -158,6 +158,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Gestión de Venues';
     } else if (url.includes('/users')) {
       return 'Gestión de Usuarios';
+    } else if (url.includes('/categories')) {
+      return 'Gestión de Categorías';
     } else if (url.includes('/settings')) {
       return 'Configuración del Sistema';
     } else {
@@ -173,6 +175,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Gestiona locales y espacios para conciertos';
     } else if (url.includes('/users')) {
       return 'Administra usuarios y promociones VIP';
+    } else if (url.includes('/categories')) {
+      return 'Organiza eventos por categorías y subcategorías';
     } else if (url.includes('/settings')) {
       return 'Configuración avanzada del sistema';
     } else {

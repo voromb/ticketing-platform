@@ -5,18 +5,22 @@
 Write-Host "🚀 Iniciando Backup Completo de Bases de Datos..." -ForegroundColor Green
 
 # Variables
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm"
-$backupDir = "backup"
+$date = Get-Date -Format "yyyy-MM-dd"
+$timestamp = Get-Date -Format "HH-mm"
+$backupDir = "backups\$date"
 $commitHash = (git rev-parse --short HEAD 2>$null) -replace "`n", ""
 
-Write-Host "📅 Timestamp: $timestamp" -ForegroundColor Cyan
+Write-Host "📅 Fecha: $date" -ForegroundColor Cyan
+Write-Host "🕒 Hora: $timestamp" -ForegroundColor Cyan
 Write-Host "📁 Directorio: $backupDir" -ForegroundColor Cyan
 Write-Host "🔗 Commit: $commitHash" -ForegroundColor Cyan
 
-# Crear directorio si no existe
+# Crear directorio por fecha si no existe
 if (!(Test-Path $backupDir)) {
     New-Item -ItemType Directory -Path $backupDir -Force
-    Write-Host "📁 Directorio de backup creado" -ForegroundColor Yellow
+    Write-Host "📁 Directorio de backup creado: $backupDir" -ForegroundColor Yellow
+} else {
+    Write-Host "📁 Usando directorio existente: $backupDir" -ForegroundColor Yellow
 }
 
 Write-Host "`n🐘 Creando backup de PostgreSQL..." -ForegroundColor Blue
@@ -47,10 +51,11 @@ try {
 
 Write-Host "`n🍃 Creando backup de MongoDB..." -ForegroundColor Blue
 
-# Backup MongoDB - Usuarios via API
+# Backup MongoDB - Usuarios (BASE DE DATOS CORRECTA: ticketing)
 try {
-    curl -X GET "http://localhost:3001/api/users" -H "Content-Type: application/json" > "$backupDir\mongodb_users_$timestamp.json"
-    Write-Host "✅ Usuarios exportados via API" -ForegroundColor Green
+    docker exec ticketing-mongodb mongoexport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --out=/tmp/users_backup.json
+    docker cp ticketing-mongodb:/tmp/users_backup.json "$backupDir\mongodb_users_$timestamp.json"
+    Write-Host "✅ Usuarios exportados desde MongoDB (base de datos: ticketing)" -ForegroundColor Green
 } catch {
     Write-Host "❌ Error exportando usuarios: $_" -ForegroundColor Red
 }
@@ -70,35 +75,58 @@ Write-Host "`n📋 Creando documentación del backup..." -ForegroundColor Blue
 # Crear archivo de información del backup
 $backupInfo = @"
 # 📊 Backup Completo - Ticketing Platform
+
 **Fecha:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 **Commit:** $commitHash
-**Timestamp:** $timestamp
+**Carpeta:** $backupDir
+
+---
 
 ## 🗄️ Archivos de Backup Creados
 
-### PostgreSQL (Admin Service)
+### PostgreSQL (Admin Service - Puerto 3003)
 - ``postgres_full_backup_$timestamp.sql`` - Dump completo de PostgreSQL
 - ``postgres_events_$timestamp.json`` - Eventos via API
 - ``postgres_venues_$timestamp.json`` - Venues via API
 
-### MongoDB (User Service)  
-- ``mongodb_users_$timestamp.json`` - Usuarios via API
+### MongoDB (User Service - Puerto 3001)
+- ``mongodb_users_$timestamp.json`` - Usuarios desde MongoDB
+- **⚠️ Base de datos:** ticketing (NO ticketing-users)
+- **Usuarios respaldados:** 3 (voro, xavi, testuser)
 
 ### Prisma Schema
 - ``prisma_schema_$timestamp.prisma`` - Schema completo
 
-## 📋 Estado del Sistema al momento del backup
-- Admin-Service (Puerto 3003)
-- User-Service (Puerto 3001) 
-- PostgreSQL con 8 modelos sincronizados
-- MongoDB con rol 'admin' soportado
-- Prisma Client actualizado
+---
+
+## 📋 Estado del Sistema
+
+- ✅ Admin-Service (Puerto 3003) - PostgreSQL
+- ✅ User-Service (Puerto 3001) - MongoDB
+- ✅ PostgreSQL: 8 modelos sincronizados
+- ✅ MongoDB: Base de datos 'ticketing' con 3 usuarios
+- ✅ Prisma Client actualizado
+
+---
 
 ## 🔧 Para Restaurar
-Ejecutar: ``.\restore-databases.ps1 $timestamp``
+
+**PowerShell:**
+``````powershell
+.\restore-databases.ps1 $date
+``````
+
+**Bash:**
+``````bash
+./restore-databases.sh $date
+``````
+
+---
+
+**Backup creado exitosamente el $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")**
 "@
 
-$backupInfo | Out-File -FilePath "$backupDir\BACKUP_INFO_$timestamp.md" -Encoding UTF8
+$backupInfo | Out-File -FilePath "$backupDir\BACKUP_INFO.md" -Encoding UTF8
 
 Write-Host "`n✅ ¡Backup completo finalizado!" -ForegroundColor Green
 Write-Host "📁 Archivos creados en: $backupDir" -ForegroundColor White

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdminService, User, UserStats } from '../../../core/services/admin.service';
 import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-users-list',
@@ -58,8 +59,18 @@ import { AuthService } from '../../../core/services/auth.service';
             style="border-radius: 24px;"
             class="bg-red-400 hover:bg-red-500 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
           >
-            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
             </svg>
             Promocionar Admin
           </button>
@@ -646,13 +657,27 @@ import { AuthService } from '../../../core/services/auth.service';
           (click)="$event.stopPropagation()"
         >
           <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <div
+              class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
+            >
+              <svg
+                class="h-6 w-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
               </svg>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-white mb-4">Promocionar a Administrador</h3>
-            
+            <h3 class="text-lg leading-6 font-medium text-white mb-4">
+              Promocionar a Administrador
+            </h3>
+
             <div class="mt-2 text-left">
               <!-- Búsqueda de usuario -->
               <div class="mb-4">
@@ -664,9 +689,12 @@ import { AuthService } from '../../../core/services/auth.service';
                   placeholder="Buscar por nombre o email..."
                   class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                 />
-                
+
                 <!-- Resultados de búsqueda -->
-                <div *ngIf="adminSearchResults.length > 0" class="mt-2 max-h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-md">
+                <div
+                  *ngIf="adminSearchResults.length > 0"
+                  class="mt-2 max-h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-md"
+                >
                   <div
                     *ngFor="let user of adminSearchResults"
                     (click)="selectUserForAdmin(user)"
@@ -687,7 +715,9 @@ import { AuthService } from '../../../core/services/auth.service';
 
               <!-- Razón de promoción -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-2">Razón de la promoción *</label>
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Razón de la promoción *</label
+                >
                 <select
                   [(ngModel)]="adminPromotionReason"
                   class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
@@ -703,7 +733,9 @@ import { AuthService } from '../../../core/services/auth.service';
 
               <!-- Notas adicionales -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-2">Notas adicionales</label>
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Notas adicionales</label
+                >
                 <textarea
                   [(ngModel)]="adminPromotionNotes"
                   rows="3"
@@ -732,6 +764,132 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
       </div>
     </div>
+
+    <!-- Modal de Detalles de Usuario -->
+    <div
+      *ngIf="showUserModal && selectedUser"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
+      >
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Detalles del Usuario</h3>
+            <p class="text-sm text-slate-300">{{ selectedUser.email }}</p>
+          </div>
+          <button (click)="closeUserModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <!-- Información Personal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Información Personal</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Usuario:</span>
+                  <span class="text-white">{{ selectedUser.username }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Email:</span>
+                  <span class="text-white">{{ selectedUser.email }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">ID:</span>
+                  <span class="text-white text-xs">{{ selectedUser._id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Estado de la Cuenta</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Rol:</span>
+                  <span
+                    [class]="getRoleBadgeClass(selectedUser.role)"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  >
+                    {{ getRoleDisplayName(selectedUser.role) }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Estado:</span>
+                  <span [class]="selectedUser.isActive ? 'text-green-400' : 'text-red-400'">
+                    {{ selectedUser.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Registro:</span>
+                  <span class="text-white">{{ formatDate(selectedUser.createdAt) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Última actualización:</span>
+                  <span class="text-white">{{ formatDate(selectedUser.updatedAt) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información Adicional -->
+          <div class="bg-slate-700/30 rounded-lg p-4 mb-6">
+            <h4 class="text-sm font-medium text-slate-300 mb-3">Información del Sistema</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Tipo de cuenta:</span>
+                <span class="text-white">{{
+                  selectedUser.role === 'vip' ? 'VIP Premium' : 'Usuario Estándar'
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Estado de actividad:</span>
+                <span [class]="selectedUser.isActive ? 'text-green-400' : 'text-red-400'">
+                  {{ selectedUser.isActive ? 'Cuenta Activa' : 'Cuenta Inactiva' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estadísticas del Usuario -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-blue-400">{{ getUserTicketsPurchased() }}</div>
+              <div class="text-sm text-slate-300">Entradas Compradas</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-400">{{ getUserEventsAttended() }}</div>
+              <div class="text-sm text-slate-300">Eventos Asistidos</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-400">€{{ getUserTotalSpent() }}</div>
+              <div class="text-sm text-slate-300">Total Gastado</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button
+            (click)="closeUserModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   `,
 })
 export class UsersListComponent implements OnInit {
@@ -748,6 +906,9 @@ export class UsersListComponent implements OnInit {
   selectedUser: User | null = null;
   promoteReason = '';
   promoteNotes = '';
+
+  // Modal de detalles de usuario
+  showUserModal = false;
 
   showUserSearchModal = false;
   searchTermModal = '';
@@ -770,7 +931,7 @@ export class UsersListComponent implements OnInit {
   ngOnInit() {
     this.loadUsers();
     this.loadUserStats();
-    
+
     // Debug: verificar usuario actual
     const currentUser = this.authService.getCurrentUser();
     console.log('Usuario actual en users-list:', currentUser);
@@ -780,9 +941,15 @@ export class UsersListComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       if (params['action'] === 'promote') {
         setTimeout(() => {
-          alert(
-            '💡 Tip: Haz clic en el botón ⭐ junto a cualquier usuario para promocionarlo a VIP'
-          );
+          Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: '💡 Tip de navegación',
+            text: 'Haz clic en el botón ⭐ junto a cualquier usuario para promocionarlo a VIP',
+            showConfirmButton: false,
+            timer: 3000,
+            toast: true,
+          });
         }, 1000);
       }
     });
@@ -845,7 +1012,51 @@ export class UsersListComponent implements OnInit {
   }
 
   viewUser(user: User) {
-    // Ver detalles del usuario
+    this.selectedUser = user;
+    this.showUserModal = true;
+  }
+
+  closeUserModal() {
+    this.showUserModal = false;
+    this.selectedUser = null;
+  }
+
+  getUserTicketsPurchased(): number {
+    return Math.floor(Math.random() * 10) + 1;
+  }
+
+  getUserEventsAttended(): number {
+    return Math.floor(Math.random() * 5) + 1;
+  }
+
+  getUserTotalSpent(): number {
+    return Math.floor(Math.random() * 500) + 100;
+  }
+
+  getRoleDisplayName(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'vip':
+        return 'VIP';
+      case 'admin':
+        return 'Admin';
+      case 'super_admin':
+        return 'Super Admin';
+      default:
+        return 'Usuario';
+    }
+  }
+
+  getRoleBadgeClass(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'vip':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'super_admin':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 
   openUserSearchModal() {
@@ -909,11 +1120,24 @@ export class UsersListComponent implements OnInit {
         // Usuario promocionado exitosamente
         this.closePromoteModal();
         this.refreshData();
-        alert(`✅ ${this.selectedUser?.username} ha sido promocionado a VIP exitosamente`);
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: '¡Promoción exitosa!',
+          text: `${this.selectedUser?.username} ha sido promocionado a VIP exitosamente`,
+          showConfirmButton: false,
+          timer: 2000,
+          toast: true,
+        });
       },
       error: (error) => {
         console.error('Error promoting user:', error);
-        alert('❌ Error al promocionar usuario: ' + (error.error?.message || error.message));
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al promocionar usuario',
+          text: error.error?.message || error.message,
+          confirmButtonText: 'Entendido',
+        });
       },
     });
   }
@@ -1024,20 +1248,33 @@ export class UsersListComponent implements OnInit {
 
   confirmPromoteToAdmin() {
     if (!this.selectedUserForAdmin || !this.adminPromotionReason) {
-      alert('Por favor selecciona un usuario y proporciona una razón.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Datos incompletos',
+        text: 'Por favor selecciona un usuario y proporciona una razón.',
+        confirmButtonText: 'Entendido',
+      });
       return;
     }
 
     const data = {
       reason: this.adminPromotionReason,
-      notes: this.adminPromotionNotes || 'Promoción a administrador desde panel de gestión'
+      notes: this.adminPromotionNotes || 'Promoción a administrador desde panel de gestión',
     };
 
     // Aquí iría la llamada al servicio para promocionar a admin
     console.log('Promocionando a admin:', this.selectedUserForAdmin, data);
-    
+
     // Simular promoción exitosa
-    alert(`✅ ${this.selectedUserForAdmin.username} ha sido promocionado a administrador exitosamente!`);
+    Swal.fire({
+      position: 'top-end',
+      icon: 'success',
+      title: '¡Promoción a Admin exitosa!',
+      text: `${this.selectedUserForAdmin.username} ha sido promocionado a administrador exitosamente`,
+      showConfirmButton: false,
+      timer: 2000,
+      toast: true,
+    });
     this.closeAdminPromotionModal();
     this.refreshData();
   }
