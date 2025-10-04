@@ -15,6 +15,7 @@ const venue_routes_1 = require("./routes/venue.routes");
 const admin_routes_1 = require("./routes/admin.routes");
 const audit_routes_1 = require("./routes/audit.routes");
 const user_management_routes_1 = require("./routes/user-management.routes");
+const category_routes_1 = require("./routes/category.routes");
 const env_1 = __importDefault(require("./config/env"));
 const pino_1 = __importDefault(require("pino"));
 const audit_middleware_1 = require("./middlewares/audit.middleware");
@@ -78,6 +79,7 @@ async function buildServer() {
         await server.register(admin_routes_1.adminRoutes, { prefix: '/api/admins' });
         await server.register(user_management_routes_1.userManagementRoutes, { prefix: '/api/user-management' });
         await server.register(audit_routes_1.auditRoutes, { prefix: '/api/audit' });
+        await server.register(category_routes_1.categoryRoutes, { prefix: '/api/categories' });
     }
     catch (error) {
         logger.error('Error registrando rutas:', error);

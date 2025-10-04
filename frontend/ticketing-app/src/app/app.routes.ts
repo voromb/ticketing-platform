@@ -71,6 +71,11 @@ export const routes: Routes = [
           import('./pages/admin/users/users-list.component').then((m) => m.UsersListComponent),
       },
       {
+        path: 'categories',
+        loadComponent: () =>
+          import('./pages/admin/categories/categories-list.component').then((m) => m.CategoriesListComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./pages/admin/settings/settings.component').then((m) => m.SettingsComponent),
