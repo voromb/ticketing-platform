@@ -127,7 +127,7 @@ export class AdminService {
   }
 
   getVenues(): Observable<{ venues: Venue[]; pagination: any }> {
-    return this.http.get<{ venues: Venue[]; pagination: any }>(`${this.baseUrl}/venues?limit=50`);
+    return this.http.get<{ venues: Venue[]; pagination: any }>(`${this.baseUrl}/venues?isActive=true&limit=50`);
   }
 
   getVenue(id: string): Observable<{ success: boolean; data: Venue }> {
