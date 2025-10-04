@@ -781,15 +781,15 @@ export class VenuesListComponent implements OnInit {
   }
 
   getVenueEventsCount(): number {
-    return Math.floor(Math.random() * 8) + 2; // Entre 2 y 9 eventos
+    return this.selectedVenue?._count?.events || 0;
   }
 
   getVenueOccupancyRate(): number {
-    return Math.floor(Math.random() * 40) + 60; // Entre 60% y 99%
+    return 0; // TODO: Calcular desde tickets vendidos
   }
 
   getVenueRevenue(): number {
-    return Math.floor(Math.random() * 5000) + 2000; // Entre 2000 y 6999
+    return 0; // TODO: Calcular desde ventas reales
   }
 
   activateVenue(venue: Venue) {

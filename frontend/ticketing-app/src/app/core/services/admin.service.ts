@@ -103,7 +103,7 @@ export class AdminService {
   }
 
   getEvents(): Observable<{ success: boolean; data: Event[]; total: number }> {
-    return this.http.get<{ success: boolean; data: Event[]; total: number }>(`${this.baseUrl}/events?isActive=true`);
+    return this.http.get<{ success: boolean; data: Event[]; total: number }>(`${this.baseUrl}/events?isActive=true`, { headers: this.getAuthHeaders() });
   }
 
   getEvent(id: string): Observable<{ success: boolean; data: Event }> {
@@ -220,8 +220,9 @@ export class AdminService {
     return this.http.get<any>(`${this.baseUrl}/events/${eventId}/localities`, { headers: this.getAuthHeaders() });
   }
 
-}  // ============= ESTADÍSTICAS DE CATEGORÍAS =============
-
+  // ============= ESTADÍSTICAS DE CATEGORÍAS =============
   getCategoryStats(): Observable<{ success: boolean; data: CategoryStats }> {
     return this.http.get<{ success: boolean; data: CategoryStats }>(`${this.baseUrl}/categories/stats`);
   }
+
+}

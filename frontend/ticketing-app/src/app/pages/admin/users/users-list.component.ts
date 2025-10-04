@@ -1022,15 +1022,15 @@ export class UsersListComponent implements OnInit {
   }
 
   getUserTicketsPurchased(): number {
-    return Math.floor(Math.random() * 10) + 1;
+    return 0; // TODO: Conectar con sistema de tickets
   }
 
   getUserEventsAttended(): number {
-    return Math.floor(Math.random() * 5) + 1;
+    return 0; // TODO: Conectar con sistema de eventos
   }
 
   getUserTotalSpent(): number {
-    return Math.floor(Math.random() * 500) + 100;
+    return 0; // TODO: Conectar con sistema de ventas
   }
 
   getRoleDisplayName(role: string): string {

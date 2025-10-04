@@ -80,19 +80,43 @@ class EventController {
     reply: FastifyReply
   ) {
     try {
-      const events = await prisma.$queryRaw`
-        SELECT 
-          e.*,
-          v.name as venue_name,
-          v.city as venue_city,
-          v.capacity as venue_capacity,
-          v.address as venue_address
-        FROM "Event" e
-        LEFT JOIN "Venue" v ON e."venueId" = v.id
-        ORDER BY e."eventDate" ASC
-      `;
+      const events = await prisma.event.findMany({
+        include: {
+          venue: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+              capacity: true,
+              address: true
+            }
+          },
+          localities: {
+            select: {
+              id: true,
+              name: true,
+              capacity: true,
+              availableTickets: true,
+              soldTickets: true,
+              reservedTickets: true,
+              price: true,
+              color: true,
+              isActive: true
+            },
+            where: {
+              isActive: true
+            },
+            orderBy: {
+              sortOrder: 'asc'
+            }
+          }
+        },
+        orderBy: {
+          eventDate: 'asc'
+        }
+      });
 
-      return reply.send({ success: true, data: events });
+      return reply.send({ success: true, data: events, total: events.length });
     } catch (error: any) {
       logger.error('Error listing events:', error);
       return reply.status(500).send({ success: false, error: 'Error interno del servidor' });

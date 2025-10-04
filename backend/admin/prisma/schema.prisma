@@ -104,6 +104,7 @@ model Event {
   category         EventCategory     @relation(fields: [categoryId], references: [id], map: "fk_event_category")
   subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id], map: "fk_event_subcategory")
   priceCategories  PriceCategory[]
+  localities       EventLocality[]
 
   @@index([slug])
   @@index([status])
@@ -185,4 +186,27 @@ enum EventStatus {
   CANCELLED
   COMPLETED
   SUSPENDED
+}
+
+model EventLocality {
+  id               String   @id @default(uuid())
+  eventId          String
+  name             String
+  description      String?
+  capacity         Int
+  price            Decimal  @db.Decimal(10, 2)
+  availableTickets Int
+  soldTickets      Int      @default(0)
+  reservedTickets  Int      @default(0)
+  color            String?
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, name])
+  @@index([eventId])
+  @@index([isActive])
+  @@map("EventLocality")
 }

@@ -221,13 +221,16 @@ import Swal from 'sweetalert2';
 
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-white">
-                    {{ getEventLocalitiesCount(event) }} localidades
+                    {{ getEventTotalCapacity(event) }} tipos de localidades
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    Capacidad: {{ getEventTotalSeats(event) }} asientos
                   </div>
                   <div class="text-sm text-green-400">
                     {{ getEventAvailableTickets(event) }} disponibles
                   </div>
                   <div class="text-sm text-slate-300">
-                    €{{ event.ticketPrice || 25 }}-{{ (event.ticketPrice || 25) * 2 }}
+                    €{{ getEventMinPrice(event) }}-{{ getEventMaxPrice(event) }}
                   </div>
                 </td>
 
@@ -931,18 +934,27 @@ export class EventsListComponent implements OnInit {
     this.selectedEvent = event;
     this.loadEventLocalities(event.id);
     this.showLocalitiesModal = true;
+  }
+
   loadEventLocalities(eventId: string) {
     this.loadingLocalities = true;
     
-    // Cargar localidades desde la base de datos
-    this.adminService.getEventLocalities(eventId).subscribe({
-      next: (response: any) => {
-        this.eventLocalities = response.data || [];
-        this.loadingLocalities = false;
-        
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+    // Cargar localidades desde el evento seleccionado
+    if (this.selectedEvent && (this.selectedEvent as any).localities) {
+      this.eventLocalities = (this.selectedEvent as any).localities || [];
+      this.loadingLocalities = false;
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 100);
+    } else {
+      this.eventLocalities = [];
+      this.loadingLocalities = false;
+    }
+  }
+
+  closeLocalitiesModal() {
+    this.showLocalitiesModal = false;
+    this.selectedEvent = null;
     this.eventLocalities = [];
   }
 
@@ -981,15 +993,29 @@ export class EventsListComponent implements OnInit {
     return this.eventLocalities.reduce((sum, locality) => sum + locality.reservedTickets, 0);
   }
 
-  getEventLocalitiesCount(event: Event): number {
-    // Mock data - en producción esto vendría del backend
-    return Math.floor(Math.random() * 4) + 2; // Entre 2 y 5 localidades
+  // Métodos para calcular desde localidades en la tabla
+  getEventTotalCapacity(event: any): number {
+    return event.localities?.length || 0;
   }
 
-  getEventAvailableTickets(event: Event): number {
-    // Mock data - en producción esto vendría del backend
-    const baseTickets = event.ticketsAvailable || 500;
-    return Math.floor(baseTickets + Math.random() * 300); // Variación realista
+  getEventTotalSeats(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.totalCapacity || 0;
+    return event.localities.reduce((sum: number, loc: any) => sum + (loc.capacity || 0), 0);
+  }
+
+  getEventAvailableTickets(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.ticketsAvailable || 0;
+    return event.localities.reduce((sum: number, loc: any) => sum + (loc.availableTickets || 0), 0);
+  }
+
+  getEventMinPrice(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.ticketPrice || 0;
+    return Math.min(...event.localities.map((loc: any) => Number(loc.price) || 0));
+  }
+
+  getEventMaxPrice(event: any): number {
+    if (!event.localities || event.localities.length === 0) return (event.ticketPrice || 0) * 2;
+    return Math.max(...event.localities.map((loc: any) => Number(loc.price) || 0));
   }
 
   toggleEventStatus(event: Event) {
