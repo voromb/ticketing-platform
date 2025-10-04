@@ -12,14 +12,14 @@ import Swal from 'sweetalert2';
   template: `
     <div class="p-8 pb-16 space-y-8">
 
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Venues</h1>
           <p class="mt-2 text-sm text-slate-300">
             Administra los lugares donde se realizan los eventos
           </p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
+        <div class="mt-4 sm:mt-0 flex flex-wrap gap-4">
           <button (click)="refreshData()"
                   style="border-radius: 24px;"
                   class="inline-flex items-center px-6 py-3 border border-gray-400/30 text-sm font-medium text-gray-300 bg-gray-800/50 hover:bg-gray-700 hover:text-white hover:border-gray-300 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">

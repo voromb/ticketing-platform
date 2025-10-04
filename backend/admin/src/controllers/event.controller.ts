@@ -198,6 +198,44 @@ class EventController {
       return reply.status(500).send({ success: false, error: 'Error interno' });
     }
   }
+
+  // ==================== OBTENER LOCALIDADES DE UN EVENTO ====================
+  async getEventLocalities(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+
+      // Verificar que el evento existe
+      const event = await prisma.event.findUnique({ where: { id } });
+      if (!event) {
+        return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
+      }
+
+      const localities = await prisma.eventLocality.findMany({
+        where: { 
+          eventId: id,
+          isActive: true
+        },
+        orderBy: {
+          price: 'asc'
+        }
+      });
+
+      logger.info(`📍 Localidades encontradas para evento ${id}: ${localities.length}`);
+
+      return reply.send({ 
+        success: true, 
+        data: localities,
+        total: localities.length
+      });
+
+    } catch (error: any) {
+      logger.error('Error getting event localities:', error);
+      return reply.status(500).send({ success: false, error: 'Error interno', details: error.message });
+    }
+  }
 }
 
 export default new EventController();

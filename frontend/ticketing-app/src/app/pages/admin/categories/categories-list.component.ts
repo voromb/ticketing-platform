@@ -12,14 +12,14 @@ import Swal from 'sweetalert2';
   template: `
     <div class="p-8 pb-16 space-y-8">
       <!-- Header con estadísticas -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Categorías</h1>
           <p class="mt-2 text-sm text-slate-300">
             Administra categorías y subcategorías de eventos
           </p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
+        <div class="mt-4 sm:mt-0 flex flex-wrap gap-4">
           <button
             (click)="openCreateCategoryModal()"
             style="border-radius: 24px;"

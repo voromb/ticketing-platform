@@ -11,7 +11,7 @@ import { AdminService, UserStats } from '../../../core/services/admin.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="p-8 pb-16 space-y-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div
           class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-8 hover:bg-slate-800/90 transition-all duration-200"
         >
@@ -134,6 +134,70 @@ import { AdminService, UserStats } from '../../../core/services/admin.service';
                 <dt class="text-sm font-medium text-slate-400 truncate">Venues Activos</dt>
                 <dd class="text-2xl font-bold text-white mt-1">
                   {{ totalVenues || 0 }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-8 hover:bg-slate-800/90 transition-all duration-200"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-yellow-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-slate-400 truncate">Reservas VIP</dt>
+                <dd class="text-2xl font-bold text-white mt-1">
+                  {{ totalReservations || 0 }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-8 hover:bg-slate-800/90 transition-all duration-200"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-emerald-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-6 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-slate-400 truncate">Órdenes Totales</dt>
+                <dd class="text-2xl font-bold text-white mt-1">
+                  {{ totalOrders || 0 }}
                 </dd>
               </dl>
             </div>
@@ -421,6 +485,8 @@ export class DashboardComponent implements OnInit {
   totalUsers = 0;
   vipUsers = 0;
   totalVenues = 0;
+  totalReservations = 0;
+  totalOrders = 0;
   recentEvents: any[] = [];
   userStats: UserStats | null = null;
   loading = true;
@@ -451,6 +517,8 @@ export class DashboardComponent implements OnInit {
       userStats: this.adminService.getUserStats(),
       events: this.adminService.getEvents(),
       venues: this.adminService.getVenues(),
+      reservations: this.adminService.getAllReservations(),
+      orders: this.adminService.getAllOrders()
     });
 
     this.dashboardData$.subscribe({
@@ -468,6 +536,14 @@ export class DashboardComponent implements OnInit {
 
         if (results.venues.venues && Array.isArray(results.venues.venues)) {
           this.totalVenues = results.venues.venues.length;
+        }
+
+        if (results.reservations?.data) {
+          this.totalReservations = results.reservations.data.length;
+        }
+
+        if (results.orders?.data) {
+          this.totalOrders = results.orders.data.length;
         }
 
         this.loading = false;

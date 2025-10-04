@@ -108,19 +108,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/profile']);
   }
 
-  goToMyTickets(event?: Event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    this.closeDropdown();
-    // Función para ver mis tickets (implementar después)
-    Swal.fire({
-      icon: 'info',
-      title: 'Próximamente',
-      text: 'Función de mis tickets en desarrollo'
-    });
-  }
 
   goToAdminDashboard(event?: Event) {
     if (event) {

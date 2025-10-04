@@ -1,10 +1,13 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { ReservationService } from '../../core/services/reservation.service';
+import { OrderService } from '../../core/services/order.service';
 import Swal from 'sweetalert2';
+import { filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-profile',
@@ -13,7 +16,7 @@ import Swal from 'sweetalert2';
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.css']
 })
-export class UserProfileComponent implements OnInit {
+export class UserProfileComponent implements OnInit, OnDestroy {
   user: any = null;
   activeTab = 'profile';
   loading = false;
@@ -23,52 +26,25 @@ export class UserProfileComponent implements OnInit {
   changePasswordForm: FormGroup;
   showPasswordForm = false;
 
-  // Mock data para tickets y historial
-  myTickets = [
-    {
-      id: '1',
-      eventName: 'Valencia Metal Battle 2024',
-      venue: 'Metal Underground Club',
-      date: '2024-11-15',
-      quantity: 2,
-      status: 'confirmed',
-      price: 30.00
-    },
-    {
-      id: '2', 
-      eventName: 'Nightwish Symphonic Tour',
-      venue: 'Sala Rockstar Valencia',
-      date: '2024-12-10',
-      quantity: 1,
-      status: 'pending',
-      price: 55.00
-    }
-  ];
+  // Reservas y órdenes reales
+  myReservations: any[] = [];
+  myOrders: any[] = [];
+  loadingReservations = false;
+  loadingOrders = false;
 
-  purchaseHistory = [
-    {
-      id: '1',
-      eventName: 'Metallica World Tour Valencia',
-      date: '2024-09-20',
-      quantity: 2,
-      total: 150.00,
-      status: 'completed'
-    },
-    {
-      id: '2',
-      eventName: 'Classic Rock Legends',
-      date: '2024-10-05', 
-      quantity: 1,
-      total: 35.00,
-      status: 'completed'
-    }
-  ];
+  // Tickets reales desde órdenes completadas
+  myTickets: any[] = [];
+
+  // Subscription para detectar navegación
+  private routerSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
     private authService: AuthService,
+    private reservationService: ReservationService,
+    private orderService: OrderService,
     private cdr: ChangeDetectorRef
   ) {
     this.profileForm = this.fb.group({
@@ -90,11 +66,41 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserData();
+    this.loadReservations();
+    this.loadOrders();
+    
+    // Escuchar navegaciones para recargar datos
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        if (event.url === '/profile' || event.url.startsWith('/profile')) {
+          console.log('🔄 Navegación detectada a perfil, recargando datos...');
+          this.refreshData();
+        }
+      });
     
     // Forzar detección de cambios
     setTimeout(() => {
       this.cdr.detectChanges();
     }, 100);
+  }
+
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  // Método para refrescar datos (llamado desde otros componentes)
+  refreshData() {
+    console.log('🔄 Refrescando datos del perfil...');
+    this.loadReservations();
+    this.loadOrders();
+  }
+
+  // Método helper para contar órdenes completadas
+  getCompletedOrdersCount(): number {
+    return this.myOrders.filter(order => order.status === 'PAID' || order.status === 'COMPLETED').length;
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -242,5 +248,177 @@ export class UserProfileComponent implements OnInit {
         control.markAsTouched();
       }
     });
+  }
+
+  // ==================== CARGAR RESERVAS ====================
+  loadReservations() {
+    if (!this.isVip) return;
+
+    this.loadingReservations = true;
+    this.reservationService.getMyReservations().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.myReservations = response.data;
+        }
+        this.loadingReservations = false;
+        setTimeout(() => this.cdr.detectChanges(), 100);
+      },
+      error: (error) => {
+        console.error('Error cargando reservas:', error);
+        this.loadingReservations = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ==================== CARGAR ÓRDENES ====================
+  loadOrders() {
+    console.log('🔄 Cargando órdenes...');
+    this.loadingOrders = true;
+    this.orderService.getMyOrders().subscribe({
+      next: (response) => {
+        console.log('✅ Respuesta de órdenes:', response);
+        if (response.success) {
+          this.myOrders = response.data;
+          console.log(`📦 Total de órdenes: ${this.myOrders.length}`);
+          
+          // Extraer tickets de órdenes pagadas (PAID o COMPLETED)
+          this.myTickets = [];
+          this.myOrders.forEach(order => {
+            console.log(`📋 Orden ${order.id}: status=${order.status}, tickets=${order.tickets?.length || 0}`);
+            if ((order.status === 'PAID' || order.status === 'COMPLETED') && order.tickets && order.tickets.length > 0) {
+              order.tickets.forEach((ticket: any) => {
+                this.myTickets.push({
+                  id: ticket.id,
+                  ticketCode: ticket.ticketCode,
+                  qrCode: ticket.qrCode,
+                  status: ticket.status,
+                  eventName: order.event?.name || 'Evento',
+                  eventDate: order.event?.eventDate,
+                  localityName: order.locality?.name || 'General',
+                  orderId: order.id,
+                  createdAt: ticket.createdAt
+                });
+              });
+            }
+          });
+          console.log(`🎫 Total de tickets extraídos: ${this.myTickets.length}`);
+        }
+        this.loadingOrders = false;
+        setTimeout(() => this.cdr.detectChanges(), 100);
+      },
+      error: (error) => {
+        console.error('❌ Error cargando órdenes:', error);
+        console.error('Detalles:', error.message);
+        this.loadingOrders = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ==================== CANCELAR RESERVA ====================
+  cancelReservation(reservationId: string) {
+    Swal.fire({
+      title: '¿Cancelar reserva?',
+      text: 'Las entradas serán liberadas inmediatamente',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#dc3545'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.reservationService.cancelReservation(reservationId).subscribe({
+          next: (response) => {
+            if (response.success) {
+              Swal.fire('Cancelada', 'La reserva ha sido cancelada', 'success');
+              this.loadReservations();
+            }
+          },
+          error: (error) => {
+            Swal.fire('Error', error.error?.error || 'Error al cancelar', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // ==================== COMPRAR RESERVA ====================
+  purchaseReservation(reservation: any) {
+    Swal.fire({
+      title: '¿Comprar esta reserva?',
+      html: `
+        <div class="text-start">
+          <p><strong>Evento:</strong> ${reservation.event.name}</p>
+          <p><strong>Cantidad:</strong> ${reservation.quantity} entrada(s)</p>
+          <p><strong>Precio:</strong> ${(reservation.locality.price * reservation.quantity).toFixed(2)}€</p>
+          <p class="text-success"><strong>Descuento VIP:</strong> 10%</p>
+          <p><strong>Total:</strong> ${(reservation.locality.price * reservation.quantity * 0.9).toFixed(2)}€</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Continuar al pago',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Procesando...',
+          text: 'Creando orden de compra',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        this.orderService.createOrder(reservation.eventId, reservation.localityId, reservation.quantity, reservation.id).subscribe({
+          next: (response) => {
+            if (response.success) {
+              const order = response.data;
+              
+              this.http.post<any>('http://localhost:3003/api/payments/create-checkout', 
+                { orderId: order.id },
+                { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+              ).subscribe({
+                next: (paymentResponse) => {
+                  if (paymentResponse.success && paymentResponse.data.url) {
+                    Swal.close();
+                    window.location.href = paymentResponse.data.url;
+                  } else {
+                    Swal.fire('Error', 'No se pudo crear la sesión de pago', 'error');
+                  }
+                },
+                error: (error) => {
+                  console.error('Error creando sesión:', error);
+                  Swal.fire('Error', 'Error al procesar el pago', 'error');
+                }
+              });
+            } else {
+              Swal.fire('Error', response.error || 'No se pudo crear la orden', 'error');
+            }
+          },
+          error: (error) => {
+            console.error('Error creando orden:', error);
+            Swal.fire('Error', error.error?.error || 'Error al crear la orden', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // ==================== CALCULAR TIEMPO RESTANTE ====================
+  getTimeLeft(reservation: any): string {
+    if (!reservation.timeLeftSeconds || reservation.timeLeftSeconds <= 0) {
+      return 'Expirada';
+    }
+    
+    const minutes = Math.floor(reservation.timeLeftSeconds / 60);
+    const seconds = reservation.timeLeftSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  get isVip(): boolean {
+    return this.user && ['vip', 'VIP'].includes(this.user.role);
   }
 }

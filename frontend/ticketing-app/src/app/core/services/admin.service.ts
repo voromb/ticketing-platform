@@ -225,4 +225,15 @@ export class AdminService {
     return this.http.get<{ success: boolean; data: CategoryStats }>(`${this.baseUrl}/categories/stats`);
   }
 
+  // ============= RESERVAS (ADMIN) =============
+  getAllReservations(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/reservations/all`, { headers: this.getAuthHeaders() });
+  }
+
+  // ============= ÓRDENES (ADMIN) =============
+  getAllOrders(status?: string): Observable<any> {
+    const url = status ? `${this.baseUrl}/orders?status=${status}` : `${this.baseUrl}/orders`;
+    return this.http.get<any>(url, { headers: this.getAuthHeaders() });
+  }
+
 }

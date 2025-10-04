@@ -12,12 +12,12 @@ import Swal from 'sweetalert2';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="p-8 pb-16 space-y-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Usuarios</h1>
           <p class="mt-2 text-sm text-slate-300">Administra usuarios y promociones VIP</p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-4">
+        <div class="mt-4 sm:mt-0 flex flex-wrap gap-4">
           <button
             (click)="openUserSearchModal()"
             style="border-radius: 24px;"
@@ -1007,8 +1007,22 @@ export class UsersListComponent implements OnInit {
   }
 
   refreshData() {
+    Swal.fire({
+      title: 'Actualizando...',
+      text: 'Cargando datos actualizados',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
     this.loadUsers();
     this.loadUserStats();
+    
+    // Cerrar el loading después de 1 segundo
+    setTimeout(() => {
+      Swal.close();
+    }, 1000);
   }
 
   viewUser(user: User) {

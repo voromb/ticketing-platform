@@ -9,6 +9,10 @@ import { adminRoutes } from './routes/admin.routes';
 import { auditRoutes } from './routes/audit.routes';
 import { userManagementRoutes } from './routes/user-management.routes';
 import { categoryRoutes } from './routes/category.routes';
+import { reservationRoutes } from './routes/reservation.routes';
+import { orderRoutes } from './routes/order.routes';
+import { paymentRoutes } from './routes/payment.routes';
+import { startReservationCron } from './jobs/reservation.cron';
 import ENV from './config/env';
 import pino from 'pino';
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -39,10 +43,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   registerAuditMiddleware(prisma);
 
   // Inicializar RabbitMQ
-  const rabbitmq = {
-    isConnected: () => false,
-    close: async () => {}
-  };
+  const { rabbitmqService } = await import('./services/rabbitmq.service');
+  await rabbitmqService.connect();
   await server.register(cors, {
     origin: true,
     credentials: true,
@@ -109,6 +111,18 @@ export async function buildServer(): Promise<FastifyInstance> {
     await server.register(categoryRoutes, { prefix: '/api/categories' });
     console.log('✅ categoryRoutes OK');
     
+    console.log('📝 Registrando reservationRoutes...');
+    await server.register(reservationRoutes, { prefix: '/api/reservations' });
+    console.log('✅ reservationRoutes OK');
+    
+    console.log('📝 Registrando orderRoutes...');
+    await server.register(orderRoutes, { prefix: '/api/orders' });
+    console.log('✅ orderRoutes OK');
+    
+    console.log('📝 Registrando paymentRoutes...');
+    await server.register(paymentRoutes, { prefix: '/api/payments' });
+    console.log('✅ paymentRoutes OK');
+    
     console.log('✅ Todas las rutas registradas exitosamente');
   } catch (error: any) {
     logger.error('❌ Error registrando rutas:', error);
@@ -120,11 +134,13 @@ export async function buildServer(): Promise<FastifyInstance> {
       .then(() => true)
       .catch(() => false);
 
+    const { rabbitmqService } = await import('./services/rabbitmq.service');
+
     return reply.send({
       status: dbHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       database: dbHealthy ? 'connected' : 'disconnected',
-      rabbitmq: 'disconnected'
+      rabbitmq: rabbitmqService.isConnected() ? 'connected' : 'disconnected'
     });
   });
 
@@ -179,6 +195,9 @@ export async function startServer() {
     `);
     
     logger.info(`Servidor iniciado en puerto ${ENV.PORT}`);
+    
+    // Iniciar cron job de reservas
+    startReservationCron();
     
     return server;
   } catch (error) {

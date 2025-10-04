@@ -36,12 +36,17 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () =>
-      import('./shared/components/profile/profile.component').then((m) => m.ProfileComponent),
+      import('./pages/user-profile/user-profile.component').then((m) => m.UserProfileComponent),
   },
   {
     path: 'vip-info',
     loadComponent: () =>
       import('./pages/vip-info/vip-info.component').then((m) => m.VipInfoComponent),
+  },
+  {
+    path: 'payment/checkout',
+    loadComponent: () =>
+      import('./pages/payment-checkout/payment-checkout.component').then((m) => m.PaymentCheckoutComponent),
   },
   // Admin Dashboard Routes
   {
