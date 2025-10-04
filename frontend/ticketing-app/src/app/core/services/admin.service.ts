@@ -170,8 +170,6 @@ export class AdminService {
     return this.http.get(`${this.baseUrl}/dashboard/stats`);
   }
 
-  // ============= CATEGORÍAS =============
-
   getCategories(params?: any): Observable<{ success: boolean; data: Category[]; pagination: any }> {
     const queryParams = new URLSearchParams(params).toString();
     return this.http.get<{ success: boolean; data: Category[]; pagination: any }>(`${this.baseUrl}/categories?${queryParams}`);
@@ -193,8 +191,6 @@ export class AdminService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/categories/${id}`, { headers: this.getAuthHeaders() });
   }
 
-  // ============= SUBCATEGORÍAS =============
-
   getSubcategories(params?: any): Observable<{ success: boolean; data: Subcategory[]; pagination: any }> {
     return this.http.get<{ success: boolean; data: Subcategory[]; pagination: any }>(`${this.baseUrl}/categories/subcategories`);
   }
@@ -214,23 +210,18 @@ export class AdminService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/categories/subcategories/${id}`, { headers: this.getAuthHeaders() });
   }
 
-  // ============= LOCALIDADES =============
-
   getEventLocalities(eventId: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/events/${eventId}/localities`, { headers: this.getAuthHeaders() });
   }
 
-  // ============= ESTADÍSTICAS DE CATEGORÍAS =============
   getCategoryStats(): Observable<{ success: boolean; data: CategoryStats }> {
     return this.http.get<{ success: boolean; data: CategoryStats }>(`${this.baseUrl}/categories/stats`);
   }
 
-  // ============= RESERVAS (ADMIN) =============
   getAllReservations(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/reservations/all`, { headers: this.getAuthHeaders() });
   }
 
-  // ============= ÓRDENES (ADMIN) =============
   getAllOrders(status?: string): Observable<any> {
     const url = status ? `${this.baseUrl}/orders?status=${status}` : `${this.baseUrl}/orders`;
     return this.http.get<any>(url, { headers: this.getAuthHeaders() });

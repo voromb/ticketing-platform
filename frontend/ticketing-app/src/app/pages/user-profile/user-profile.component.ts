@@ -250,7 +250,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== CARGAR RESERVAS ====================
   loadReservations() {
     if (!this.isVip) return;
 
@@ -271,7 +270,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== CARGAR ÓRDENES ====================
   loadOrders() {
     console.log('🔄 Cargando órdenes...');
     this.loadingOrders = true;
@@ -316,7 +314,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== CANCELAR RESERVA ====================
   cancelReservation(reservationId: string) {
     Swal.fire({
       title: '¿Cancelar reserva?',
@@ -343,7 +340,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== COMPRAR RESERVA ====================
   purchaseReservation(reservation: any) {
     Swal.fire({
       title: '¿Comprar esta reserva?',
@@ -407,7 +403,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== CALCULAR TIEMPO RESTANTE ====================
   getTimeLeft(reservation: any): string {
     if (!reservation.timeLeftSeconds || reservation.timeLeftSeconds <= 0) {
       return 'Expirada';

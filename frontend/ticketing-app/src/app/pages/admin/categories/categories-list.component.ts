@@ -859,27 +859,18 @@ import Swal from 'sweetalert2';
   styles: [],
 })
 export class CategoriesListComponent implements OnInit {
-  // ============= PROPIEDADES PRINCIPALES =============
   categories: Category[] = [];
   subcategories: Subcategory[] = [];
   filteredCategories: Category[] = [];
   filteredSubcategories: Subcategory[] = [];
-
-  // ============= ESTADOS =============
   loading = false;
   activeTab: 'categories' | 'subcategories' = 'categories';
-
-  // ============= ESTADÍSTICAS =============
   totalCategories = 0;
   totalSubcategories = 0;
   categoriesWithEvents = 0;
-
-  // ============= FILTROS Y BÚSQUEDA =============
   searchTerm = '';
   sortBy: 'name' | 'events' | 'subcategories' = 'name';
   sortOrder: 'asc' | 'desc' = 'asc';
-
-  // ============= MODALES =============
   showCreateCategoryModal = false;
   showEditCategoryModal = false;
   showCreateSubcategoryModal = false;
@@ -887,8 +878,6 @@ export class CategoriesListComponent implements OnInit {
   showDeleteModal = false;
   showCategoryDetailsModal = false;
   showSubcategoryDetailsModal = false;
-
-  // ============= FORMULARIOS =============
   categoryForm = {
     id: 0,
     name: '',
@@ -899,8 +888,6 @@ export class CategoriesListComponent implements OnInit {
     categoryId: 0,
     name: '',
   };
-
-  // ============= ITEM SELECCIONADO =============
   selectedCategory: Category | null = null;
   selectedSubcategory: Subcategory | null = null;
   deleteTarget: { type: 'category' | 'subcategory'; item: any } | null = null;
@@ -915,7 +902,6 @@ export class CategoriesListComponent implements OnInit {
     this.loadData();
   }
 
-  // ============= CARGA DE DATOS =============
   loadData() {
     this.loading = true;
     this.loadCategories();
@@ -987,7 +973,6 @@ export class CategoriesListComponent implements OnInit {
     });
   }
 
-  // ============= FILTROS Y ORDENACIÓN =============
   applyFilters() {
     let filtered = [...this.categories];
 
@@ -1091,7 +1076,6 @@ export class CategoriesListComponent implements OnInit {
     }
   }
 
-  // ============= CAMBIO DE TABS =============
   switchTab(tab: 'categories' | 'subcategories') {
     console.log('Cambiando a tab:', tab);
     this.activeTab = tab;
@@ -1108,7 +1092,6 @@ export class CategoriesListComponent implements OnInit {
     }
   }
 
-  // ============= MÉTODOS DE MODAL =============
   openCreateCategoryModal() {
     this.categoryForm = { id: 0, name: '' };
     this.showCreateCategoryModal = true;
@@ -1153,7 +1136,6 @@ export class CategoriesListComponent implements OnInit {
     this.deleteTarget = null;
   }
 
-  // ============= MÉTODOS CRUD =============
   createCategory() {
     console.log('Intentando crear categoría:', this.categoryForm.name);
     if (!this.categoryForm.name.trim()) {
@@ -1279,7 +1261,6 @@ export class CategoriesListComponent implements OnInit {
     }
   }
 
-  // ============= VER DETALLES =============
   viewCategoryDetails(category: Category) {
     console.log('🔍 Abriendo modal de categoría:', category);
     this.selectedCategory = category;
@@ -1314,7 +1295,6 @@ export class CategoriesListComponent implements OnInit {
     this.selectedSubcategory = null;
   }
 
-  // ============= TRACK BY FUNCTIONS =============
   trackBySubcategoryId(index: number, subcategory: Subcategory): number {
     return subcategory.id;
   }

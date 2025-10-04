@@ -73,8 +73,6 @@ export class EventsComponent implements OnInit {
       }
     });
   }
-
-  // ==================== LÓGICA DE BOTONES SEGÚN ROL ====================
   
   get isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
