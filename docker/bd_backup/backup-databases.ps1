@@ -80,8 +80,13 @@ Write-Host "`n🔧 Copiando Prisma Schema..." -ForegroundColor Blue
 
 # Backup Prisma Schema
 try {
-    Copy-Item "backend\admin\prisma\schema.prisma" "$backupDir\prisma_schema_$timestamp.prisma"
-    Write-Host "✅ Prisma Schema copiado" -ForegroundColor Green
+    $prismaPath = "..\..\backend\admin\prisma\schema.prisma"
+    if (Test-Path $prismaPath) {
+        Copy-Item $prismaPath "$backupDir\prisma_schema_$timestamp.prisma" -Force
+        Write-Host "✅ Prisma Schema copiado" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  Advertencia: No se encontró el schema de Prisma en $prismaPath" -ForegroundColor Yellow
+    }
 } catch {
     Write-Host "❌ Error copiando Prisma Schema: $_" -ForegroundColor Red
 }

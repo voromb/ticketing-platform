@@ -109,10 +109,10 @@ echo ""
 echo "🔧 Restaurando Prisma Schema..."
 
 # Restore Prisma Schema
-if cp "$backup_dir/prisma_schema_$timestamp.prisma" "backend/admin/prisma/schema.prisma"; then
+if cp "$backup_dir/prisma_schema_$timestamp.prisma" "../../backend/admin/prisma/schema.prisma"; then
     echo "✅ Prisma Schema restaurado"
     
-    cd backend/admin
+    cd ../../backend/admin || exit 1
     
     # Sincronizar Prisma con PostgreSQL restaurado
     echo "🔄 Sincronizando Prisma con PostgreSQL..."
@@ -130,7 +130,7 @@ if cp "$backup_dir/prisma_schema_$timestamp.prisma" "backend/admin/prisma/schema
         echo "❌ Error regenerando Prisma Client"
     fi
     
-    cd ../..
+    cd ../../docker/bd_backup || exit 1
 else
     echo "❌ Error restaurando Prisma Schema"
 fi

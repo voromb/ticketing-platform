@@ -64,10 +64,15 @@ echo ""
 echo "🔧 Copiando Prisma Schema..."
 
 # Backup Prisma Schema
-if cp "backend/admin/prisma/schema.prisma" "$backupDir/prisma_schema_$timestamp.prisma"; then
-    echo "✅ Prisma Schema copiado"
+prismaPath="../../backend/admin/prisma/schema.prisma"
+if [ -f "$prismaPath" ]; then
+    if cp "$prismaPath" "$backupDir/prisma_schema_$timestamp.prisma"; then
+        echo "✅ Prisma Schema copiado"
+    else
+        echo "❌ Error copiando Prisma Schema"
+    fi
 else
-    echo "❌ Error copiando Prisma Schema"
+    echo "⚠️  Advertencia: No se encontró el schema de Prisma en $prismaPath"
 fi
 
 echo ""

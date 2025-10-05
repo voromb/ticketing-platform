@@ -100,10 +100,10 @@ Write-Host "`n🔧 Restaurando Prisma Schema..." -ForegroundColor Blue
 
 # Restore Prisma Schema
 try {
-    Copy-Item "$backupDir\prisma_schema_$timestamp.prisma" "backend\admin\prisma\schema.prisma" -Force
+    Copy-Item "$backupDir\prisma_schema_$timestamp.prisma" "..\..\backend\admin\prisma\schema.prisma" -Force
     Write-Host "✅ Prisma Schema restaurado" -ForegroundColor Green
     
-    Set-Location "backend\admin"
+    Set-Location "..\..\backend\admin"
     
     # Sincronizar Prisma con PostgreSQL restaurado
     Write-Host "🔄 Sincronizando Prisma con PostgreSQL..." -ForegroundColor Cyan
@@ -119,7 +119,7 @@ try {
     npx prisma generate
     Write-Host "✅ Prisma Client regenerado correctamente" -ForegroundColor Green
     
-    Set-Location "..\..\"
+    Set-Location "..\..\docker\bd_backup"
 } catch {
     Write-Host "❌ Error restaurando Prisma Schema: $_" -ForegroundColor Red
 }
@@ -128,9 +128,9 @@ Write-Host "`n🚀 Reiniciando servicios..." -ForegroundColor Blue
 
 # Reiniciar servicios
 try {
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'backend\admin'; npm run dev" -WindowStyle Minimized
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'C:\Programacion_2DAW\ticketing-platform\backend\admin'; npm run dev" -WindowStyle Minimized
     Start-Sleep 2
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'backend\user-service'; npm run dev" -WindowStyle Minimized
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'C:\Programacion_2DAW\ticketing-platform\backend\user-service'; npm run dev" -WindowStyle Minimized
     Write-Host "✅ Servicios reiniciados" -ForegroundColor Green
 } catch {
     Write-Host "❌ Error reiniciando servicios: $_" -ForegroundColor Red
