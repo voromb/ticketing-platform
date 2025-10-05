@@ -49,6 +49,22 @@ try {
     Write-Host "❌ Error exportando venues: $_" -ForegroundColor Red
 }
 
+# Backup PostgreSQL - Categorías via API
+try {
+    curl -X GET "http://localhost:3003/api/categories" -H "Content-Type: application/json" > "$backupDir\postgres_categories_$timestamp.json"
+    Write-Host "✅ Categorías exportadas via API" -ForegroundColor Green
+} catch {
+    Write-Host "⚠️  Advertencia: Error exportando categorías" -ForegroundColor Yellow
+}
+
+# Backup PostgreSQL - Localidades via API
+try {
+    curl -X GET "http://localhost:3003/api/localities" -H "Content-Type: application/json" > "$backupDir\postgres_localities_$timestamp.json"
+    Write-Host "✅ Localidades exportadas via API" -ForegroundColor Green
+} catch {
+    Write-Host "⚠️  Advertencia: Error exportando localidades" -ForegroundColor Yellow
+}
+
 Write-Host "`n🍃 Creando backup de MongoDB..." -ForegroundColor Blue
 
 # Backup MongoDB - Usuarios (BASE DE DATOS CORRECTA: ticketing)
@@ -88,6 +104,8 @@ $backupInfo = @"
 - ``postgres_full_backup_$timestamp.sql`` - Dump completo de PostgreSQL
 - ``postgres_events_$timestamp.json`` - Eventos via API
 - ``postgres_venues_$timestamp.json`` - Venues via API
+- ``postgres_categories_$timestamp.json`` - Categorías via API
+- ``postgres_localities_$timestamp.json`` - Localidades via API
 
 ### MongoDB (User Service - Puerto 3001)
 - ``mongodb_users_$timestamp.json`` - Usuarios desde MongoDB
@@ -103,8 +121,8 @@ $backupInfo = @"
 
 - ✅ Admin-Service (Puerto 3003) - PostgreSQL
 - ✅ User-Service (Puerto 3001) - MongoDB
-- ✅ PostgreSQL: 8 modelos sincronizados
-- ✅ MongoDB: Base de datos 'ticketing' con 3 usuarios
+- ✅ PostgreSQL: Eventos, Venues, Categorías, Localidades
+- ✅ MongoDB: Base de datos 'ticketing' con usuarios
 - ✅ Prisma Client actualizado
 
 ---

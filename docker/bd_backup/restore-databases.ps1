@@ -80,10 +80,22 @@ try {
     Copy-Item "$backupDir\prisma_schema_$timestamp.prisma" "backend\admin\prisma\schema.prisma" -Force
     Write-Host "✅ Prisma Schema restaurado" -ForegroundColor Green
     
-    # Regenerar Prisma Client
     Set-Location "backend\admin"
+    
+    # Sincronizar Prisma con PostgreSQL restaurado
+    Write-Host "🔄 Sincronizando Prisma con PostgreSQL..." -ForegroundColor Cyan
+    try {
+        npx prisma db pull 2>$null
+        Write-Host "✅ Prisma sincronizado con base de datos" -ForegroundColor Green
+    } catch {
+        Write-Host "⚠️  Advertencia: Error en sincronización (continuando...)" -ForegroundColor Yellow
+    }
+    
+    # Regenerar Prisma Client
+    Write-Host "🔄 Regenerando Prisma Client..." -ForegroundColor Cyan
     npx prisma generate
-    Write-Host "✅ Prisma Client regenerado" -ForegroundColor Green
+    Write-Host "✅ Prisma Client regenerado correctamente" -ForegroundColor Green
+    
     Set-Location "..\..\"
 } catch {
     Write-Host "❌ Error restaurando Prisma Schema: $_" -ForegroundColor Red

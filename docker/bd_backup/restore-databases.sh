@@ -88,13 +88,24 @@ echo "🔧 Restaurando Prisma Schema..."
 if cp "$backup_dir/prisma_schema_$timestamp.prisma" "backend/admin/prisma/schema.prisma"; then
     echo "✅ Prisma Schema restaurado"
     
-    # Regenerar Prisma Client
     cd backend/admin
+    
+    # Sincronizar Prisma con PostgreSQL restaurado
+    echo "🔄 Sincronizando Prisma con PostgreSQL..."
+    if npx prisma db pull >/dev/null 2>&1; then
+        echo "✅ Prisma sincronizado con base de datos"
+    else
+        echo "⚠️  Advertencia: Error en sincronización (continuando...)"
+    fi
+    
+    # Regenerar Prisma Client
+    echo "🔄 Regenerando Prisma Client..."
     if npx prisma generate >/dev/null 2>&1; then
-        echo "✅ Prisma Client regenerado"
+        echo "✅ Prisma Client regenerado correctamente"
     else
         echo "❌ Error regenerando Prisma Client"
     fi
+    
     cd ../..
 else
     echo "❌ Error restaurando Prisma Schema"
