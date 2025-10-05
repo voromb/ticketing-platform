@@ -4,10 +4,11 @@
 
 Write-Host "🚀 Iniciando Backup Completo de Bases de Datos..." -ForegroundColor Green
 
-# Variables
+# Variables con rutas relativas desde el script
+$scriptPath = $PSScriptRoot
 $date = Get-Date -Format "yyyy-MM-dd"
 $timestamp = Get-Date -Format "HH-mm"
-$backupDir = "backups\$date"
+$backupDir = Join-Path $scriptPath "backups\$date"
 $commitHash = (git rev-parse --short HEAD 2>$null) -replace "`n", ""
 
 Write-Host "📅 Fecha: $date" -ForegroundColor Cyan
@@ -80,12 +81,13 @@ Write-Host "`n🔧 Copiando Prisma Schema..." -ForegroundColor Blue
 
 # Backup Prisma Schema
 try {
-    $prismaPath = "..\..\backend\admin\prisma\schema.prisma"
+    $prismaPath = Join-Path $scriptPath "..\..\backend\admin\prisma\schema.prisma"
     if (Test-Path $prismaPath) {
         Copy-Item $prismaPath "$backupDir\prisma_schema_$timestamp.prisma" -Force
         Write-Host "✅ Prisma Schema copiado" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Advertencia: No se encontró el schema de Prisma en $prismaPath" -ForegroundColor Yellow
+        Write-Host "⚠️  Advertencia: No se encontró el schema de Prisma" -ForegroundColor Yellow
+        Write-Host "    Ruta buscada: $prismaPath" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "❌ Error copiando Prisma Schema: $_" -ForegroundColor Red

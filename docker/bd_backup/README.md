@@ -1,59 +1,20 @@
 # 🗄️ Sistema de Backup y Restauración - Ticketing Platform
 
-**Versión:** 2.0  
-**Última actualización:** 2025-10-04  
+**Versión:** 3.0  
+**Última actualización:** 2025-10-05  
 **Autor:** Voro
 
 ---
 
 ## 📋 Índice
 
-1. [Estructura de Carpetas](#estructura-de-carpetas)
-2. [Scripts Disponibles](#scripts-disponibles)
-3. [Uso Rápido](#uso-rápido)
-4. [Bases de Datos](#bases-de-datos)
-5. [Comandos Manuales](#comandos-manuales)
-6. [Restauración](#restauración)
-7. [Troubleshooting](#troubleshooting)
-
----
-
-## 📁 Estructura de Carpetas
-
-```
-bd_backup/
-├── README.md                      # Este archivo (documentación completa)
-├── backup-databases.ps1           # Script de backup (PowerShell/Windows)
-├── backup-databases.sh            # Script de backup (Bash/Linux/Mac)
-├── restore-databases.ps1          # Script de restauración (PowerShell)
-├── restore-databases.sh           # Script de restauración (Bash)
-└── backups/                       # Carpeta de backups organizados por fecha
-    ├── 2025-10-04/               # Backup del 4 de octubre 2025
-    │   ├── postgres_backup.sql
-    │   ├── mongodb_users.json
-    │   ├── prisma_schema.prisma
-    │   └── BACKUP_INFO.md
-    ├── 2025-10-05/               # Backup del 5 de octubre 2025
-    └── ...
-```
-
-**⚠️ IMPORTANTE:** Cada backup se guarda en una carpeta con la fecha (YYYY-MM-DD) para mantener todo organizado.
-
----
-
-## 🛠️ Scripts Disponibles
-
-### 1. **backup-databases.ps1** (PowerShell - Windows)
-Crea un backup completo de PostgreSQL y MongoDB en una carpeta con la fecha actual.
-
-### 2. **backup-databases.sh** (Bash - Linux/Mac)
-Versión Bash del script de backup.
-
-### 3. **restore-databases.ps1** (PowerShell - Windows)
-Restaura un backup específico desde una carpeta de fecha.
-
-### 4. **restore-databases.sh** (Bash - Linux/Mac)
-Versión Bash del script de restauración.
+1. [Uso Rápido](#-uso-rápido)
+2. [Correcciones Aplicadas](#-correcciones-aplicadas)
+3. [Instrucciones de Restore](#-instrucciones-de-restore)
+4. [Estructura de Carpetas](#-estructura-de-carpetas)
+5. [Bases de Datos](#-bases-de-datos)
+6. [Troubleshooting](#-troubleshooting)
+7. [Credenciales](#-credenciales)
 
 ---
 
@@ -75,10 +36,13 @@ cd docker/bd_backup
 
 **Resultado:**
 ```
-✅ Backup creado en: backups/2025-10-04/
-   - postgres_backup.sql
-   - mongodb_users.json
-   - prisma_schema.prisma
+✅ Backup creado en: backups/2025-10-05/
+   - postgres_full_backup_17-01.sql (61 KB)
+   - mongodb_users_17-01.json (1 KB)
+   - prisma_schema_17-01.prisma (8.5 KB)
+   - postgres_categories_17-01.json
+   - postgres_localities_17-01.json
+   - postgres_venues_17-01.json
    - BACKUP_INFO.md
 ```
 
@@ -86,12 +50,186 @@ cd docker/bd_backup
 
 **Windows (PowerShell):**
 ```powershell
-.\restore-databases.ps1 2025-10-04
+.\restore-databases.ps1 17-01
 ```
 
 **Linux/Mac (Bash):**
 ```bash
-./restore-databases.sh 2025-10-04
+./restore-databases.sh 17-01
+```
+
+---
+
+## ✅ Correcciones Aplicadas
+
+### 1. **Comillas Dobles → Comillas Simples**
+
+**Problema:** Las comillas dobles en comandos Docker causaban errores de interpretación.
+
+**Solución:**
+```bash
+# ANTES (❌)
+docker exec ticketing-postgres psql -c "DROP SCHEMA public CASCADE;"
+
+# DESPUÉS (✅)
+docker exec ticketing-postgres psql -c 'DROP SCHEMA public CASCADE;'
+```
+
+### 2. **Rutas Relativas**
+
+**Problema:** Las rutas absolutas no funcionaban en otros PCs.
+
+**Solución PowerShell:**
+```powershell
+$scriptPath = $PSScriptRoot
+$backupDir = Join-Path $scriptPath "backups\$date"
+$prismaPath = Join-Path $scriptPath "..\..\backend\admin\prisma\schema.prisma"
+```
+
+**Solución Bash:**
+```bash
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+backupDir="$SCRIPT_DIR/backups/$date"
+prismaPath="$SCRIPT_DIR/../../backend/admin/prisma/schema.prisma"
+```
+
+### 3. **MongoDB Automático**
+
+**Problema:** MongoDB no se restauraba automáticamente.
+
+**Solución:**
+```bash
+# Limpiar
+docker exec ticketing-mongodb mongosh --eval 'use ticketing; db.users.deleteMany({})'
+
+# Restaurar
+docker cp "$backupDir/mongodb_users_$timestamp.json" ticketing-mongodb:/tmp/users_restore.json
+docker exec ticketing-mongodb mongoimport --db=ticketing --collection=users --file=/tmp/users_restore.json --jsonArray
+```
+
+### 4. **Prisma Sincronizado**
+
+**Problema:** Usaba `prisma db pull` que no aplicaba cambios.
+
+**Solución:**
+```bash
+# ANTES (❌)
+npx prisma db pull
+
+# DESPUÉS (✅)
+npx prisma db push --accept-data-loss
+npx prisma generate
+```
+
+---
+
+## 🔄 Instrucciones de Restore
+
+### ⚠️ IMPORTANTE: Leer antes de restaurar
+
+Este proceso **sobrescribirá completamente** las bases de datos actuales.
+
+### Requisitos Previos
+
+1. **Docker Desktop** instalado y funcionando
+2. **Node.js** instalado (v18 o superior)
+3. **Contenedores Docker levantados:**
+   ```powershell
+   docker-compose up -d
+   ```
+
+4. **Verificar contenedores activos:**
+   ```powershell
+   docker ps
+   ```
+   Debes ver: `ticketing-postgres`, `ticketing-mongodb`, `ticketing-rabbitmq`
+
+### Pasos para Restaurar
+
+#### 1. Copiar carpeta de backup
+
+Copia toda la carpeta `docker/bd_backup/` a tu nuevo PC:
+```
+ticketing-platform/
+  └── docker/
+      └── bd_backup/
+          ├── backups/
+          │   └── 2025-10-05/
+          ├── backup-databases.ps1
+          ├── backup-databases.sh
+          ├── restore-databases.ps1
+          ├── restore-databases.sh
+          └── README.md
+```
+
+#### 2. Navegar a la carpeta
+
+```powershell
+cd ticketing-platform\docker\bd_backup
+```
+
+#### 3. Ejecutar restore
+
+**Windows:**
+```powershell
+.\restore-databases.ps1 17-01
+```
+
+**Linux/Mac:**
+```bash
+./restore-databases.sh 17-01
+```
+
+#### 4. Confirmar
+
+El script preguntará:
+```
+⚠️  ADVERTENCIA: Este proceso sobrescribirá las bases de datos actuales
+¿Continuar con el restore? (s/N):
+```
+
+Escribe `s` y presiona Enter.
+
+### Qué hace el script automáticamente
+
+1. ✅ Detiene servicios Node.js activos
+2. ✅ Limpia PostgreSQL (DROP SCHEMA CASCADE)
+3. ✅ Restaura PostgreSQL desde dump SQL
+4. ✅ Limpia MongoDB (deleteMany users)
+5. ✅ Restaura MongoDB desde JSON
+6. ✅ Restaura Prisma Schema
+7. ✅ Sincroniza Prisma (`db push --accept-data-loss`)
+8. ✅ Regenera Prisma Client (`generate`)
+9. ✅ Reinicia servicios automáticamente
+
+---
+
+## 📁 Estructura de Carpetas
+
+```
+bd_backup/
+├── README.md                      # Este archivo (documentación completa)
+├── backup-databases.ps1           # Script de backup (PowerShell/Windows)
+├── backup-databases.sh            # Script de backup (Bash/Linux/Mac)
+├── restore-databases.ps1          # Script de restauración (PowerShell)
+├── restore-databases.sh           # Script de restauración (Bash)
+└── backups/                       # Carpeta de backups organizados por fecha
+    ├── 2025-10-04/
+    │   ├── postgres_full_backup_22-22.sql
+    │   ├── mongodb_users_22-22.json
+    │   ├── prisma_schema_22-22.prisma
+    │   ├── postgres_categories_22-22.json
+    │   ├── postgres_localities_22-22.json
+    │   ├── postgres_venues_22-22.json
+    │   └── BACKUP_INFO.md
+    └── 2025-10-05/
+        ├── postgres_full_backup_17-01.sql (61 KB)
+        ├── mongodb_users_17-01.json (1 KB)
+        ├── prisma_schema_17-01.prisma (8.5 KB)
+        ├── postgres_categories_17-01.json
+        ├── postgres_localities_17-01.json
+        ├── postgres_venues_17-01.json
+        └── BACKUP_INFO.md
 ```
 
 ---
@@ -131,192 +269,57 @@ cd docker/bd_backup
 
 ---
 
-## 💻 Comandos Manuales
-
-### Backup Manual
-
-#### PostgreSQL:
-```bash
-# Crear backup
-docker exec ticketing-postgres pg_dump -U admin -d ticketing > backups/$(date +%Y-%m-%d)/postgres_backup.sql
-
-# Verificar
-docker exec ticketing-postgres psql -U admin -d ticketing -c "\dt"
-```
-
-#### MongoDB:
-```bash
-# Crear backup (BASE DE DATOS CORRECTA: ticketing)
-docker exec ticketing-mongodb mongoexport \
-  --authenticationDatabase=admin \
-  --username=admin \
-  --password=admin123 \
-  --db=ticketing \
-  --collection=users \
-  --out=/tmp/users_backup.json
-
-# Copiar backup
-docker cp ticketing-mongodb:/tmp/users_backup.json backups/$(date +%Y-%m-%d)/mongodb_users.json
-
-# Verificar usuarios
-docker exec ticketing-mongodb mongosh \
-  --username admin \
-  --password admin123 \
-  --authenticationDatabase admin \
-  ticketing \
-  --eval "db.users.countDocuments()"
-```
-
-### Restauración Manual
-
-#### PostgreSQL:
-```bash
-# Restaurar
-docker exec -i ticketing-postgres psql -U admin -d ticketing < backups/2025-10-04/postgres_backup.sql
-
-# Verificar
-docker exec ticketing-postgres psql -U admin -d ticketing -c "SELECT COUNT(*) FROM \"Event\";"
-```
-
-#### MongoDB:
-```bash
-# Copiar backup al contenedor
-docker cp backups/2025-10-04/mongodb_users.json ticketing-mongodb:/tmp/
-
-# Restaurar (BASE DE DATOS CORRECTA: ticketing)
-docker exec ticketing-mongodb mongoimport \
-  --authenticationDatabase=admin \
-  --username=admin \
-  --password=admin123 \
-  --db=ticketing \
-  --collection=users \
-  --file=/tmp/mongodb_users.json
-
-# Verificar
-docker exec ticketing-mongodb mongosh \
-  --username admin \
-  --password admin123 \
-  --authenticationDatabase admin \
-  ticketing \
-  --eval "db.users.find().pretty()"
-```
-
----
-
-## 🔄 Restauración Completa del Sistema
-
-### 1. Levantar Docker
-```bash
-docker-compose up -d
-```
-
-### 2. Esperar a que los servicios estén listos
-```bash
-docker ps
-# Verificar que todos los contenedores estén "healthy"
-```
-
-### 3. Restaurar Bases de Datos
-```bash
-# Opción A: Usar script (recomendado)
-.\restore-databases.ps1 2025-10-04
-
-# Opción B: Manual (ver sección anterior)
-```
-
-### 4. Verificar Restauración
-```bash
-# PostgreSQL - Contar eventos
-docker exec ticketing-postgres psql -U admin -d ticketing -c "SELECT COUNT(*) FROM \"Event\";"
-
-# MongoDB - Contar usuarios
-docker exec ticketing-mongodb mongosh \
-  --username admin \
-  --password admin123 \
-  --authenticationDatabase admin \
-  ticketing \
-  --eval "db.users.countDocuments()"
-```
-
-### 5. Iniciar Servicios
-
-```bash
-# Admin-Service (Puerto 3003)
-cd backend/admin
-npm install
-npx prisma generate
-npm run dev
-
-# User-Service (Puerto 3001)
-cd backend/users
-npm install
-npm run dev
-
-# Frontend (Puerto 4200)
-cd frontend/ticketing-app
-npm install
-npm start
-```
-
-### 6. Acceder al Sistema
-- **Frontend:** http://localhost:4200
-- **Admin Dashboard:** http://localhost:4200/admin-dashboard
-- **Login:** voro.super@ticketing.com / Voro123!
-
----
-
 ## 🐛 Troubleshooting
 
-### Problema: MongoDB backup vacío (0 usuarios)
+### Error: "Cannot connect to Docker"
 
-**Causa:** Estás usando la base de datos incorrecta (`ticketing-users` en lugar de `ticketing`)
+**Solución:** Asegúrate de que Docker Desktop esté corriendo.
+
+### Error: "Request failed with status code 500"
+
+**Causa:** El restore no se completó correctamente.
 
 **Solución:**
-```bash
-# Verificar base de datos correcta
-docker exec ticketing-mongodb mongosh \
-  --username admin \
-  --password admin123 \
-  --authenticationDatabase admin \
-  --eval "show dbs"
+1. Detén todos los servicios Node.js
+2. Ejecuta el restore nuevamente
+3. Espera a que termine completamente
+4. Verifica los logs
 
-# Usar la base de datos CORRECTA: ticketing
-docker exec ticketing-mongodb mongoexport \
-  --authenticationDatabase=admin \
-  --username=admin \
-  --password=admin123 \
-  --db=ticketing \
-  --collection=users \
-  --out=/tmp/users_backup.json
+### Error: "Prisma Client not found"
+
+**Solución:**
+```powershell
+cd backend\admin
+npx prisma generate
+cd ..\..
 ```
 
-### Problema: Error de autenticación en MongoDB
+### MongoDB no restaura usuarios
 
-**Solución:**
-```bash
-# Siempre incluir authenticationDatabase=admin
-docker exec ticketing-mongodb mongosh \
-  --username admin \
-  --password admin123 \
-  --authenticationDatabase admin \
-  ticketing
+**Solución manual:**
+```powershell
+# Copiar archivo
+docker cp docker\bd_backup\backups\2025-10-05\mongodb_users_17-01.json ticketing-mongodb:/tmp/users.json
+
+# Importar
+docker exec ticketing-mongodb mongoimport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --file=/tmp/users.json --jsonArray
 ```
 
-### Problema: PostgreSQL no restaura correctamente
+### PostgreSQL no restaura correctamente
 
 **Solución:**
-```bash
-# Limpiar base de datos antes de restaurar
-docker exec ticketing-postgres psql -U admin -d ticketing -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+```powershell
+# Limpiar base de datos
+docker exec ticketing-postgres psql -U admin -d ticketing -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
 
 # Restaurar
-docker exec -i ticketing-postgres psql -U admin -d ticketing < backups/2025-10-04/postgres_backup.sql
+Get-Content backups\2025-10-05\postgres_full_backup_17-01.sql | docker exec -i ticketing-postgres psql -U admin -d ticketing
 ```
 
-### Problema: Contenedores no están corriendo
+### Contenedores no están corriendo
 
 **Solución:**
-```bash
+```powershell
 # Ver logs
 docker-compose logs ticketing-postgres
 docker-compose logs ticketing-mongodb
@@ -325,13 +328,90 @@ docker-compose logs ticketing-mongodb
 docker-compose restart
 ```
 
+### Si nada funciona - Limpieza completa
+
+```powershell
+# Detener contenedores
+docker-compose down -v
+
+# Eliminar volúmenes
+docker volume prune -f
+
+# Levantar contenedores limpios
+docker-compose up -d
+
+# Ejecutar restore
+cd docker\bd_backup
+.\restore-databases.ps1 17-01
+```
+
 ---
 
-## 📊 Información de los Backups
+## 🔍 Verificación Post-Restore
 
-### Contenido Típico de un Backup:
+### Verificar PostgreSQL
+```powershell
+docker exec ticketing-postgres psql -U admin -d ticketing -c "SELECT COUNT(*) FROM \"Event\";"
+```
+Debería mostrar el número de eventos.
 
-**PostgreSQL (~32 KB):**
+### Verificar MongoDB
+```powershell
+docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --eval "use ticketing; db.users.countDocuments()"
+```
+Debería mostrar el número de usuarios (3).
+
+### Verificar Prisma
+```powershell
+cd backend\admin
+npx prisma studio
+```
+
+### Iniciar Servicios
+
+```powershell
+# Admin-Service (Puerto 3003)
+cd backend\admin
+npm run dev
+
+# User-Service (Puerto 3001)
+cd backend\user-service
+npm run dev
+
+# Frontend (Puerto 4200)
+cd frontend\ticketing-app
+npm start
+```
+
+---
+
+## 🔐 Credenciales
+
+### Base de Datos PostgreSQL
+- **Host:** localhost:5432
+- **Database:** ticketing
+- **User:** admin
+- **Password:** admin123
+
+### Base de Datos MongoDB
+- **Host:** localhost:27017
+- **Database:** ticketing (⚠️ NO ticketing-users)
+- **User:** admin
+- **Password:** admin123
+- **Auth Source:** admin
+
+### Usuarios de la Aplicación
+- **Super Admin:** voro.super@ticketing.com / Voro123!
+- **Usuario VIP:** xavi.vip@ticketing.com / Xavi123!
+- **Usuario Normal:** test@test.com / Test123!
+
+---
+
+## 📦 Archivos de Backup
+
+### Contenido Típico:
+
+**PostgreSQL (~61 KB):**
 - 6 eventos activos
 - 10 venues
 - 5 categorías
@@ -339,52 +419,41 @@ docker-compose restart
 - Localidades por evento
 - Admins del sistema
 
-**MongoDB (~3 KB):**
+**MongoDB (~1 KB):**
 - 3 usuarios registrados
 - Roles: SUPER_ADMIN, VIP, USER
-- Perfiles completos con datos personales
+- Perfiles completos
 
 ---
 
-## 🔐 Credenciales del Sistema
+## ⚠️ Puntos Críticos Resueltos
 
-### Base de Datos PostgreSQL:
-- **Host:** localhost:5432
-- **Database:** ticketing
-- **User:** admin
-- **Password:** admin123
+### Error Original:
+```
+[API Error] 500 - /api/events/public Request failed with status code 500
+```
 
-### Base de Datos MongoDB:
-- **Host:** localhost:27017
-- **Database:** ticketing (⚠️ NO ticketing-users)
-- **User:** admin
-- **Password:** admin123
-- **Auth Source:** admin
+### Causas Identificadas:
+1. ❌ MongoDB no se restauraba (usuarios faltantes)
+2. ❌ Prisma no se sincronizaba (schema desactualizado)
+3. ❌ PostgreSQL tenía datos corruptos mezclados
+4. ❌ Comillas dobles causaban errores en comandos
 
-### Usuarios de la Aplicación:
-- **Super Admin:** voro.super@ticketing.com / Voro123!
-- **Usuario VIP:** xavi.vip@ticketing.com / Xavi123!
-- **Usuario Normal:** test@test.com / Test123!
-
----
-
-## 📅 Política de Retención de Backups
-
-- **Backups diarios:** Mantener últimos 7 días
-- **Backups semanales:** Mantener últimas 4 semanas
-- **Backups mensuales:** Mantener últimos 12 meses
-
-**Limpieza automática:** Los scripts eliminan automáticamente backups con más de 7 días.
+### Solución Aplicada:
+1. ✅ MongoDB se limpia y restaura completamente
+2. ✅ Prisma se sincroniza con `db push`
+3. ✅ PostgreSQL se limpia con DROP SCHEMA CASCADE
+4. ✅ Comillas simples en todos los comandos Docker
 
 ---
 
-## 🎯 Próximos Pasos
+## 📝 Notas Finales
 
-1. ✅ Configurar backup automático diario (cron/task scheduler)
-2. ✅ Implementar rotación de backups (7 días)
-3. ⏳ Añadir backup de archivos estáticos
-4. ⏳ Configurar backup remoto (cloud storage)
-5. ⏳ Implementar notificaciones de backup exitoso/fallido
+- **Todas las rutas son relativas** - Funciona en cualquier PC
+- **Comillas simples** - Sin problemas de interpretación
+- **Limpieza automática** - Sin datos mezclados
+- **Sincronización completa** - Prisma alineado con PostgreSQL
+- **Documentación incluida** - Todo lo necesario en un solo archivo
 
 ---
 
@@ -393,7 +462,8 @@ docker-compose restart
 **Desarrollador:** Voro  
 **Email:** voromb@hotmail.com  
 **Versión del Sistema:** 1.0.0  
-**Última actualización:** 2025-10-04
+**Última actualización:** 2025-10-05  
+**Versión del backup:** 17-01
 
 ---
 

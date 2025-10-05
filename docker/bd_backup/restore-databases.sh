@@ -15,11 +15,11 @@ fi
 timestamp=$1
 # Detectar si es formato fecha (YYYY-MM-DD) o timestamp (HH-MM)
 if [[ $timestamp =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-    backup_dir="backups/$timestamp"
+    backupDir="backups/$timestamp"
 else
     # Buscar en carpetas de fecha recientes
     latest_date=$(ls -d backups/*/ 2>/dev/null | tail -1 | sed 's|backups/||' | sed 's|/||')
-    backup_dir="backups/$latest_date"
+    backupDir="backups/$latest_date"
 fi
 
 echo "🔄 Iniciando Restore de Bases de Datos..."
@@ -27,26 +27,26 @@ echo "📅 Timestamp: $timestamp"
 
 # Verificar que existen los archivos de backup
 required_files=(
-    "$backup_dir/postgres_full_backup_$timestamp.sql"
-    "$backup_dir/mongodb_users_$timestamp.json"
-    "$backup_dir/prisma_schema_$timestamp.prisma"
+    "$backupDir/postgres_full_backup_$timestamp.sql"
+    "$backupDir/mongodb_users_$timestamp.json"
+    "$backupDir/prisma_schema_$timestamp.prisma"
 )
 
 # Archivos opcionales (no críticos)
 optional_files=(
-    "$backup_dir/postgres_categories_$timestamp.json"
-    "$backup_dir/postgres_localities_$timestamp.json"
+    "$backupDir/postgres_categories_$timestamp.json"
+    "$backupDir/postgres_localities_$timestamp.json"
 )
 
 echo ""
 echo "🔍 Verificando archivos de backup..."
-echo "📁 Directorio: $backup_dir"
+echo "📁 Directorio: $backupDir"
 
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
         echo "❌ Archivo no encontrado: $file"
         echo "💡 Archivos disponibles:"
-        ls "$backup_dir"/* 2>/dev/null | sed 's/.*\//   - /'
+        ls "$backupDir"/* 2>/dev/null | sed 's/.*\//   - /'
         exit 1
     else
         echo "✅ Encontrado: $(basename "$file")"
@@ -85,10 +85,10 @@ echo ""
 echo "🐘 Restaurando PostgreSQL..."
 
 # Restore PostgreSQL
-if docker exec ticketing-postgres psql -U admin -d ticketing -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null 2>&1; then
+if docker exec ticketing-postgres psql -U admin -d ticketing -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' >/dev/null 2>&1; then
     echo "✅ Base de datos PostgreSQL limpiada"
     
-    if cat "$backup_dir/postgres_full_backup_$timestamp.sql" | docker exec -i ticketing-postgres psql -U admin -d ticketing >/dev/null 2>&1; then
+    if cat "$backupDir/postgres_full_backup_$timestamp.sql" | docker exec -i ticketing-postgres psql -U admin -d ticketing >/dev/null 2>&1; then
         echo "✅ PostgreSQL restaurado desde backup"
     else
         echo "❌ Error restaurando PostgreSQL"
@@ -100,23 +100,37 @@ fi
 echo ""
 echo "🍃 Restaurando MongoDB..."
 
-# Restore MongoDB (requiere implementación en el backend)
-echo "⚠️  MongoDB restore requiere implementación manual"
-echo "📁 Archivo disponible: mongodb_users_$timestamp.json"
-echo "💡 Usar MongoDB Compass o mongoimport para restaurar"
+# Restore MongoDB - Limpiar y restaurar
+if docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --eval 'use ticketing; db.users.deleteMany({})' >/dev/null 2>&1; then
+    echo "✅ Colección de usuarios limpiada"
+    
+    # Restaurar usuarios desde backup
+    if docker cp "$backupDir/mongodb_users_$timestamp.json" ticketing-mongodb:/tmp/users_restore.json >/dev/null 2>&1; then
+        if docker exec ticketing-mongodb mongoimport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --file=/tmp/users_restore.json --jsonArray >/dev/null 2>&1; then
+            echo "✅ Usuarios restaurados desde MongoDB"
+        else
+            echo "❌ Error importando usuarios a MongoDB"
+        fi
+    else
+        echo "❌ Error copiando archivo de usuarios"
+    fi
+else
+    echo "❌ Error limpiando MongoDB"
+fi
 
 echo ""
 echo "🔧 Restaurando Prisma Schema..."
 
 # Restore Prisma Schema
-if cp "$backup_dir/prisma_schema_$timestamp.prisma" "../../backend/admin/prisma/schema.prisma"; then
+prismaDestination="../../backend/admin/prisma/schema.prisma"
+if cp "$backupDir/prisma_schema_$timestamp.prisma" "$prismaDestination"; then
     echo "✅ Prisma Schema restaurado"
     
-    cd ../../backend/admin || exit 1
+    cd ../../backend/admin || exit
     
     # Sincronizar Prisma con PostgreSQL restaurado
     echo "🔄 Sincronizando Prisma con PostgreSQL..."
-    if npx prisma db pull >/dev/null 2>&1; then
+    if npx prisma db push --accept-data-loss >/dev/null 2>&1; then
         echo "✅ Prisma sincronizado con base de datos"
     else
         echo "⚠️  Advertencia: Error en sincronización (continuando...)"
@@ -130,19 +144,27 @@ if cp "$backup_dir/prisma_schema_$timestamp.prisma" "../../backend/admin/prisma/
         echo "❌ Error regenerando Prisma Client"
     fi
     
-    cd ../../docker/bd_backup || exit 1
+    cd ../../docker/bd_backup || exit
 else
-    echo "❌ Error restaurando Prisma Schema"
+    echo "Error restaurando Prisma Schema"
 fi
 
 echo ""
 echo "🚀 Reiniciando servicios..."
 
-# Reiniciar servicios en background
-cd backend/admin && npm run dev >/dev/null 2>&1 &
-sleep 2
-cd ../user-service && npm run dev >/dev/null 2>&1 &
-cd ../..
+# Reiniciar servicios en background con rutas relativas
+RESTORE_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ADMIN_PATH="$RESTORE_SCRIPT_DIR/../../backend/admin"
+USER_PATH="$RESTORE_SCRIPT_DIR/../../backend/user-service"
+
+if [ -d "$ADMIN_PATH" ]; then
+    (cd "$ADMIN_PATH" && npm run dev >/dev/null 2>&1 &)
+    sleep 2
+fi
+
+if [ -d "$USER_PATH" ]; then
+    (cd "$USER_PATH" && npm run dev >/dev/null 2>&1 &)
+fi
 
 echo "✅ Servicios reiniciados en background"
 
@@ -150,14 +172,14 @@ echo ""
 echo "📦 Restaurando datos adicionales..."
 
 # Restaurar categorías si existe el archivo
-if [ -f "$backup_dir/postgres_categories_$timestamp.json" ]; then
+if [ -f "$backupDir/postgres_categories_$timestamp.json" ]; then
     echo "📂 Categorías disponibles para importación manual"
 else
     echo "⚠️  No hay backup de categorías"
 fi
 
 # Restaurar localidades si existe el archivo
-if [ -f "$backup_dir/postgres_localities_$timestamp.json" ]; then
+if [ -f "$backupDir/postgres_localities_$timestamp.json" ]; then
     echo "🏢 Localidades disponibles para importación manual"
 else
     echo "⚠️  No hay backup de localidades"
