@@ -10,7 +10,14 @@ param(
 Write-Host "🔄 Iniciando Restore de Bases de Datos..." -ForegroundColor Green
 Write-Host "📅 Timestamp: $timestamp" -ForegroundColor Cyan
 
-$backupDir = "backup"
+# Detectar si es formato fecha (YYYY-MM-DD) o timestamp (HH-MM)
+if ($timestamp -match '^\d{4}-\d{2}-\d{2}$') {
+    $backupDir = "backups\$timestamp"
+} else {
+    # Buscar en carpetas de fecha recientes
+    $latestDate = (Get-ChildItem "backups" -Directory | Sort-Object Name -Descending | Select-Object -First 1).Name
+    $backupDir = "backups\$latestDate"
+}
 
 # Verificar que existen los archivos de backup
 $requiredFiles = @(
@@ -19,16 +26,32 @@ $requiredFiles = @(
     "$backupDir\prisma_schema_$timestamp.prisma"
 )
 
+# Archivos opcionales (no críticos)
+$optionalFiles = @(
+    "$backupDir\postgres_categories_$timestamp.json",
+    "$backupDir\postgres_localities_$timestamp.json"
+)
+
 Write-Host "`n🔍 Verificando archivos de backup..." -ForegroundColor Blue
+Write-Host "📁 Directorio: $backupDir" -ForegroundColor Cyan
 
 foreach ($file in $requiredFiles) {
     if (!(Test-Path $file)) {
         Write-Host "❌ Archivo no encontrado: $file" -ForegroundColor Red
         Write-Host "💡 Archivos disponibles:" -ForegroundColor Yellow
-        Get-ChildItem "$backupDir\*backup*" | ForEach-Object { Write-Host "   - $($_.Name)" -ForegroundColor White }
+        Get-ChildItem "$backupDir\*" | ForEach-Object { Write-Host "   - $($_.Name)" -ForegroundColor White }
         exit 1
     } else {
         Write-Host "✅ Encontrado: $(Split-Path $file -Leaf)" -ForegroundColor Green
+    }
+}
+
+Write-Host "`n📦 Verificando archivos opcionales..." -ForegroundColor Blue
+foreach ($file in $optionalFiles) {
+    if (Test-Path $file) {
+        Write-Host "✅ Encontrado: $(Split-Path $file -Leaf)" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  Opcional no encontrado: $(Split-Path $file -Leaf)" -ForegroundColor Yellow
     }
 }
 
@@ -113,14 +136,32 @@ try {
     Write-Host "❌ Error reiniciando servicios: $_" -ForegroundColor Red
 }
 
+Write-Host "`n📦 Restaurando datos adicionales..." -ForegroundColor Blue
+
+# Restaurar categorías si existe el archivo
+if (Test-Path "$backupDir\postgres_categories_$timestamp.json") {
+    Write-Host "📂 Categorías disponibles para importación manual" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠️  No hay backup de categorías" -ForegroundColor Yellow
+}
+
+# Restaurar localidades si existe el archivo
+if (Test-Path "$backupDir\postgres_localities_$timestamp.json") {
+    Write-Host "🏢 Localidades disponibles para importación manual" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠️  No hay backup de localidades" -ForegroundColor Yellow
+}
+
 Write-Host "`n✅ ¡Restore completado!" -ForegroundColor Green
 Write-Host "📋 Resumen:" -ForegroundColor White
 Write-Host "   🐘 PostgreSQL: Restaurado desde SQL dump" -ForegroundColor White
 Write-Host "   🍃 MongoDB: Archivo disponible para restore manual" -ForegroundColor White
 Write-Host "   🔧 Prisma: Schema restaurado y cliente regenerado" -ForegroundColor White
+Write-Host "   📦 Categorías y Localidades: Disponibles en archivos JSON" -ForegroundColor White
 Write-Host "   🚀 Servicios: Reiniciados automáticamente" -ForegroundColor White
 
 Write-Host "`n💡 Próximos pasos:" -ForegroundColor Cyan
 Write-Host "   1. Verificar que los servicios estén funcionando" -ForegroundColor White
 Write-Host "   2. Restaurar MongoDB manualmente si es necesario" -ForegroundColor White
-Write-Host "   3. Probar la aplicación" -ForegroundColor White
+Write-Host "   3. Importar categorías y localidades si es necesario" -ForegroundColor White
+Write-Host "   4. Probar la aplicación" -ForegroundColor White

@@ -13,7 +13,14 @@ if [ $# -eq 0 ]; then
 fi
 
 timestamp=$1
-backup_dir="backup"
+# Detectar si es formato fecha (YYYY-MM-DD) o timestamp (HH-MM)
+if [[ $timestamp =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    backup_dir="backups/$timestamp"
+else
+    # Buscar en carpetas de fecha recientes
+    latest_date=$(ls -d backups/*/ 2>/dev/null | tail -1 | sed 's|backups/||' | sed 's|/||')
+    backup_dir="backups/$latest_date"
+fi
 
 echo "🔄 Iniciando Restore de Bases de Datos..."
 echo "📅 Timestamp: $timestamp"
@@ -25,17 +32,34 @@ required_files=(
     "$backup_dir/prisma_schema_$timestamp.prisma"
 )
 
+# Archivos opcionales (no críticos)
+optional_files=(
+    "$backup_dir/postgres_categories_$timestamp.json"
+    "$backup_dir/postgres_localities_$timestamp.json"
+)
+
 echo ""
 echo "🔍 Verificando archivos de backup..."
+echo "📁 Directorio: $backup_dir"
 
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
         echo "❌ Archivo no encontrado: $file"
         echo "💡 Archivos disponibles:"
-        ls "$backup_dir"/*backup* 2>/dev/null | sed 's/.*\//   - /'
+        ls "$backup_dir"/* 2>/dev/null | sed 's/.*\//   - /'
         exit 1
     else
         echo "✅ Encontrado: $(basename "$file")"
+    fi
+done
+
+echo ""
+echo "📦 Verificando archivos opcionales..."
+for file in "${optional_files[@]}"; do
+    if [ -f "$file" ]; then
+        echo "✅ Encontrado: $(basename "$file")"
+    else
+        echo "⚠️  Opcional no encontrado: $(basename "$file")"
     fi
 done
 
@@ -123,15 +147,34 @@ cd ../..
 echo "✅ Servicios reiniciados en background"
 
 echo ""
+echo "📦 Restaurando datos adicionales..."
+
+# Restaurar categorías si existe el archivo
+if [ -f "$backup_dir/postgres_categories_$timestamp.json" ]; then
+    echo "📂 Categorías disponibles para importación manual"
+else
+    echo "⚠️  No hay backup de categorías"
+fi
+
+# Restaurar localidades si existe el archivo
+if [ -f "$backup_dir/postgres_localities_$timestamp.json" ]; then
+    echo "🏢 Localidades disponibles para importación manual"
+else
+    echo "⚠️  No hay backup de localidades"
+fi
+
+echo ""
 echo "✅ ¡Restore completado!"
 echo "📋 Resumen:"
 echo "   🐘 PostgreSQL: Restaurado desde SQL dump"
 echo "   🍃 MongoDB: Archivo disponible para restore manual"
 echo "   🔧 Prisma: Schema restaurado y cliente regenerado"
+echo "   📦 Categorías y Localidades: Disponibles en archivos JSON"
 echo "   🚀 Servicios: Reiniciados en background"
 
 echo ""
 echo "💡 Próximos pasos:"
 echo "   1. Verificar que los servicios estén funcionando"
 echo "   2. Restaurar MongoDB manualmente si es necesario"
-echo "   3. Probar la aplicación"
+echo "   3. Importar categorías y localidades si es necesario"
+echo "   4. Probar la aplicación"
