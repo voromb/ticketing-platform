@@ -126,7 +126,7 @@ prismaDestination="../../backend/admin/prisma/schema.prisma"
 if cp "$backupDir/prisma_schema_$timestamp.prisma" "$prismaDestination"; then
     echo "✅ Prisma Schema restaurado"
     
-    cd ../../backend/admin
+    cd ../../backend/admin || exit
     
     # Sincronizar Prisma con PostgreSQL restaurado
     echo "🔄 Sincronizando Prisma con PostgreSQL..."
@@ -140,28 +140,37 @@ if cp "$backupDir/prisma_schema_$timestamp.prisma" "$prismaDestination"; then
     echo "🔄 Regenerando Prisma Client..."
     if npx prisma generate >/dev/null 2>&1; then
         echo "✅ Prisma Client regenerado correctamente"
+    else
         echo "❌ Error regenerando Prisma Client"
     fi
     
-    cd ../../docker/bd_backup
+    cd ../../docker/bd_backup || exit
 else
-    echo "❌ Error restaurando Prisma Schema"
+    echo "Error restaurando Prisma Schema"
 fi
 
 echo ""
 echo "🚀 Reiniciando servicios..."
-# Reiniciar servicios en background con rutas relativas
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ADMIN_PATH="$SCRIPT_DIR/../../backend/admin"
-USER_PATH="$SCRIPT_DIR/../../backend/user-service"
 
-(cd "$ADMIN_PATH" && npm run dev >/dev/null 2>&1 &)
-sleep 2
+# Reiniciar servicios en background con rutas relativas
+RESTORE_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ADMIN_PATH="$RESTORE_SCRIPT_DIR/../../backend/admin"
+USER_PATH="$RESTORE_SCRIPT_DIR/../../backend/user-service"
+
+if [ -d "$ADMIN_PATH" ]; then
+    (cd "$ADMIN_PATH" && npm run dev >/dev/null 2>&1 &)
+    sleep 2
+fi
+
+if [ -d "$USER_PATH" ]; then
+    (cd "$USER_PATH" && npm run dev >/dev/null 2>&1 &)
+fi
 
 echo "✅ Servicios reiniciados en background"
 
 echo ""
 echo "📦 Restaurando datos adicionales..."
+
 # Restaurar categorías si existe el archivo
 if [ -f "$backupDir/postgres_categories_$timestamp.json" ]; then
     echo "📂 Categorías disponibles para importación manual"
