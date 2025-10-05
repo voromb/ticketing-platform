@@ -1,8 +1,9 @@
 <a *ngIf="venue"
-   class="card h-100 shadow-sm text-decoration-none text-dark"
+   class="card venue-card h-100 shadow-sm text-decoration-none text-dark d-flex flex-column p-3"
    [routerLink]="['/shop']"
    [queryParams]="{ venueId: venue.id }">
-  <div class="card-body">
+  
+  <div class="flex-grow-1 overflow-auto">
     <h5 class="card-title">{{ venue.name }}</h5>
     <p class="card-text">
       {{ venue.address }}, {{ venue.city }}

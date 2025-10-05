@@ -1,9 +1,17 @@
-.card {
-  background: linear-gradient(135deg, #1f1c2c, #928dab);
-  color: #fff;
-  border: none;
-  
+.venue-card {
+  width: 350px;       /* Más ancho */
+  height: 350px;      /* Más alto → cuadrada */
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-.card-title{
- color: #cc2323;   
+
+.venue-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Permite scroll interno si el contenido es muy largo */
+.venue-card .overflow-auto {
+  max-height: 100%;
 }

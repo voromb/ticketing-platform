@@ -167,10 +167,10 @@ class EventController {
     // Obtener eventos
     const events = await prisma.event.findMany({
       where,
-      include: {
+            include: {
         venue: true,
-        EventCategory: true,       // nombre exacto del modelo en schema.prisma
-        EventSubcategory: true     // nombre exacto del modelo en schema.prisma
+        category: true,             // ✅ BIEN
+        subcategory: true,          // ✅ BIEN
       },
       orderBy: {
         eventDate: 'asc'
