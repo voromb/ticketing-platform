@@ -1,4 +1,4 @@
-import { IEvent } from "./Event.model";
+
 
 export interface ISubcategory {
   id: number;

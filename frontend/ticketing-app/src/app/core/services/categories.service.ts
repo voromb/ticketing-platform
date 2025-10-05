@@ -14,11 +14,11 @@ export class CategoryService {
 
   // Obtener todas las categorías (con subcategorías)
   getAllCategories(): Observable<ICategory[]> {
-    return this.http.get<ICategory[]>(`${this.baseUrl}/api/events/public/categories`);
+    return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories`);
   }
 
   // Obtener solo las categorías disponibles (con eventos activos)
   getAvailableCategories(): Observable<ICategory[]> {
-    return this.http.get<ICategory[]>(`${this.baseUrl}/api/events/public/categories/available`);
+    return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories/:id`);
   }
 }

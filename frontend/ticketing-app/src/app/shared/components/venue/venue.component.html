@@ -1,9 +1,27 @@
 <a *ngIf="venue"
-   class="card venue-card h-100 shadow-sm text-decoration-none text-dark d-flex flex-column p-3"
+   class="card venue-card h-100 shadow-sm text-decoration-none text-dark d-flex flex-column"
    [routerLink]="['/shop']"
    [queryParams]="{ venueId: venue.id }">
-  
-  <div class="flex-grow-1 overflow-auto">
+
+  <!-- 🔵 Cabecera azul / imagen -->
+  <div class="venue-header">
+    <ng-container *ngIf="venue.images && venue.images.length > 0; else noImage">
+      <img
+        [src]="venue.images[0]"
+        [alt]="venue.name"
+        class="venue-image"
+      />
+    </ng-container>
+
+    <ng-template #noImage>
+      <div class="venue-placeholder">
+        <span>Sin imagen</span>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- 📝 Cuerpo del texto -->
+  <div class="flex-grow-1 overflow-auto p-3">
     <h5 class="card-title">{{ venue.name }}</h5>
     <p class="card-text">
       {{ venue.address }}, {{ venue.city }}
@@ -13,4 +31,5 @@
     <p class="text-muted">Capacidad: {{ venue.capacity }}</p>
     <p *ngIf="venue.description" class="mt-2">{{ venue.description }}</p>
   </div>
+
 </a>

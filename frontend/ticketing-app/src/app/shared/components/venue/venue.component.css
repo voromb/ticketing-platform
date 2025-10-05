@@ -1,9 +1,12 @@
 .venue-card {
-  width: 350px;       /* Más ancho */
-  height: 350px;      /* Más alto → cuadrada */
+  width: 350px;
+  height: 350px;
   background-color: #f8f9fa;
   border-radius: 0.5rem;
+  overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 .venue-card:hover {
@@ -11,7 +14,32 @@
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Permite scroll interno si el contenido es muy largo */
-.venue-card .overflow-auto {
-  max-height: 100%;
+/* 🔵 Zona superior */
+.venue-header {
+  background-color: #b53765; /* Azul visible si no hay imagen */
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Imagen (si existe) */
+.venue-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder cuando no hay imagen */
+.venue-placeholder {
+  width: 100%;
+  height: 100%;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.25);
 }
