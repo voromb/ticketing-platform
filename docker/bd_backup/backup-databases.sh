@@ -6,10 +6,11 @@
 
 echo "🚀 Iniciando Backup Completo de Bases de Datos..."
 
-# Variables
+# Variables con rutas relativas desde el script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 date=$(date +"%Y-%m-%d")
 timestamp=$(date +"%H-%M")
-backupDir="backups/$date"
+backupDir="$SCRIPT_DIR/backups/$date"
 commitHash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 echo "📅 Fecha: $date"
@@ -64,7 +65,7 @@ echo ""
 echo "🔧 Copiando Prisma Schema..."
 
 # Backup Prisma Schema
-prismaPath="../../backend/admin/prisma/schema.prisma"
+prismaPath="$SCRIPT_DIR/../../backend/admin/prisma/schema.prisma"
 if [ -f "$prismaPath" ]; then
     if cp "$prismaPath" "$backupDir/prisma_schema_$timestamp.prisma"; then
         echo "✅ Prisma Schema copiado"
@@ -72,7 +73,8 @@ if [ -f "$prismaPath" ]; then
         echo "❌ Error copiando Prisma Schema"
     fi
 else
-    echo "⚠️  Advertencia: No se encontró el schema de Prisma en $prismaPath"
+    echo "⚠️  Advertencia: No se encontró el schema de Prisma"
+    echo "    Ruta buscada: $prismaPath"
 fi
 
 echo ""

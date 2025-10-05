@@ -75,7 +75,7 @@ Write-Host "`n🐘 Restaurando PostgreSQL..." -ForegroundColor Blue
 # Restore PostgreSQL
 try {
     # Limpiar base de datos
-    docker exec ticketing-postgres psql -U admin -d ticketing -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+    docker exec ticketing-postgres psql -U admin -d ticketing -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
     Write-Host "✅ Base de datos PostgreSQL limpiada" -ForegroundColor Green
     
     # Restaurar desde backup
@@ -87,28 +87,34 @@ try {
 
 Write-Host "`n🍃 Restaurando MongoDB..." -ForegroundColor Blue
 
-# Restore MongoDB (requiere implementación en el backend)
+# Restore MongoDB - Limpiar y restaurar
 try {
-    Write-Host "⚠️  MongoDB restore requiere implementación manual" -ForegroundColor Yellow
-    Write-Host "📁 Archivo disponible: mongodb_users_$timestamp.json" -ForegroundColor White
-    Write-Host "💡 Usar MongoDB Compass o mongoimport para restaurar" -ForegroundColor Cyan
+    # Limpiar colección de usuarios
+    docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --eval 'use ticketing; db.users.deleteMany({})' 2>$null
+    Write-Host "✅ Colección de usuarios limpiada" -ForegroundColor Green
+    
+    # Restaurar usuarios desde backup
+    docker cp "$backupDir\mongodb_users_$timestamp.json" ticketing-mongodb:/tmp/users_restore.json
+    docker exec ticketing-mongodb mongoimport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --file=/tmp/users_restore.json --jsonArray 2>$null
+    Write-Host "✅ Usuarios restaurados desde MongoDB" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Error preparando restore de MongoDB: $_" -ForegroundColor Red
+    Write-Host "❌ Error restaurando MongoDB: $_" -ForegroundColor Red
 }
 
 Write-Host "`n🔧 Restaurando Prisma Schema..." -ForegroundColor Blue
 
 # Restore Prisma Schema
 try {
-    Copy-Item "$backupDir\prisma_schema_$timestamp.prisma" "backend\admin\prisma\schema.prisma" -Force
+    $prismaDestination = "..\..\backend\admin\prisma\schema.prisma"
+    Copy-Item "$backupDir\prisma_schema_$timestamp.prisma" $prismaDestination -Force
     Write-Host "✅ Prisma Schema restaurado" -ForegroundColor Green
     
-    Set-Location "backend\admin"
+    Push-Location "..\..\backend\admin"
     
     # Sincronizar Prisma con PostgreSQL restaurado
     Write-Host "🔄 Sincronizando Prisma con PostgreSQL..." -ForegroundColor Cyan
     try {
-        npx prisma db pull 2>$null
+        npx prisma db push --accept-data-loss 2>$null
         Write-Host "✅ Prisma sincronizado con base de datos" -ForegroundColor Green
     } catch {
         Write-Host "⚠️  Advertencia: Error en sincronización (continuando...)" -ForegroundColor Yellow
@@ -116,10 +122,10 @@ try {
     
     # Regenerar Prisma Client
     Write-Host "🔄 Regenerando Prisma Client..." -ForegroundColor Cyan
-    npx prisma generate
+    npx prisma generate 2>$null
     Write-Host "✅ Prisma Client regenerado correctamente" -ForegroundColor Green
     
-    Set-Location "..\..\"
+    Pop-Location
 } catch {
     Write-Host "❌ Error restaurando Prisma Schema: $_" -ForegroundColor Red
 }
@@ -128,9 +134,12 @@ Write-Host "`n🚀 Reiniciando servicios..." -ForegroundColor Blue
 
 # Reiniciar servicios
 try {
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'backend\admin'; npm run dev" -WindowStyle Minimized
+    $adminPath = Join-Path $PSScriptRoot "..\..\backend\admin"
+    $userPath = Join-Path $PSScriptRoot "..\..\backend\user-service"
+    
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$adminPath'; npm run dev" -WindowStyle Minimized
     Start-Sleep 2
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'backend\user-service'; npm run dev" -WindowStyle Minimized
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$userPath'; npm run dev" -WindowStyle Minimized
     Write-Host "✅ Servicios reiniciados" -ForegroundColor Green
 } catch {
     Write-Host "❌ Error reiniciando servicios: $_" -ForegroundColor Red
