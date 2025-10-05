@@ -12,6 +12,7 @@ const venueController = new venue_controller_1.VenueController({
 async function venueRoutes(fastify) {
     fastify.get('/', venueController.getAll.bind(venueController));
     fastify.get('/:id', venueController.getById.bind(venueController));
+    // fastify.get('/slug/:slug', venueController.getBySlug.bind(venueController));
     fastify.post('/', {
         preHandler: auth_middleware_1.authMiddleware
     }, venueController.create.bind(venueController));

@@ -179,7 +179,7 @@ class AuthService {
         user = new User({
           username,
           email,
-          password: 'google_auth_' + Math.random().toString(36), // Password temporal
+          password: 'google_auth_' + Math.random().toString(36),
           googleId,
           avatar: picture,
           firstName: name?.split(' ')[0] || '',

@@ -171,6 +171,109 @@ class UserManagementController {
       });
     }
   };
+
+  /**
+   * Obtener perfil del usuario autenticado
+   */
+  getProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.id;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: 'Usuario no autenticado'
+        });
+        return;
+      }
+
+      const user = await User.findById(userId, {
+        password: 0 // Excluir contraseña
+      });
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          error: 'Usuario no encontrado'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        user: user
+      });
+    } catch (error: any) {
+      console.error('[User Service] Error obteniendo perfil:', error.message);
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo perfil',
+        details: error.message
+      });
+    }
+  };
+
+  /**
+   * Actualizar perfil de usuario
+   */
+  updateProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.id;
+      const { username, firstName, lastName, phone, address, city, country, dateOfBirth } = req.body;
+
+      console.log(`[User Service] Actualizando perfil del usuario ${userId}`);
+      console.log('Datos recibidos:', req.body);
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: 'Usuario no autenticado'
+        });
+        return;
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          username,
+          firstName,
+          lastName,
+          phone,
+          address,
+          city,
+          country,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined
+        },
+        { 
+          new: true,
+          select: '-password' // Excluir contraseña
+        }
+      );
+
+      if (!updatedUser) {
+        res.status(404).json({
+          success: false,
+          error: 'Usuario no encontrado'
+        });
+        return;
+      }
+
+      console.log(`[User Service] Perfil actualizado exitosamente para usuario ${userId}`);
+
+      res.json({
+        success: true,
+        message: 'Perfil actualizado correctamente',
+        user: updatedUser
+      });
+    } catch (error: any) {
+      console.error('[User Service] Error actualizando perfil:', error.message);
+      res.status(500).json({
+        success: false,
+        error: 'Error actualizando perfil',
+        details: error.message
+      });
+    }
+  };
 }
 
 export default UserManagementController;

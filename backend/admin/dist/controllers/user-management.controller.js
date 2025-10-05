@@ -4,7 +4,7 @@ exports.UserManagementController = void 0;
 const zod_1 = require("zod");
 const user_api_service_1 = require("../services/user-api.service");
 const logger_1 = require("../utils/logger");
-// ==================== SCHEMAS DE VALIDACIÓN ====================
+// Esquemas para validar datos de entrada
 const promoteUserSchema = zod_1.z.object({
     reason: zod_1.z.string().optional(),
     notes: zod_1.z.string().optional()
@@ -29,7 +29,7 @@ class UserManagementController {
             }
             const query = userQuerySchema.parse(request.query);
             const { search, role } = query;
-            logger_1.logger.info(`Admin ${request.user.id} consultando usuarios del user-service`);
+            // Registrar la acción en los logs
             // Obtener usuarios del user-service
             const allUsers = await user_api_service_1.userApiService.getUsers();
             // Aplicar filtros localmente
@@ -81,7 +81,7 @@ class UserManagementController {
                 });
             }
             const { id } = request.params;
-            logger_1.logger.info(`Admin ${request.user.id} consultando usuario ${id} del user-service`);
+            // Registrar consulta en logs
             const user = await user_api_service_1.userApiService.getUserById(id);
             if (!user) {
                 return reply.status(404).send({
@@ -115,7 +115,7 @@ class UserManagementController {
             }
             const { id } = request.params;
             const validatedData = promoteUserSchema.parse(request.body);
-            logger_1.logger.info(`Admin ${request.user.id} promocionando usuario ${id} a VIP`);
+            // Registrar promoción en logs
             // Verificar que el usuario existe antes de promocionar
             const existingUser = await user_api_service_1.userApiService.getUserById(id);
             if (!existingUser) {
@@ -131,7 +131,7 @@ class UserManagementController {
             }
             // Promocionar usuario via API call
             const promotedUser = await user_api_service_1.userApiService.promoteUserToVip(id, request.user.id);
-            logger_1.logger.info(`Usuario ${id} promocionado a VIP exitosamente por admin ${request.user.id}`);
+            // Promoción completada exitosamente
             return reply.send({
                 success: true,
                 message: 'Usuario promocionado a VIP exitosamente',
@@ -176,7 +176,7 @@ class UserManagementController {
             }
             const { id } = request.params;
             const validatedData = promoteUserSchema.parse(request.body);
-            logger_1.logger.info(`Admin ${request.user.id} degradando usuario VIP ${id} a usuario normal`);
+            // Registrar degradación en logs
             // Verificar que el usuario existe y es VIP
             const existingUser = await user_api_service_1.userApiService.getUserById(id);
             if (!existingUser) {
@@ -191,7 +191,7 @@ class UserManagementController {
             }
             // Degradar usuario via API call
             const demotedUser = await user_api_service_1.userApiService.demoteVipToUser(id, request.user.id);
-            logger_1.logger.info(`Usuario VIP ${id} degradado a usuario normal por admin ${request.user.id}`);
+            // Degradación completada exitosamente
             return reply.send({
                 success: true,
                 message: 'Usuario VIP degradado a usuario normal exitosamente',
@@ -234,7 +234,7 @@ class UserManagementController {
                     error: 'Solo SUPER_ADMIN puede ver estadísticas de usuarios'
                 });
             }
-            logger_1.logger.info(`Admin ${request.user.id} consultando estadísticas de usuarios`);
+            // Registrar consulta de estadísticas
             const allUsers = await user_api_service_1.userApiService.getUsers();
             const stats = {
                 total: allUsers.length,

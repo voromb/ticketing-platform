@@ -8,6 +8,11 @@ import { venueRoutes } from './routes/venue.routes';
 import { adminRoutes } from './routes/admin.routes';
 import { auditRoutes } from './routes/audit.routes';
 import { userManagementRoutes } from './routes/user-management.routes';
+import { categoryRoutes } from './routes/category.routes';
+import { reservationRoutes } from './routes/reservation.routes';
+import { orderRoutes } from './routes/order.routes';
+import { paymentRoutes } from './routes/payment.routes';
+import { startReservationCron } from './jobs/reservation.cron';
 import ENV from './config/env';
 import pino from 'pino';
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -37,11 +42,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   const prisma = new PrismaClient();
   registerAuditMiddleware(prisma);
 
-  // Inicializar RabbitMQ (comentado temporalmente)
-  const rabbitmq = {
-    isConnected: () => false,
-    close: async () => {}
-  };
+  // Inicializar RabbitMQ
+  const { rabbitmqService } = await import('./services/rabbitmq.service');
+  await rabbitmqService.connect();
   await server.register(cors, {
     origin: true,
     credentials: true,
@@ -78,25 +81,66 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   try {
+    console.log('🔄 Iniciando registro de rutas...');
+    
+    console.log('📝 Registrando authRoutes...');
     await server.register(authRoutes, { prefix: '/api/auth' });
+    console.log('✅ authRoutes OK');
+    
+    console.log('📝 Registrando eventRoutes...');
     await server.register(eventRoutes, { prefix: '/api/events' });
+    console.log('✅ eventRoutes OK');
+    
+    console.log('📝 Registrando venueRoutes...');
     await server.register(venueRoutes, { prefix: '/api/venues' });
+    console.log('✅ venueRoutes OK');
+    
+    console.log('📝 Registrando adminRoutes...');
     await server.register(adminRoutes, { prefix: '/api/admins' });
+    console.log('✅ adminRoutes OK');
+    
+    console.log('📝 Registrando userManagementRoutes...');
     await server.register(userManagementRoutes, { prefix: '/api/user-management' });
+    console.log('✅ userManagementRoutes OK');
+    
+    console.log('📝 Registrando auditRoutes...');
     await server.register(auditRoutes, { prefix: '/api/audit' });
+    console.log('✅ auditRoutes OK');
+    
+    console.log('📝 Registrando categoryRoutes...');
+    await server.register(categoryRoutes, { prefix: '/api/categories' });
+    console.log('✅ categoryRoutes OK');
+    
+    console.log('📝 Registrando reservationRoutes...');
+    await server.register(reservationRoutes, { prefix: '/api/reservations' });
+    console.log('✅ reservationRoutes OK');
+    
+    console.log('📝 Registrando orderRoutes...');
+    await server.register(orderRoutes, { prefix: '/api/orders' });
+    console.log('✅ orderRoutes OK');
+    
+    console.log('📝 Registrando paymentRoutes...');
+    await server.register(paymentRoutes, { prefix: '/api/payments' });
+    console.log('✅ paymentRoutes OK');
+    
+    console.log('✅ Todas las rutas registradas exitosamente');
   } catch (error: any) {
-    logger.error('Error registrando rutas:', error);
+    logger.error('❌ Error registrando rutas:', error);
+    console.error('❌ Error completo:', error);
+    console.error('❌ Stack:', error.stack);
   }
   server.get('/health', async (request, reply) => {
     const dbHealthy = await prisma.$queryRaw`SELECT 1`
       .then(() => true)
       .catch(() => false);
 
+    const { rabbitmqService } = await import('./services/rabbitmq.service');
+
     return reply.send({
       status: dbHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       database: dbHealthy ? 'connected' : 'disconnected',
-      rabbitmq: 'disconnected'
+      rabbitmq: rabbitmqService.isConnected() ? 'connected' : 'disconnected'
     });
   });
 
@@ -151,6 +195,9 @@ export async function startServer() {
     `);
     
     logger.info(`Servidor iniciado en puerto ${ENV.PORT}`);
+    
+    // Iniciar cron job de reservas
+    startReservationCron();
     
     return server;
   } catch (error) {

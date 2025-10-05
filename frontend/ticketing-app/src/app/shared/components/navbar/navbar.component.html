@@ -66,12 +66,6 @@
             </a>
           </li>
           
-          <li>
-            <a class="dropdown-item" href="#" (click)="goToMyTickets($event)">
-              <i class="fas fa-ticket-alt me-2"></i>Mis Tickets
-            </a>
-          </li>
-          
           <!-- Panel de Admin -->
           <li *ngIf="isAdmin">
             <a class="dropdown-item" href="#" (click)="goToAdminDashboard($event)">
@@ -79,12 +73,6 @@
             </a>
           </li>
           
-          <!-- Panel de Usuario -->
-          <li *ngIf="!isAdmin">
-            <a class="dropdown-item" href="#" (click)="goToUserPanel($event)">
-              <i class="fas fa-shopping-cart me-2"></i>Panel Usuario
-            </a>
-          </li>
           
           <li><hr class="dropdown-divider"></li>
           

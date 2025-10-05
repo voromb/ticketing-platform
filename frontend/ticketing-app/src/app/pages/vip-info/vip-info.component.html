@@ -1,0 +1,193 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-lg p-8 mb-8 text-white">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center mb-2">
+            <i class="fas fa-crown text-3xl mr-4"></i>
+            <h1 class="text-3xl font-bold">Programa VIP</h1>
+          </div>
+          <p class="text-yellow-100 text-lg">Experiencias exclusivas para verdaderos fanáticos del rock y metal</p>
+        </div>
+        <button 
+          (click)="goBack()"
+          class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all">
+          <i class="fas fa-arrow-left mr-2"></i>Volver
+        </button>
+      </div>
+    </div>
+
+    <!-- ¿Qué es el Programa VIP? -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">¿Qué es el Programa VIP?</h2>
+      <p class="text-gray-600 leading-relaxed">
+        Nuestro programa VIP está diseñado para recompensar a los fanáticos más dedicados del rock y metal. 
+        No es algo que puedas comprar, sino que se gana a través de tu pasión, lealtad y participación activa 
+        en nuestra comunidad de eventos.
+      </p>
+    </div>
+
+    <!-- Criterios para ser VIP -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">¿Cómo convertirse en VIP?</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center p-4 border border-gray-200 rounded-lg">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-ticket-alt text-blue-600 text-2xl"></i>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Compras Frecuentes</h3>
+          <p class="text-gray-600 text-sm">Mínimo 5 entradas en 6 meses para 3 eventos diferentes</p>
+        </div>
+        
+        <div class="text-center p-4 border border-gray-200 rounded-lg">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-heart text-green-600 text-2xl"></i>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Comportamiento Ejemplar</h3>
+          <p class="text-gray-600 text-sm">Sin incidentes, respeto a las normas y buena conducta</p>
+        </div>
+        
+        <div class="text-center p-4 border border-gray-200 rounded-lg">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-clock text-purple-600 text-2xl"></i>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Mérito y Lealtad</h3>
+          <p class="text-gray-600 text-sm">3 meses de antigüedad, recomendaciones y participación activa</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beneficios VIP -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Beneficios Exclusivos</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex items-start space-x-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-percentage text-yellow-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Descuento del 10%</h3>
+            <p class="text-gray-600 text-sm">En todas las entradas, sin excepciones</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-fast-forward text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Acceso Prioritario</h3>
+            <p class="text-gray-600 text-sm">Compra 24 horas antes que el público general</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-lg border border-green-200">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-star text-green-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Ofertas Exclusivas</h3>
+            <p class="text-gray-600 text-sm">Promociones especiales solo para miembros VIP</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-headset text-purple-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Soporte Premium</h3>
+            <p class="text-gray-600 text-sm">Atención al cliente prioritaria y personalizada</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proceso de Evaluación -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Proceso de Evaluación</h2>
+      
+      <div class="space-y-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Evaluación Automática</h3>
+            <p class="text-gray-600 text-sm">Nuestro sistema revisa mensualmente tu actividad y compras</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Análisis de Criterios</h3>
+            <p class="text-gray-600 text-sm">Verificamos compras, comportamiento y antigüedad</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Revisión Manual</h3>
+            <p class="text-gray-600 text-sm">Nuestro equipo revisa casos especiales y recomendaciones</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+          <div>
+            <h3 class="font-semibold text-gray-900">Notificación</h3>
+            <p class="text-gray-600 text-sm">Te notificamos por email y en tu panel de usuario</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Preguntas Frecuentes</h2>
+      
+      <div class="space-y-6">
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">¿Puedo comprar el estatus VIP?</h3>
+          <p class="text-gray-600">No, el estatus VIP no se puede comprar. Se gana únicamente a través del mérito, 
+          la lealtad y la participación activa en nuestra comunidad.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">¿Cuánto tiempo dura el estatus VIP?</h3>
+          <p class="text-gray-600">El estatus VIP se mantiene mientras sigas cumpliendo los criterios. 
+          Realizamos evaluaciones cada 6 meses para asegurar que los beneficios lleguen a quienes realmente los merecen.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">¿Cómo sé si cumplo los criterios?</h3>
+          <p class="text-gray-600">Puedes revisar tu actividad en tu panel de usuario. Si crees que cumples los criterios 
+          pero no has sido seleccionado, puedes contactar con nuestro equipo de soporte.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">¿Los descuentos se aplican automáticamente?</h3>
+          <p class="text-gray-600">Sí, una vez que tengas el estatus VIP, todos los descuentos y beneficios 
+          se aplicarán automáticamente en tu cuenta.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-8 text-white text-center">
+      <i class="fas fa-guitar text-4xl mb-4"></i>
+      <h2 class="text-2xl font-bold mb-4">¿Listo para Rock?</h2>
+      <p class="text-gray-300 mb-6">Participa activamente en nuestra comunidad, asiste a eventos y demuestra tu pasión por el rock y metal.</p>
+      <button 
+        (click)="goBack()"
+        class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-8 py-3 rounded-lg transition-all">
+        <i class="fas fa-user mr-2"></i>Volver a Mi Perfil
+      </button>
+    </div>
+
+  </div>
+</div>

@@ -97,7 +97,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/shop']);
         break;
       case 'company':
-        this.router.navigate(['/shop']); // Temporal, redirigir a shop
+        this.router.navigate(['/shop']);
         break;
       default:
         this.router.navigate(['/shop']); // Por defecto ir a shop (panel usuario)

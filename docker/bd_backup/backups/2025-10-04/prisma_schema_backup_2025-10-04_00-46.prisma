@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          UserRole   @default(ADMIN)
+  isActive      Boolean    @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  auditLogs     AuditLog[]
+  eventsCreated Event[]
+  venuesCreated Venue[]
+
+  @@index([email])
+  @@map("admins")
+}
+
+model Venue {
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  capacity    Int
+  address     String
+  city        String
+  state       String?
+  country     String         @default("Espa??a")
+  postalCode  String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  amenities   String[]
+  images      String[]
+  isActive    Boolean        @default(true)
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  events      Event[]
+  createdBy   Admin?         @relation(fields: [createdById], references: [id])
+  sections    VenueSection[]
+
+  @@index([slug])
+  @@index([city])
+}
+
+model VenueSection {
+  id            String          @id @default(uuid())
+  venueId       String
+  name          String
+  capacity      Int
+  rowCount      Int?
+  seatsPerRow   Int?
+  PriceCategory PriceCategory[]
+  venue         Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, name])
+  @@index([venueId])
+}
+
+model Event {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  slug             String            @unique
+  status           EventStatus       @default(DRAFT)
+  eventDate        DateTime
+  doorsOpenTime    DateTime?
+  saleStartDate    DateTime
+  saleEndDate      DateTime
+  venueId          String
+  totalCapacity    Int
+  availableTickets Int
+  reservedTickets  Int               @default(0)
+  soldTickets      Int               @default(0)
+  tags             String[]
+  bannerImage      String?
+  thumbnailImage   String?
+  images           String[]
+  minPrice         Decimal           @db.Decimal(10, 2)
+  maxPrice         Decimal           @db.Decimal(10, 2)
+  ageRestriction   String?
+  createdById      String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  publishedAt      DateTime?
+  cancelledAt      DateTime?
+  completedAt      DateTime?
+  metadata         Json?
+  categoryId       Int               @map("category_id")
+  subcategoryId    Int?              @map("subcategory_id")
+  auditLogs        AuditLog[]
+  createdBy        Admin             @relation(fields: [createdById], references: [id])
+  venue            Venue             @relation(fields: [venueId], references: [id])
+  category         EventCategory     @relation(fields: [categoryId], references: [id], map: "fk_event_category")
+  subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id], map: "fk_event_subcategory")
+  priceCategories  PriceCategory[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([eventDate])
+  @@map("Event")
+}
+
+model PriceCategory {
+  id               String        @id @default(uuid())
+  eventId          String
+  name             String
+  description      String?
+  price            Decimal       @db.Decimal(10, 2)
+  totalTickets     Int
+  availableTickets Int
+  isActive         Boolean       @default(true)
+  capacity         Int
+  createdAt        DateTime      @default(now())
+  metadata         Json?
+  sectionId        String?
+  updatedAt        DateTime
+  event            Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  VenueSection     VenueSection? @relation(fields: [sectionId], references: [id])
+
+  @@unique([eventId, name])
+  @@index([eventId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tableName String
+  recordId  String
+  action    String
+  fieldName String?
+  oldValue  Json?
+  newValue  Json?
+  adminId   String
+  eventId   String?
+  ipAddress String?
+  userAgent String?
+  sessionId String?
+  createdAt DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  event     Event?   @relation(fields: [eventId], references: [id])
+
+  @@index([tableName, recordId])
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model EventCategory {
+  id            Int                @id @default(autoincrement())
+  name          String             @unique
+  events        Event[]
+  subcategories EventSubcategory[]
+}
+
+model EventSubcategory {
+  id         Int           @id @default(autoincrement())
+  categoryId Int           @map("category_id")
+  name       String
+  events     Event[]
+  category   EventCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([categoryId, name])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+enum EventStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  CANCELLED
+  COMPLETED
+  SUSPENDED
+}

@@ -10,8 +10,8 @@
             <i class="fas fa-user"></i>
           </div>
           <div>
-            <h2 class="mb-1">{{ user?.username }}</h2>
-            <p class="text-muted mb-1">{{ user?.email }}</p>
+            <h2 class="mb-1">{{ user?.firstName || user?.email || 'Usuario' }}</h2>
+            <p class="text-muted mb-1">{{ user?.email || 'Sin email' }}</p>
             <span [class]="getRoleBadgeClass(user?.role)">
               {{ getRoleDisplayName(user?.role) }}
             </span>
@@ -26,6 +26,27 @@
              [class.active]="activeTab === 'profile'"
              (click)="setActiveTab('profile')">
             <i class="fas fa-user me-2"></i>Información Personal
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="activeTab === 'tickets'"
+             (click)="setActiveTab('tickets')">
+            <i class="fas fa-ticket-alt me-2"></i>Mis Entradas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="activeTab === 'history'"
+             (click)="setActiveTab('history')">
+            <i class="fas fa-history me-2"></i>Historial
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="!isVipUser()">
+          <a class="nav-link text-warning"
+             [class.active]="activeTab === 'vip'"
+             (click)="setActiveTab('vip')">
+            <i class="fas fa-crown me-2"></i>Beneficios VIP
           </a>
         </li>
         <li class="nav-item">
@@ -134,6 +155,194 @@
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab de Mis Entradas -->
+        <div class="tab-pane" [class.active]="activeTab === 'tickets'">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-ticket-alt me-2"></i>Mis Entradas
+                <i *ngIf="isVipUser()" class="fas fa-crown text-warning ms-2"></i>
+              </h5>
+            </div>
+            <div class="card-body">
+              
+              <div *ngIf="isVipUser()">
+                <div class="alert alert-warning border-warning">
+                  <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-crown text-warning me-2 crown-medium"></i>
+                    <h6 class="mb-0">Tus Beneficios VIP Activos</h6>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-percentage text-warning me-2"></i>
+                        <div>
+                          <strong>Descuento del 10%</strong>
+                          <small class="d-block text-muted">En todas las entradas</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-fast-forward text-warning me-2"></i>
+                        <div>
+                          <strong>Acceso Prioritario</strong>
+                          <small class="d-block text-muted">Compra antes que otros</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        <div>
+                          <strong>Ofertas Exclusivas</strong>
+                          <small class="d-block text-muted">Solo para miembros VIP</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-headset text-warning me-2"></i>
+                        <div>
+                          <strong>Soporte Premium</strong>
+                          <small class="d-block text-muted">Atención prioritaria</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="text-center py-4">
+                  <i class="fas fa-ticket-alt text-muted large-icon"></i>
+                  <p class="text-muted mt-3">Tus entradas aparecerán aquí cuando realices compras</p>
+                  <small class="text-muted">Recuerda: Como VIP tienes 10% de descuento automático</small>
+                </div>
+              </div>
+              
+              <div *ngIf="!isVipUser()">
+                <div *ngIf="myTickets.length === 0" class="text-center py-4">
+                  <i class="fas fa-ticket-alt text-muted large-icon"></i>
+                  <p class="text-muted mt-3">No tienes entradas compradas</p>
+                </div>
+                
+                <div *ngIf="myTickets.length > 0" class="row">
+                  <div *ngFor="let ticket of myTickets" class="col-md-6 mb-3">
+                    <div class="card border">
+                      <div class="card-body">
+                        <h6 class="card-title">{{ ticket.eventName }}</h6>
+                        <p class="card-text text-muted small">{{ ticket.venue }}</p>
+                        <p class="card-text">
+                          <small class="text-muted">{{ ticket.date | date:'dd/MM/yyyy' }}</small><br>
+                          <strong>{{ ticket.quantity }} entrada(s) - {{ ticket.price | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                        </p>
+                        <span class="badge" [ngClass]="getStatusBadgeClass(ticket.status)">
+                          {{ getStatusText(ticket.status) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab de Historial -->
+        <div class="tab-pane" [class.active]="activeTab === 'history'">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-history me-2"></i>Historial de Compras
+              </h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="purchaseHistory.length === 0" class="text-center py-4">
+                <i class="fas fa-history text-muted large-icon"></i>
+                <p class="text-muted mt-3">No tienes compras anteriores</p>
+              </div>
+              
+              <div *ngIf="purchaseHistory.length > 0">
+                <div *ngFor="let purchase of purchaseHistory" class="border-bottom pb-3 mb-3">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="mb-1">{{ purchase.eventName }}</h6>
+                      <p class="text-muted small mb-1">{{ purchase.date | date:'dd/MM/yyyy' }}</p>
+                      <p class="mb-0">{{ purchase.quantity }} entrada(s)</p>
+                    </div>
+                    <div class="text-end">
+                      <strong class="d-block">{{ purchase.total | currency:'EUR':'symbol':'1.2-2' }}</strong>
+                      <span class="badge" [ngClass]="getStatusBadgeClass(purchase.status)">
+                        {{ getStatusText(purchase.status) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab de Beneficios VIP -->
+        <div class="tab-pane" [class.active]="activeTab === 'vip'" *ngIf="!isVipUser()">
+          <div class="card border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+              <h5 class="mb-0 text-warning">
+                <i class="fas fa-crown me-2"></i>Beneficios VIP
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 border-warning border-opacity-25">
+                    <div class="card-body text-center">
+                      <i class="fas fa-percentage text-warning mb-2 vip-benefit-icon"></i>
+                      <h6 class="card-title">Descuento Exclusivo</h6>
+                      <p class="card-text text-muted">10% de descuento en todas las entradas</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 border-warning border-opacity-25">
+                    <div class="card-body text-center">
+                      <i class="fas fa-fast-forward text-warning mb-2 vip-benefit-icon"></i>
+                      <h6 class="card-title">Acceso Prioritario</h6>
+                      <p class="card-text text-muted">Compra antes que el público general</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 border-warning border-opacity-25">
+                    <div class="card-body text-center">
+                      <i class="fas fa-star text-warning mb-2 vip-benefit-icon"></i>
+                      <h6 class="card-title">Ofertas Exclusivas</h6>
+                      <p class="card-text text-muted">Promociones especiales solo para VIP</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 border-warning border-opacity-25">
+                    <div class="card-body text-center">
+                      <i class="fas fa-headset text-warning mb-2 vip-benefit-icon"></i>
+                      <h6 class="card-title">Soporte Premium</h6>
+                      <p class="card-text text-muted">Atención al cliente prioritaria</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-center mt-4">
+                <button class="btn btn-warning" (click)="goToVipInfo()">
+                  <i class="fas fa-info-circle me-2"></i>Más Información
+                </button>
+              </div>
             </div>
           </div>
         </div>

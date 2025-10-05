@@ -119,10 +119,9 @@ class VenueController {
             const query = venueQuerySchema.parse(request.query);
             const { page, limit, search, city, isActive, minCapacity, maxCapacity } = query;
             const where = {};
-            // Comentado para mostrar todos los venues (activos e inactivos)
-            // if (typeof isActive === 'boolean') {
-            //     where.isActive = isActive;
-            // }
+            if (typeof isActive === 'boolean') {
+                where.isActive = isActive;
+            }
             if (city) {
                 where.city = { contains: city, mode: 'insensitive' };
             }
@@ -155,7 +154,9 @@ class VenueController {
                     name: 'asc',
                 },
             });
-            return reply.send({
+            return reply
+                .header('Content-Type', 'application/json; charset=utf-8')
+                .send({
                 venues,
                 pagination: {
                     total,
@@ -218,6 +219,53 @@ class VenueController {
             });
         }
     }
+    /**Buscar por Slug
+     */
+    //     async getBySlug(
+    //   request: FastifyRequest<{ Params: { slug: string } }>,
+    //   reply: FastifyReply
+    // ) {
+    //   try {
+    //     const { slug } = request.params;
+    //     const venue = await prisma.venue.findUnique({
+    //       where: { slug }, 
+    //       include: {
+    //         sections: true,
+    //         createdBy: {
+    //           select: {
+    //             id: true,
+    //             email: true,
+    //             firstName: true,
+    //             lastName: true,
+    //           },
+    //         },
+    //         events: {
+    //           where: {
+    //             status: 'ACTIVE',
+    //             eventDate: {
+    //               gte: new Date(),
+    //             },
+    //           },
+    //           orderBy: {
+    //             eventDate: 'asc',
+    //           },
+    //           take: 10,
+    //         },
+    //       },
+    //     });
+    //     if (!venue) {
+    //       return reply.status(404).send({
+    //         error: 'Venue no encontrado',
+    //       });
+    //     }
+    //     return reply.send({ venue });
+    //   } catch (error) {
+    //     logger.error('Error obteniendo venue por slug:', error);
+    //     return reply.status(500).send({
+    //       error: 'Error interno del servidor',
+    //     });
+    //   }
+    // }
     /**
      * Actualizar un venue
      */

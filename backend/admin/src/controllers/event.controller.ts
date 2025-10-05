@@ -13,7 +13,7 @@ class EventController {
     reply: FastifyReply
   ) {
     try {
-      const { user } = request;
+      const user = (request as any).user;
       const data = request.body;
 
       if (!user?.id) return reply.code(403).send({ error: 'Usuario no autenticado' });
@@ -74,20 +74,52 @@ class EventController {
     }
   }
 
-    // ==================== LISTAR categorias ====================
-
-  async listCategories(req, reply) {
+  // Métodos públicos (sin autenticación)
+  async listRockEvents(
+    request: FastifyRequest<{ Querystring: EventQueryDTO }>,
+    reply: FastifyReply
+  ) {
     try {
-      const categories = await prisma.eventCategory.findMany({
+      const events = await prisma.event.findMany({
         include: {
-          EventSubcategory: true, // incluir subcategorías
+          venue: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+              capacity: true,
+              address: true
+            }
+          },
+          localities: {
+            select: {
+              id: true,
+              name: true,
+              capacity: true,
+              availableTickets: true,
+              soldTickets: true,
+              reservedTickets: true,
+              price: true,
+              color: true,
+              isActive: true
+            },
+            where: {
+              isActive: true
+            },
+            orderBy: {
+              sortOrder: 'asc'
+            }
+          }
         },
+        orderBy: {
+          eventDate: 'asc'
+        }
       });
 
-      return reply.send(categories);
-    } catch (error) {
-      console.error(error);
-      return reply.status(500).send({ message: 'Error fetching categories' });
+      return reply.send({ success: true, data: events, total: events.length });
+    } catch (error: any) {
+      logger.error('Error listing events:', error);
+      return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
     }
   }
 
@@ -163,7 +195,7 @@ class EventController {
       const { id } = request.params;
       const event = await prisma.event.findUnique({
         where: { id },
-        include: { venue: true, category: true, subcategory: true }
+        include: { venue: true }
       });
 
       if (!event) return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
@@ -230,6 +262,44 @@ class EventController {
     } catch (error: any) {
       logger.error('Error deleting event:', error);
       return reply.status(500).send({ success: false, error: 'Error interno' });
+    }
+  }
+
+  // ==================== OBTENER LOCALIDADES DE UN EVENTO ====================
+  async getEventLocalities(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+
+      // Verificar que el evento existe
+      const event = await prisma.event.findUnique({ where: { id } });
+      if (!event) {
+        return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
+      }
+
+      const localities = await prisma.eventLocality.findMany({
+        where: { 
+          eventId: id,
+          isActive: true
+        },
+        orderBy: {
+          price: 'asc'
+        }
+      });
+
+      logger.info(`📍 Localidades encontradas para evento ${id}: ${localities.length}`);
+
+      return reply.send({ 
+        success: true, 
+        data: localities,
+        total: localities.length
+      });
+
+    } catch (error: any) {
+      logger.error('Error getting event localities:', error);
+      return reply.status(500).send({ success: false, error: 'Error interno', details: error.message });
     }
   }
 }

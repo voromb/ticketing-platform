@@ -5,10 +5,9 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 export async function eventRoutes(fastify: FastifyInstance) {
 
   // ==================== RUTAS PÚBLICAS ====================
-  fastify.get('/public/:id', EventController.getEventById);
-  fastify.get('/public', EventController.listRockEvents);
-  fastify.get('/public/categories', EventController.listCategories);
-  fastify.get('/public/categories/available', EventController.listAvailableCategories);
+  fastify.get('/public', EventController.listRockEvents.bind(EventController)); // lista pública de eventos
+  fastify.get('/public/:id', EventController.getEventById.bind(EventController));
+  fastify.get('/:id/localities', EventController.getEventLocalities.bind(EventController)); // Localidades públicas
 
   // ==================== RUTAS PRIVADAS ====================
   fastify.register(async function (fastify) {

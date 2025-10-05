@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdminService, Venue } from '../../../core/services/admin.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-venues-list',
@@ -11,14 +12,14 @@ import { AdminService, Venue } from '../../../core/services/admin.service';
   template: `
     <div class="p-8 pb-16 space-y-8">
 
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Venues</h1>
           <p class="mt-2 text-sm text-slate-300">
             Administra los lugares donde se realizan los eventos
           </p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
+        <div class="mt-4 sm:mt-0 flex flex-wrap gap-4">
           <button (click)="refreshData()"
                   style="border-radius: 24px;"
                   class="inline-flex items-center px-6 py-3 border border-gray-400/30 text-sm font-medium text-gray-300 bg-gray-800/50 hover:bg-gray-700 hover:text-white hover:border-gray-300 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
@@ -401,6 +402,96 @@ import { AdminService, Venue } from '../../../core/services/admin.service';
       </div>
 
     </div>
+
+    <!-- Modal de Detalles de Venue -->
+    <div *ngIf="showVenueModal && selectedVenue" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Detalles del Venue</h3>
+            <p class="text-sm text-slate-300">{{ selectedVenue.name }}</p>
+          </div>
+          <button (click)="closeVenueModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+
+          <!-- Información Principal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Información del Local</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Nombre:</span>
+                  <span class="text-white">{{ selectedVenue.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Dirección:</span>
+                  <span class="text-white">{{ selectedVenue.address }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Ciudad:</span>
+                  <span class="text-white">{{ selectedVenue.city }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Capacidad:</span>
+                  <span class="text-white font-bold">{{ selectedVenue.capacity }} personas</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Estado y Actividad</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Estado:</span>
+                  <span [class]="selectedVenue.isActive ? 'text-green-400' : 'text-red-400'">
+                    {{ selectedVenue.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">ID:</span>
+                  <span class="text-white text-xs">{{ selectedVenue.id }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estadísticas del Venue -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-blue-400">{{ getVenueEventsCount() }}</div>
+              <div class="text-sm text-slate-300">Eventos Programados</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-400">{{ getVenueOccupancyRate() }}%</div>
+              <div class="text-sm text-slate-300">Tasa de Ocupación</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-400">€{{ getVenueRevenue() }}</div>
+              <div class="text-sm text-slate-300">Ingresos Estimados</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button
+            (click)="closeVenueModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   `
 })
 export class VenuesListComponent implements OnInit {
@@ -426,6 +517,10 @@ export class VenuesListComponent implements OnInit {
     capacity: 0,
     isActive: true
   };
+
+  // Modal de detalles de venue
+  showVenueModal = false;
+  selectedVenue: Venue | null = null;
 
   constructor(
     private adminService: AdminService,
@@ -576,7 +671,14 @@ export class VenuesListComponent implements OnInit {
           // Venue actualizado exitosamente
           this.closeModal();
           this.loadVenues();
-          alert('Venue actualizado exitosamente');
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: '¡Venue actualizado!',
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true
+          });
         },
         error: (error) => {
           console.error('❌ Error updating venue:', error);
@@ -591,7 +693,12 @@ export class VenuesListComponent implements OnInit {
             errorMessage = error.message;
           }
 
-          alert('❌ Error al actualizar venue: ' + errorMessage);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar venue',
+            text: errorMessage,
+            confirmButtonText: 'Entendido'
+          });
         }
       });
     } else {
@@ -620,7 +727,14 @@ export class VenuesListComponent implements OnInit {
           // Venue creado exitosamente
           this.closeModal();
           this.loadVenues();
-          alert('Venue creado exitosamente');
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: '¡Venue creado!',
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true
+          });
         },
         error: (error) => {
           console.error('❌ Error creating venue:', error);
@@ -637,7 +751,12 @@ export class VenuesListComponent implements OnInit {
             errorMessage = error.message;
           }
 
-          alert('❌ Error al crear venue: ' + errorMessage);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al crear venue',
+            text: errorMessage,
+            confirmButtonText: 'Entendido'
+          });
         }
       });
     }
@@ -652,7 +771,25 @@ export class VenuesListComponent implements OnInit {
   }
 
   viewVenue(venue: Venue) {
-    // Ver detalles del venue
+    this.selectedVenue = venue;
+    this.showVenueModal = true;
+  }
+
+  closeVenueModal() {
+    this.showVenueModal = false;
+    this.selectedVenue = null;
+  }
+
+  getVenueEventsCount(): number {
+    return this.selectedVenue?._count?.events || 0;
+  }
+
+  getVenueOccupancyRate(): number {
+    return 0; // TODO: Calcular desde tickets vendidos
+  }
+
+  getVenueRevenue(): number {
+    return 0; // TODO: Calcular desde ventas reales
   }
 
   activateVenue(venue: Venue) {

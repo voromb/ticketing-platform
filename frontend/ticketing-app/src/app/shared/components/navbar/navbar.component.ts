@@ -1,7 +1,8 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, User } from '../../../core/services/auth.service';
+import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -11,19 +12,23 @@ import Swal from 'sweetalert2';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   user: User | null = null;
   showDropdown = false;
+  private userSubscription?: Subscription;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe(user => {
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
       this.user = user;
+      this.cdr.markForCheck();
     });
+    
     if (this.router.url.includes('/admin-dashboard') && !this.user) {
       setTimeout(() => {
         const token = localStorage.getItem('token');
@@ -103,19 +108,6 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/profile']);
   }
 
-  goToMyTickets(event?: Event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    this.closeDropdown();
-    // Función para ver mis tickets (implementar después)
-    Swal.fire({
-      icon: 'info',
-      title: 'Próximamente',
-      text: 'Función de mis tickets en desarrollo'
-    });
-  }
 
   goToAdminDashboard(event?: Event) {
     if (event) {
@@ -158,6 +150,12 @@ export class NavbarComponent implements OnInit {
       case 'user': return 'badge bg-primary';
       case 'company': return 'badge bg-info';
       default: return 'badge bg-secondary';
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 }

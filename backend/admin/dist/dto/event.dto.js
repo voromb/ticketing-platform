@@ -11,7 +11,8 @@ exports.createEventSchema = zod_1.z.object({
     saleEndDate: zod_1.z.string(),
     venueId: zod_1.z.string(),
     totalCapacity: zod_1.z.number(),
-    category: zod_1.z.string(),
+    categoryId: zod_1.z.number(), // ← aquí
+    subcategoryId: zod_1.z.number().optional(), // ← si puede ser nula
     minPrice: zod_1.z.number(),
     maxPrice: zod_1.z.number()
 });
@@ -20,5 +21,7 @@ exports.eventQuerySchema = zod_1.z.object({
     page: zod_1.z.string().optional().default('1').transform(Number),
     limit: zod_1.z.string().optional().default('10').transform(Number),
     status: zod_1.z.string().optional(),
-    search: zod_1.z.string().optional()
+    search: zod_1.z.string().optional(),
+    categoryId: zod_1.z.string().optional().transform(Number),
+    subcategoryId: zod_1.z.string().optional().transform(Number)
 });

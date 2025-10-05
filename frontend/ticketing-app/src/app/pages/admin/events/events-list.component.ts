@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { AdminService, type Event } from '../../../core/services/admin.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-events-list',
@@ -181,7 +182,9 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
                       <div class="h-10 w-10 rounded-lg bg-violet-100 flex items-center justify-center">
-                        <span class="text-violet-600 font-medium">🎵</span>
+                        <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
                       </div>
                     </div>
                     <div class="ml-4">
@@ -218,10 +221,16 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
 
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-white">
-                    {{ event.ticketsAvailable || 0 }} disponibles
+                    {{ getEventTotalCapacity(event) }} tipos de localidades
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    Capacidad: {{ getEventTotalSeats(event) }} asientos
+                  </div>
+                  <div class="text-sm text-green-400">
+                    {{ getEventAvailableTickets(event) }} disponibles
                   </div>
                   <div class="text-sm text-slate-300">
-                    €{{ event.ticketPrice || 0 }}
+                    €{{ getEventMinPrice(event) }}-{{ getEventMaxPrice(event) }}
                   </div>
                 </td>
 
@@ -249,22 +258,25 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
                             (click)="toggleEventStatus(event)"
                             class="text-green-600 hover:text-green-900 p-1 rounded"
                             title="Activar evento (hacerlo visible)">
-                      <span class="sr-only">Activar</span>
-                      🟢
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
                     </button>
 
                     <button *ngIf="event.status === 'ACTIVE'"
                             (click)="toggleEventStatus(event)"
                             class="text-yellow-600 hover:text-yellow-900 p-1 rounded"
                             title="Poner en borrador (ocultar)">
-                      <span class="sr-only">Desactivar</span>
-                      🟡
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
                     </button>
 
                     <button (click)="deleteEvent(event)"
                             class="text-red-600 hover:text-red-900 p-1 rounded">
-                      <span class="sr-only">Eliminar</span>
-                      🗑️
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
                     </button>
 
                   </div>
@@ -424,10 +436,10 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
               <select [(ngModel)]="eventForm.status"
                       name="status"
                       class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-violet-500 focus:border-violet-500">
-                <option value="DRAFT">🟡 Borrador (No visible)</option>
-                <option value="ACTIVE">🟢 Activo (Visible)</option>
-                <option value="CANCELLED">🔴 Cancelado</option>
-                <option value="COMPLETED">✅ Completado</option>
+                <option value="DRAFT">Borrador (No visible)</option>
+                <option value="ACTIVE">Activo (Visible)</option>
+                <option value="CANCELLED">Cancelado</option>
+                <option value="COMPLETED">Completado</option>
               </select>
             </div>
             <div>
@@ -458,6 +470,140 @@ import { AdminService, type Event } from '../../../core/services/admin.service';
         </form>
       </div>
     </div>
+
+    <!-- Modal de Localidades -->
+    <div *ngIf="showLocalitiesModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Localidades del Evento</h3>
+            <p class="text-sm text-slate-300">{{ selectedEvent?.name }}</p>
+          </div>
+          <button (click)="closeLocalitiesModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          
+          <!-- Loading State -->
+          <div *ngIf="loadingLocalities" class="text-center py-8">
+            <div class="inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Cargando localidades...
+            </div>
+          </div>
+
+          <!-- Estadísticas Rápidas -->
+          <div *ngIf="!loadingLocalities && eventLocalities.length > 0" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-slate-700/50 rounded-lg p-4">
+              <div class="text-sm text-slate-300">Capacidad Total</div>
+              <div class="text-2xl font-bold text-white">{{ getTotalCapacity() }}</div>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-4">
+              <div class="text-sm text-slate-300">Disponibles</div>
+              <div class="text-2xl font-bold text-green-400">{{ getTotalAvailableTickets() }}</div>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-4">
+              <div class="text-sm text-slate-300">Vendidas</div>
+              <div class="text-2xl font-bold text-red-400">{{ getTotalSoldTickets() }}</div>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-4">
+              <div class="text-sm text-slate-300">Reservadas</div>
+              <div class="text-2xl font-bold text-yellow-400">{{ getTotalReservedTickets() }}</div>
+            </div>
+          </div>
+
+          <!-- Lista de Localidades -->
+          <div *ngIf="!loadingLocalities && eventLocalities.length > 0" class="space-y-4">
+            <div *ngFor="let locality of eventLocalities" class="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full mr-3" [style.background-color]="locality.color"></div>
+                  <h4 class="text-lg font-medium text-white">{{ locality.name }}</h4>
+                </div>
+                <span [class]="getLocalityStatusClass(locality)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                  {{ getLocalityStatusText(locality) }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Información de Capacidad -->
+                <div>
+                  <div class="text-sm text-slate-300 mb-2">Capacidad y Disponibilidad</div>
+                  <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-slate-300">Capacidad Total:</span>
+                      <span class="text-white font-medium">{{ locality.capacity }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                      <span class="text-green-400">Disponibles:</span>
+                      <span class="text-green-400 font-medium">{{ locality.availableTickets }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                      <span class="text-red-400">Vendidas:</span>
+                      <span class="text-red-400 font-medium">{{ locality.soldTickets }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                      <span class="text-yellow-400">Reservadas:</span>
+                      <span class="text-yellow-400 font-medium">{{ locality.reservedTickets }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Barra de Progreso y Precio -->
+                <div>
+                  <div class="text-sm text-slate-300 mb-2">Ocupación</div>
+                  <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-slate-300">Ocupación:</span>
+                      <span class="text-white font-medium">{{ 100 - getAvailabilityPercentage(locality) }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-600 rounded-full h-3">
+                      <div 
+                        class="bg-gradient-to-r from-green-500 to-red-500 h-3 rounded-full transition-all duration-300"
+                        [style.width.%]="100 - getAvailabilityPercentage(locality)"
+                      ></div>
+                    </div>
+                    <div class="flex justify-between text-sm mt-3">
+                      <span class="text-slate-300">Precio:</span>
+                      <span class="text-white font-bold">{{ locality.price | currency:'EUR':'symbol':'1.2-2' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado Vacío -->
+          <div *ngIf="!loadingLocalities && eventLocalities.length === 0" class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-white mb-2">Sin localidades configuradas</h3>
+            <p class="text-slate-300">Este evento aún no tiene localidades asignadas</p>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button 
+            (click)="closeLocalitiesModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   `
 })
 export class EventsListComponent implements OnInit {
@@ -485,6 +631,12 @@ export class EventsListComponent implements OnInit {
     status: 'DRAFT',
     isPublished: false
   };
+
+  // Modal de localidades
+  showLocalitiesModal = false;
+  selectedEvent: Event | null = null;
+  eventLocalities: any[] = [];
+  loadingLocalities = false;
 
   constructor(
     private adminService: AdminService,
@@ -622,7 +774,12 @@ export class EventsListComponent implements OnInit {
 
     const selectedVenueId = this.eventForm.venueId || this.uniqueVenues[0]?.id;
     if (!selectedVenueId) {
-      alert('❌ Error: No hay venues disponibles. Crea un venue primero.');
+      Swal.fire({
+        icon: 'error',
+        title: 'No hay venues disponibles',
+        text: 'Debes crear un venue primero antes de crear un evento.',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
@@ -669,7 +826,15 @@ export class EventsListComponent implements OnInit {
             message += `\n\nNota: Algunos campos (${response.ignoredFields.join(', ')}) mantienen sus valores originales.`;
           }
 
-          alert(message);
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: '¡Evento actualizado!',
+            text: message,
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true
+          });
         },
         error: (error) => {
           console.error('❌ Error updating event:', error);
@@ -684,7 +849,12 @@ export class EventsListComponent implements OnInit {
             errorMessage = error.message;
           }
 
-          alert('❌ Error al actualizar evento: ' + errorMessage);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar evento',
+            text: errorMessage,
+            confirmButtonText: 'Entendido'
+          });
         }
       });
     } else {
@@ -693,7 +863,15 @@ export class EventsListComponent implements OnInit {
           // Evento creado exitosamente
           this.closeModal();
           this.loadEvents();
-          alert('Evento creado exitosamente');
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: '¡Evento creado!',
+            text: 'El evento ha sido creado exitosamente',
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true
+          });
         },
         error: (error) => {
           console.error('❌ Error creating event:', error);
@@ -708,7 +886,12 @@ export class EventsListComponent implements OnInit {
             errorMessage = error.message;
           }
 
-          alert('❌ Error al crear evento: ' + errorMessage);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al crear evento',
+            text: errorMessage,
+            confirmButtonText: 'Entendido'
+          });
         }
       });
     }
@@ -748,7 +931,91 @@ export class EventsListComponent implements OnInit {
   }
 
   viewEvent(event: Event) {
-    alert(`Evento: ${event.name}\nDescripción: ${event.description}\nFecha: ${this.formatDate(event.eventDate)}\nEstado: ${this.getStatusText(event.status)}\nVenue: ${event.venue?.name || 'Sin venue'}`);
+    this.selectedEvent = event;
+    this.loadEventLocalities(event.id);
+    this.showLocalitiesModal = true;
+  }
+
+  loadEventLocalities(eventId: string) {
+    this.loadingLocalities = true;
+    
+    // Cargar localidades desde el evento seleccionado
+    if (this.selectedEvent && (this.selectedEvent as any).localities) {
+      this.eventLocalities = (this.selectedEvent as any).localities || [];
+      this.loadingLocalities = false;
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 100);
+    } else {
+      this.eventLocalities = [];
+      this.loadingLocalities = false;
+    }
+  }
+
+  closeLocalitiesModal() {
+    this.showLocalitiesModal = false;
+    this.selectedEvent = null;
+    this.eventLocalities = [];
+  }
+
+  getAvailabilityPercentage(locality: any): number {
+    if (locality.capacity === 0) return 0;
+    return Math.round((locality.availableTickets / locality.capacity) * 100);
+  }
+
+  getLocalityStatusClass(locality: any): string {
+    if (!locality.isActive) return 'bg-gray-100 text-gray-800';
+    if (locality.availableTickets === 0) return 'bg-red-100 text-red-800';
+    if (locality.availableTickets <= locality.capacity * 0.1) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-green-100 text-green-800';
+  }
+
+  getLocalityStatusText(locality: any): string {
+    if (!locality.isActive) return 'Inactiva';
+    if (locality.availableTickets === 0) return 'Agotada';
+    if (locality.availableTickets <= locality.capacity * 0.1) return 'Pocas entradas';
+    return 'Disponible';
+  }
+
+  getTotalCapacity(): number {
+    return this.eventLocalities.reduce((sum, locality) => sum + locality.capacity, 0);
+  }
+
+  getTotalAvailableTickets(): number {
+    return this.eventLocalities.reduce((sum, locality) => sum + locality.availableTickets, 0);
+  }
+
+  getTotalSoldTickets(): number {
+    return this.eventLocalities.reduce((sum, locality) => sum + locality.soldTickets, 0);
+  }
+
+  getTotalReservedTickets(): number {
+    return this.eventLocalities.reduce((sum, locality) => sum + locality.reservedTickets, 0);
+  }
+
+  // Métodos para calcular desde localidades en la tabla
+  getEventTotalCapacity(event: any): number {
+    return event.localities?.length || 0;
+  }
+
+  getEventTotalSeats(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.totalCapacity || 0;
+    return event.localities.reduce((sum: number, loc: any) => sum + (loc.capacity || 0), 0);
+  }
+
+  getEventAvailableTickets(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.ticketsAvailable || 0;
+    return event.localities.reduce((sum: number, loc: any) => sum + (loc.availableTickets || 0), 0);
+  }
+
+  getEventMinPrice(event: any): number {
+    if (!event.localities || event.localities.length === 0) return event.ticketPrice || 0;
+    return Math.min(...event.localities.map((loc: any) => Number(loc.price) || 0));
+  }
+
+  getEventMaxPrice(event: any): number {
+    if (!event.localities || event.localities.length === 0) return (event.ticketPrice || 0) * 2;
+    return Math.max(...event.localities.map((loc: any) => Number(loc.price) || 0));
   }
 
   toggleEventStatus(event: Event) {
@@ -758,11 +1025,23 @@ export class EventsListComponent implements OnInit {
       next: (response) => {
         // Estado del evento cambiado
         this.loadEvents();
-        alert(`Evento ${newStatus === 'ACTIVE' ? 'activado' : 'desactivado'} exitosamente`);
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: `Evento ${newStatus === 'ACTIVE' ? 'activado' : 'desactivado'}`,
+          showConfirmButton: false,
+          timer: 2000,
+          toast: true
+        });
       },
       error: (error) => {
         console.error('Error changing status:', error);
-        alert('Error al cambiar estado: ' + (error.error?.message || error.message));
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al cambiar estado',
+          text: error.error?.message || error.message,
+          confirmButtonText: 'Entendido'
+        });
       }
     });
   }
@@ -771,11 +1050,23 @@ export class EventsListComponent implements OnInit {
     this.adminService.updateEvent(event.id, { status: 'ACTIVE' }).subscribe({
       next: () => {
         this.loadEvents();
-        alert('Evento publicado exitosamente');
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: '¡Evento publicado!',
+          showConfirmButton: false,
+          timer: 2000,
+          toast: true
+        });
       },
       error: (error) => {
         console.error('Error publishing event:', error);
-        alert('Error al publicar evento: ' + (error.error?.message || error.message));
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al publicar evento',
+          text: error.error?.message || error.message,
+          confirmButtonText: 'Entendido'
+        });
       }
     });
   }
@@ -784,26 +1075,63 @@ export class EventsListComponent implements OnInit {
     this.adminService.updateEvent(event.id, { status: 'DRAFT' }).subscribe({
       next: () => {
         this.loadEvents();
-        alert('Evento despublicado exitosamente');
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: '¡Evento despublicado!',
+          showConfirmButton: false,
+          timer: 2000,
+          toast: true
+        });
       },
       error: (error) => {
         console.error('Error unpublishing event:', error);
-        alert('Error al despublicar evento: ' + (error.error?.message || error.message));
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al despublicar evento',
+          text: error.error?.message || error.message,
+          confirmButtonText: 'Entendido'
+        });
       }
     });
   }
 
   deleteEvent(event: Event) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el evento "${event.name}"?`)) {
-      this.adminService.deleteEvent(event.id).subscribe({
-        next: () => {
-          this.loadEvents();
-        },
-        error: (error) => {
-          console.error('Error deleting event:', error);
-        }
-      });
-    }
+    Swal.fire({
+      title: '¿Eliminar evento?',
+      text: `¿Estás seguro de que quieres eliminar "${event.name}"? Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.adminService.deleteEvent(event.id).subscribe({
+          next: () => {
+            this.loadEvents();
+            Swal.fire({
+              position: 'top-end',
+              icon: 'success',
+              title: '¡Evento eliminado!',
+              showConfirmButton: false,
+              timer: 2000,
+              toast: true
+            });
+          },
+          error: (error) => {
+            console.error('Error deleting event:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al eliminar evento',
+              text: error.error?.message || error.message,
+              confirmButtonText: 'Entendido'
+            });
+          }
+        });
+      }
+    });
   }
 
   formatDate(dateString: string): string {

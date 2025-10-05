@@ -140,10 +140,9 @@ export class VenueController {
 
             const where: any = {};
 
-            // Comentado para mostrar todos los venues (activos e inactivos)
-            // if (typeof isActive === 'boolean') {
-            //     where.isActive = isActive;
-            // }
+            if (typeof isActive === 'boolean') {
+                where.isActive = isActive;
+            }
 
             if (city) {
                 where.city = { contains: city, mode: 'insensitive' };

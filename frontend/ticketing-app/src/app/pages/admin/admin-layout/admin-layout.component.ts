@@ -70,6 +70,16 @@ import { AuthService } from '../../../core/services/auth.service';
               <span>Usuarios</span>
             </a>
 
+            <a routerLink="/admin-dashboard/categories"
+               routerLinkActive="bg-slate-700/90"
+               style="border-radius: 24px;"
+               class="group flex items-center px-6 py-4 text-sm font-medium text-white bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800/90 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+              <svg class="w-5 h-5 mr-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+              <span>Categorías</span>
+            </a>
+
             <a *ngIf="isSuperAdmin"
                routerLink="/admin-dashboard/settings"
                routerLinkActive="bg-slate-700/90"
@@ -148,6 +158,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Gestión de Venues';
     } else if (url.includes('/users')) {
       return 'Gestión de Usuarios';
+    } else if (url.includes('/categories')) {
+      return 'Gestión de Categorías';
     } else if (url.includes('/settings')) {
       return 'Configuración del Sistema';
     } else {
@@ -163,6 +175,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Gestiona locales y espacios para conciertos';
     } else if (url.includes('/users')) {
       return 'Administra usuarios y promociones VIP';
+    } else if (url.includes('/categories')) {
+      return 'Organiza eventos por categorías y subcategorías';
     } else if (url.includes('/settings')) {
       return 'Configuración avanzada del sistema';
     } else {

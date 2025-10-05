@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdminService, User, UserStats } from '../../../core/services/admin.service';
+import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-users-list',
@@ -10,12 +12,12 @@ import { AdminService, User, UserStats } from '../../../core/services/admin.serv
   imports: [CommonModule, FormsModule],
   template: `
     <div class="p-8 pb-16 space-y-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Usuarios</h1>
           <p class="mt-2 text-sm text-slate-300">Administra usuarios y promociones VIP</p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-4">
+        <div class="mt-4 sm:mt-0 flex flex-wrap gap-4">
           <button
             (click)="openUserSearchModal()"
             style="border-radius: 24px;"
@@ -26,10 +28,51 @@ import { AdminService, User, UserStats } from '../../../core/services/admin.serv
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+            Buscar usuarios
+          </button>
+          <button
+            (click)="openVipPromotionModal()"
+            style="border-radius: 24px;"
+            class="bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
                 d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
               ></path>
             </svg>
             Promocionar VIP
+          </button>
+          <button
+            *ngIf="isSuperAdmin"
+            (click)="openAdminPromotionModal()"
+            style="border-radius: 24px;"
+            class="bg-red-400 hover:bg-red-500 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            Promocionar Admin
           </button>
           <button
             (click)="refreshData()"
@@ -594,12 +637,256 @@ import { AdminService, User, UserStats } from '../../../core/services/admin.serv
               <button
                 (click)="confirmPromoteToVip()"
                 [disabled]="!promoteReason"
-                class="px-4 py-2 bg-yellow-600 text-white text-base font-medium rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-4 py-2 bg-yellow-400 text-white text-base font-medium rounded-md hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Promocionar
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Modal Promoción a Admin -->
+      <div
+        *ngIf="showAdminPromotionModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        (click)="closeAdminPromotionModal()"
+      >
+        <div
+          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-slate-800 border-slate-700"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="mt-3 text-center">
+            <div
+              class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
+            >
+              <svg
+                class="h-6 w-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-white mb-4">
+              Promocionar a Administrador
+            </h3>
+
+            <div class="mt-2 text-left">
+              <!-- Búsqueda de usuario -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Buscar Usuario</label>
+                <input
+                  type="text"
+                  [(ngModel)]="adminSearchTerm"
+                  (input)="searchUsersForAdmin()"
+                  placeholder="Buscar por nombre o email..."
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                />
+
+                <!-- Resultados de búsqueda -->
+                <div
+                  *ngIf="adminSearchResults.length > 0"
+                  class="mt-2 max-h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-md"
+                >
+                  <div
+                    *ngFor="let user of adminSearchResults"
+                    (click)="selectUserForAdmin(user)"
+                    class="px-3 py-2 hover:bg-slate-600 cursor-pointer text-white border-b border-slate-600 last:border-b-0"
+                  >
+                    <div class="font-medium">{{ user.username }}</div>
+                    <div class="text-sm text-slate-400">{{ user.email }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Usuario seleccionado -->
+              <div *ngIf="selectedUserForAdmin" class="mb-4 p-3 bg-slate-700 rounded-md">
+                <div class="text-sm text-slate-300">Usuario seleccionado:</div>
+                <div class="font-medium text-white">{{ selectedUserForAdmin.username }}</div>
+                <div class="text-sm text-slate-400">{{ selectedUserForAdmin.email }}</div>
+              </div>
+
+              <!-- Razón de promoción -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Razón de la promoción *</label
+                >
+                <select
+                  [(ngModel)]="adminPromotionReason"
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="">Selecciona una razón</option>
+                  <option value="experiencia_tecnica">Experiencia y conocimiento técnico</option>
+                  <option value="liderazgo">Capacidades de liderazgo</option>
+                  <option value="confianza">Confianza y responsabilidad demostrada</option>
+                  <option value="necesidad_operativa">Necesidad operativa del equipo</option>
+                  <option value="promocion_interna">Promoción interna</option>
+                </select>
+              </div>
+
+              <!-- Notas adicionales -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Notas adicionales</label
+                >
+                <textarea
+                  [(ngModel)]="adminPromotionNotes"
+                  rows="3"
+                  placeholder="Notas opcionales..."
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-center space-x-4 px-4 py-3">
+              <button
+                (click)="closeAdminPromotionModal()"
+                class="px-4 py-2 border border-slate-600 text-slate-300 text-base font-medium rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Cancelar
+              </button>
+              <button
+                (click)="confirmPromoteToAdmin()"
+                [disabled]="!selectedUserForAdmin || !adminPromotionReason"
+                class="px-4 py-2 bg-red-400 text-white text-base font-medium rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Promocionar a Admin
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Detalles de Usuario -->
+    <div
+      *ngIf="showUserModal && selectedUser"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
+      >
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-medium text-white">Detalles del Usuario</h3>
+            <p class="text-sm text-slate-300">{{ selectedUser.email }}</p>
+          </div>
+          <button (click)="closeUserModal()" class="text-slate-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
+          <!-- Información Personal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Información Personal</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Usuario:</span>
+                  <span class="text-white">{{ selectedUser.username }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Email:</span>
+                  <span class="text-white">{{ selectedUser.email }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">ID:</span>
+                  <span class="text-white text-xs">{{ selectedUser._id }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-700/30 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Estado de la Cuenta</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Rol:</span>
+                  <span
+                    [class]="getRoleBadgeClass(selectedUser.role)"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  >
+                    {{ getRoleDisplayName(selectedUser.role) }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Estado:</span>
+                  <span [class]="selectedUser.isActive ? 'text-green-400' : 'text-red-400'">
+                    {{ selectedUser.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Registro:</span>
+                  <span class="text-white">{{ formatDate(selectedUser.createdAt) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Última actualización:</span>
+                  <span class="text-white">{{ formatDate(selectedUser.updatedAt) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información Adicional -->
+          <div class="bg-slate-700/30 rounded-lg p-4 mb-6">
+            <h4 class="text-sm font-medium text-slate-300 mb-3">Información del Sistema</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Tipo de cuenta:</span>
+                <span class="text-white">{{
+                  selectedUser.role === 'vip' ? 'VIP Premium' : 'Usuario Estándar'
+                }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Estado de actividad:</span>
+                <span [class]="selectedUser.isActive ? 'text-green-400' : 'text-red-400'">
+                  {{ selectedUser.isActive ? 'Cuenta Activa' : 'Cuenta Inactiva' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estadísticas del Usuario -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-blue-400">{{ getUserTicketsPurchased() }}</div>
+              <div class="text-sm text-slate-300">Entradas Compradas</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-400">{{ getUserEventsAttended() }}</div>
+              <div class="text-sm text-slate-300">Eventos Asistidos</div>
+            </div>
+            <div class="bg-slate-700/30 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-400">€{{ getUserTotalSpent() }}</div>
+              <div class="text-sm text-slate-300">Total Gastado</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
+          <button
+            (click)="closeUserModal()"
+            class="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </div>
@@ -620,26 +907,49 @@ export class UsersListComponent implements OnInit {
   promoteReason = '';
   promoteNotes = '';
 
+  // Modal de detalles de usuario
+  showUserModal = false;
+
   showUserSearchModal = false;
   searchTermModal = '';
   searchResultsModal: User[] = [];
 
+  // Admin promotion modal
+  showAdminPromotionModal = false;
+  adminSearchTerm = '';
+  adminSearchResults: User[] = [];
+  selectedUserForAdmin: User | null = null;
+  adminPromotionReason = '';
+  adminPromotionNotes = '';
+
   constructor(
     private adminService: AdminService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
-
   ngOnInit() {
     this.loadUsers();
     this.loadUserStats();
 
+    // Debug: verificar usuario actual
+    const currentUser = this.authService.getCurrentUser();
+    console.log('Usuario actual en users-list:', currentUser);
+    console.log('Es super admin?', this.isSuperAdmin);
+    console.log('Rol del usuario:', currentUser?.role);
+
     this.route.queryParams.subscribe((params) => {
       if (params['action'] === 'promote') {
         setTimeout(() => {
-          alert(
-            '💡 Tip: Haz clic en el botón ⭐ junto a cualquier usuario para promocionarlo a VIP'
-          );
+          Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: '💡 Tip de navegación',
+            text: 'Haz clic en el botón ⭐ junto a cualquier usuario para promocionarlo a VIP',
+            showConfirmButton: false,
+            timer: 3000,
+            toast: true,
+          });
         }, 1000);
       }
     });
@@ -697,12 +1007,70 @@ export class UsersListComponent implements OnInit {
   }
 
   refreshData() {
+    Swal.fire({
+      title: 'Actualizando...',
+      text: 'Cargando datos actualizados',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
     this.loadUsers();
     this.loadUserStats();
+    
+    // Cerrar el loading después de 1 segundo
+    setTimeout(() => {
+      Swal.close();
+    }, 1000);
   }
 
   viewUser(user: User) {
-    // Ver detalles del usuario
+    this.selectedUser = user;
+    this.showUserModal = true;
+  }
+
+  closeUserModal() {
+    this.showUserModal = false;
+    this.selectedUser = null;
+  }
+
+  getUserTicketsPurchased(): number {
+    return 0; // TODO: Conectar con sistema de tickets
+  }
+
+  getUserEventsAttended(): number {
+    return 0; // TODO: Conectar con sistema de eventos
+  }
+
+  getUserTotalSpent(): number {
+    return 0; // TODO: Conectar con sistema de ventas
+  }
+
+  getRoleDisplayName(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'vip':
+        return 'VIP';
+      case 'admin':
+        return 'Admin';
+      case 'super_admin':
+        return 'Super Admin';
+      default:
+        return 'Usuario';
+    }
+  }
+
+  getRoleBadgeClass(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'vip':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'super_admin':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 
   openUserSearchModal() {
@@ -766,11 +1134,24 @@ export class UsersListComponent implements OnInit {
         // Usuario promocionado exitosamente
         this.closePromoteModal();
         this.refreshData();
-        alert(`✅ ${this.selectedUser?.username} ha sido promocionado a VIP exitosamente`);
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: '¡Promoción exitosa!',
+          text: `${this.selectedUser?.username} ha sido promocionado a VIP exitosamente`,
+          showConfirmButton: false,
+          timer: 2000,
+          toast: true,
+        });
       },
       error: (error) => {
         console.error('Error promoting user:', error);
-        alert('❌ Error al promocionar usuario: ' + (error.error?.message || error.message));
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al promocionar usuario',
+          text: error.error?.message || error.message,
+          confirmButtonText: 'Entendido',
+        });
       },
     });
   }
@@ -837,5 +1218,87 @@ export class UsersListComponent implements OnInit {
 
   getStatusClass(isActive: boolean): string {
     return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  }
+
+  // Admin promotion methods
+  get isSuperAdmin(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser !== null && ['super_admin', 'SUPER_ADMIN'].includes(currentUser.role);
+  }
+
+  openVipPromotionModal() {
+    this.showUserSearchModal = true;
+    this.searchTermModal = '';
+    this.searchResultsModal = [];
+  }
+
+  openAdminPromotionModal() {
+    this.showAdminPromotionModal = true;
+    this.adminSearchTerm = '';
+    this.adminSearchResults = [];
+    this.selectedUserForAdmin = null;
+    this.adminPromotionReason = '';
+    this.adminPromotionNotes = '';
+  }
+
+  searchUsersForAdmin() {
+    if (this.adminSearchTerm.length < 2) {
+      this.adminSearchResults = [];
+    }
+
+    this.adminSearchResults = this.users.filter(
+      (user: any) =>
+        (user.username.toLowerCase().includes(this.adminSearchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(this.adminSearchTerm.toLowerCase())) &&
+        !['admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)
+    );
+  }
+
+  selectUserForAdmin(user: User) {
+    this.selectedUserForAdmin = user;
+    this.adminSearchTerm = user.username;
+    this.adminSearchResults = [];
+  }
+
+  confirmPromoteToAdmin() {
+    if (!this.selectedUserForAdmin || !this.adminPromotionReason) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Datos incompletos',
+        text: 'Por favor selecciona un usuario y proporciona una razón.',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
+    const data = {
+      reason: this.adminPromotionReason,
+      notes: this.adminPromotionNotes || 'Promoción a administrador desde panel de gestión',
+    };
+
+    // Aquí iría la llamada al servicio para promocionar a admin
+    console.log('Promocionando a admin:', this.selectedUserForAdmin, data);
+
+    // Simular promoción exitosa
+    Swal.fire({
+      position: 'top-end',
+      icon: 'success',
+      title: '¡Promoción a Admin exitosa!',
+      text: `${this.selectedUserForAdmin.username} ha sido promocionado a administrador exitosamente`,
+      showConfirmButton: false,
+      timer: 2000,
+      toast: true,
+    });
+    this.closeAdminPromotionModal();
+    this.refreshData();
+  }
+
+  closeAdminPromotionModal() {
+    this.showAdminPromotionModal = false;
+    this.adminSearchTerm = '';
+    this.adminSearchResults = [];
+    this.selectedUserForAdmin = null;
+    this.adminPromotionReason = '';
+    this.adminPromotionNotes = '';
   }
 }
