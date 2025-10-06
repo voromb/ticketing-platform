@@ -1,14 +1,17 @@
 // src/app/models/event.model.ts
+import { Venue } from "./Venue.model";
 
 export interface IEvent {
   id?: string;           // opcional, por si lo recibes del backend
   name: string;
   description?: string;
   slug: string;
+  image:[];
   eventDate: string;      // puedes usar Date si quieres convertirlo en frontend
   saleStartDate: string;
   saleEndDate: string;
   venueId: string;
+  venue: Venue;
   totalCapacity: number;
   category: string;
   minPrice: number;

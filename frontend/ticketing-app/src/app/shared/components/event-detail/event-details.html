@@ -1,0 +1,33 @@
+<div class="event-details" *ngIf="event">
+  <div class="hero-image" [style.backgroundImage]="'url(' + event.image + ')'">
+    <div class="overlay">
+      <h1 class="title">{{ event.name }}</h1>
+      <p class="date">{{ event.eventDate | date:'fullDate' }}</p>
+    </div>
+  </div>
+
+  <div class="event-info">
+    <p class="description">{{ event.description }}</p>
+    <p class="ubicacion">{{ event.venue.city }}</p>
+
+    <!-- Botones rockeros -->
+    <div class="ticket-actions">
+      <div *ngIf="!isLoggedIn" class="text-muted small mb-2">
+        <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
+      </div>
+
+      <ng-container *ngIf="canReserve">
+        <button (click)="onReserve(event)" class="rock-btn reserve-btn me-2">
+          <i class="fas fa-bookmark me-2"></i>Reservar (VIP)
+        </button>
+        <button (click)="onBuy(event)" class="rock-btn buy-btn">
+          <i class="fas fa-shopping-cart me-2"></i>Comprar
+        </button>
+      </ng-container>
+
+      <button *ngIf="canBuy && !canReserve" (click)="onBuy(event)" class="rock-btn buy-btn">
+        <i class="fas fa-shopping-cart me-2"></i>Comprar
+      </button>
+    </div>
+  </div>
+</div>

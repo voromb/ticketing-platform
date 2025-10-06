@@ -7,13 +7,13 @@ import { ReservationService } from '../../../core/services/reservation.service';
 import { OrderService } from '../../../core/services/order.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { IEvent } from '../../../core/models/Event.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule  } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './events.component.html'
 })
 export class EventsComponent implements OnInit {
