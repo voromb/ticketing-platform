@@ -103,10 +103,10 @@ model Event {
   venue            Venue             @relation(fields: [venueId], references: [id])
   category         EventCategory     @relation(fields: [categoryId], references: [id], map: "fk_event_category")
   subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id], map: "fk_event_subcategory")
-  localities       EventLocality[]
-  orders           Order[]
   priceCategories  PriceCategory[]
+  localities       EventLocality[]
   reservations     Reservation[]
+  orders           Order[]
   tickets          Ticket[]
 
   @@index([slug])
@@ -175,6 +175,22 @@ model EventSubcategory {
   @@unique([categoryId, name])
 }
 
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+enum EventStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  CANCELLED
+  COMPLETED
+  SUSPENDED
+}
+
 model EventLocality {
   id               String        @id @default(uuid())
   eventId          String
@@ -191,8 +207,8 @@ model EventLocality {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   event            Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  orders           Order[]
   reservations     Reservation[]
+  orders           Order[]
   tickets          Ticket[]
 
   @@unique([eventId, name])
@@ -211,9 +227,9 @@ model Reservation {
   expiresAt  DateTime
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
-  orders     Order[]
   event      Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality   EventLocality     @relation(fields: [localityId], references: [id], onDelete: Cascade)
+  orders     Order[]
 
   @@index([userId])
   @@index([status])
@@ -223,23 +239,23 @@ model Reservation {
 }
 
 model Order {
-  id              String        @id @default(uuid())
+  id              String      @id @default(uuid())
   userId          String
   eventId         String
   localityId      String
   quantity        Int
-  totalAmount     Decimal       @db.Decimal(10, 2)
-  discount        Decimal       @default(0) @db.Decimal(10, 2)
-  finalAmount     Decimal       @db.Decimal(10, 2)
-  status          OrderStatus   @default(PENDING)
-  stripeSessionId String?       @unique
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  discount        Decimal     @db.Decimal(10, 2) @default(0)
+  finalAmount     Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  stripeSessionId String?     @unique
   stripePaymentId String?
   reservationId   String?
   userEmail       String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   paidAt          DateTime?
-  event           Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event           Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality        EventLocality @relation(fields: [localityId], references: [id], onDelete: Cascade)
   reservation     Reservation?  @relation(fields: [reservationId], references: [id])
   tickets         Ticket[]
@@ -252,41 +268,25 @@ model Order {
 }
 
 model Ticket {
-  id         String        @id @default(uuid())
+  id         String       @id @default(uuid())
   orderId    String
   eventId    String
   localityId String
   userId     String
-  ticketCode String        @unique
+  ticketCode String       @unique
   qrCode     String?
-  status     TicketStatus  @default(VALID)
+  status     TicketStatus @default(VALID)
   usedAt     DateTime?
-  createdAt  DateTime      @default(now())
-  event      Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  event      Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality   EventLocality @relation(fields: [localityId], references: [id], onDelete: Cascade)
-  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([ticketCode])
   @@index([status])
   @@index([orderId])
   @@map("Ticket")
-}
-
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
-  VIEWER
-}
-
-enum EventStatus {
-  DRAFT
-  ACTIVE
-  SOLD_OUT
-  CANCELLED
-  COMPLETED
-  SUSPENDED
 }
 
 enum ReservationStatus {
