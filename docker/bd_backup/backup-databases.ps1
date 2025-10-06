@@ -36,7 +36,7 @@ try {
 
 # Backup PostgreSQL - Eventos via API
 try {
-    curl -X GET "http://localhost:3003/api/events" -H "Content-Type: application/json" > "$backupDir\postgres_events_$timestamp.json"
+    curl.exe -X GET "http://localhost:3003/api/events" -H "Content-Type: application/json" > "$backupDir\postgres_events_$timestamp.json"
     Write-Host " Eventos exportados via API" -ForegroundColor Green
 } catch {
     Write-Host " Error exportando eventos: $_" -ForegroundColor Red
@@ -44,7 +44,7 @@ try {
 
 # Backup PostgreSQL - Venues via API
 try {
-    curl -X GET "http://localhost:3003/api/venues?limit=50" -H "Content-Type: application/json" > "$backupDir\postgres_venues_$timestamp.json"
+    curl.exe -X GET "http://localhost:3003/api/venues?limit=50" -H "Content-Type: application/json" > "$backupDir\postgres_venues_$timestamp.json"
     Write-Host " Venues exportados via API" -ForegroundColor Green
 } catch {
     Write-Host " Error exportando venues: $_" -ForegroundColor Red
@@ -52,7 +52,7 @@ try {
 
 # Backup PostgreSQL - Categoras via API
 try {
-    curl -X GET "http://localhost:3003/api/categories" -H "Content-Type: application/json" > "$backupDir\postgres_categories_$timestamp.json"
+    curl.exe -X GET "http://localhost:3003/api/categories" -H "Content-Type: application/json" > "$backupDir\postgres_categories_$timestamp.json"
     Write-Host " Categoras exportadas via API" -ForegroundColor Green
 } catch {
     Write-Host "  Advertencia: Error exportando categoras" -ForegroundColor Yellow
@@ -60,7 +60,7 @@ try {
 
 # Backup PostgreSQL - Localidades via API
 try {
-    curl -X GET "http://localhost:3003/api/localities" -H "Content-Type: application/json" > "$backupDir\postgres_localities_$timestamp.json"
+    curl.exe -X GET "http://localhost:3003/api/localities" -H "Content-Type: application/json" > "$backupDir\postgres_localities_$timestamp.json"
     Write-Host " Localidades exportadas via API" -ForegroundColor Green
 } catch {
     Write-Host "  Advertencia: Error exportando localidades" -ForegroundColor Yellow

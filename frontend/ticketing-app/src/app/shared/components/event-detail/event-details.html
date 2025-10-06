@@ -11,23 +11,18 @@
     <p class="ubicacion">{{ event.venue.city }}</p>
 
     <!-- Botones rockeros -->
-    <div class="ticket-actions">
-      <div *ngIf="!isLoggedIn" class="text-muted small mb-2">
-        <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
-      </div>
+    <!-- Usuario NO LOGUEADO: Sin botones -->
+            <div *ngIf="!isLoggedIn" class="text-muted small">
+              <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
+            </div>
 
-      <ng-container *ngIf="canReserve">
-        <button (click)="onReserve(event)" class="rock-btn reserve-btn me-2">
-          <i class="fas fa-bookmark me-2"></i>Reservar (VIP)
-        </button>
-        <button (click)="onBuy(event)" class="rock-btn buy-btn">
-          <i class="fas fa-shopping-cart me-2"></i>Comprar
-        </button>
-      </ng-container>
+            <!-- Usuario VIP: Botón Reservar + Comprar -->
+          <button *ngIf="canBuy && !canReserve" (click)="buy()" class="btn btn-danger">Comprar</button>
+          <button *ngIf="canReserve" (click)="reserve()" class="btn btn-warning">Reservar VIP</button>
 
-      <button *ngIf="canBuy && !canReserve" (click)="onBuy(event)" class="rock-btn buy-btn">
-        <i class="fas fa-shopping-cart me-2"></i>Comprar
-      </button>
-    </div>
+            <!-- Usuario NORMAL: Solo Comprar -->
+            <button *ngIf="canBuy && !canReserve" (click)="buy()" class="btn btn-danger btn-lg px-4">
+              <i class="fas fa-shopping-cart me-2"></i>Comprar
+            </button>
   </div>
 </div>

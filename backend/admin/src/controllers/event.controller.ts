@@ -169,8 +169,8 @@ class EventController {
       where,
             include: {
         venue: true,
-        category: true,             // ✅ BIEN
-        subcategory: true,          // ✅ BIEN
+        category: true,            
+        subcategory: true,         
       },
       orderBy: {
         eventDate: 'asc'
