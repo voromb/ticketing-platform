@@ -17,11 +17,13 @@
             </div>
 
             <!-- Usuario VIP: Botón Reservar + Comprar -->
-          <button *ngIf="canBuy && !canReserve" (click)="buy()" class="btn btn-danger">Comprar</button>
-          <button *ngIf="canReserve" (click)="reserve()" class="btn btn-warning">Reservar VIP</button>
+          
+          <button *ngIf="canReserve" (click)="reserve()" class="reserve-btn">Reservar VIP</button>
+
+          <button *ngIf="canBuy && canReserve" (click)="buy()" class="buy-btn">Comprar</button>
 
             <!-- Usuario NORMAL: Solo Comprar -->
-            <button *ngIf="canBuy && !canReserve" (click)="buy()" class="btn btn-danger btn-lg px-4">
+            <button *ngIf="canBuy && !canReserve" (click)="buy()" class="buy-btn btn-danger btn-lg px-4">
               <i class="fas fa-shopping-cart me-2"></i>Comprar
             </button>
   </div>

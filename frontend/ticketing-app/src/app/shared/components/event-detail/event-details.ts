@@ -113,6 +113,12 @@ export class EventDetailComponent implements OnInit {
     if (quantity != null) await this.ticketService.processPurchase(this.event.id, quantity);
   }
 
+  //   async onBuy(event: IEvent): Promise<void> {
+  //   if (!event.id) return;
+  //   const quantity = await this.ticketService.selectQuantityModal(event.name);
+  //   if (quantity) await this.ticketService.processPurchase(event.id, quantity);
+  // }
+
   async reserve(): Promise<void> {
     if (!this.event || !this.event.id) return;
     const quantity = await this.ticketService.selectQuantityModal(this.event.name, true);
