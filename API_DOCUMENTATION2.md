@@ -723,7 +723,7 @@ export function startReservationCron() {
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Buscar reservas: status=ACTIVE AND expiresAt < now        │
+│  Buscar reservas: status=ACTIVE AND expiresAt < now         │
 └─────────────────────────────────────────────────────────────┘
                             ↓
                     ¿Hay reservas?

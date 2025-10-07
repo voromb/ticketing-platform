@@ -82,47 +82,47 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   try {
     console.log('🔄 Iniciando registro de rutas...');
-    
+
     console.log('📝 Registrando authRoutes...');
     await server.register(authRoutes, { prefix: '/api/auth' });
     console.log('✅ authRoutes OK');
-    
+
     console.log('📝 Registrando eventRoutes...');
     await server.register(eventRoutes, { prefix: '/api/events' });
     console.log('✅ eventRoutes OK');
-    
+
     console.log('📝 Registrando venueRoutes...');
     await server.register(venueRoutes, { prefix: '/api/venues' });
     console.log('✅ venueRoutes OK');
-    
+
     console.log('📝 Registrando adminRoutes...');
     await server.register(adminRoutes, { prefix: '/api/admins' });
     console.log('✅ adminRoutes OK');
-    
+
     console.log('📝 Registrando userManagementRoutes...');
     await server.register(userManagementRoutes, { prefix: '/api/user-management' });
     console.log('✅ userManagementRoutes OK');
-    
+
     console.log('📝 Registrando auditRoutes...');
     await server.register(auditRoutes, { prefix: '/api/audit' });
     console.log('✅ auditRoutes OK');
-    
+
     console.log('📝 Registrando categoryRoutes...');
     await server.register(categoryRoutes, { prefix: '/api/categories' });
     console.log('✅ categoryRoutes OK');
-    
+
     console.log('📝 Registrando reservationRoutes...');
     await server.register(reservationRoutes, { prefix: '/api/reservations' });
     console.log('✅ reservationRoutes OK');
-    
+
     console.log('📝 Registrando orderRoutes...');
     await server.register(orderRoutes, { prefix: '/api/orders' });
     console.log('✅ orderRoutes OK');
-    
+
     console.log('📝 Registrando paymentRoutes...');
     await server.register(paymentRoutes, { prefix: '/api/payments' });
     console.log('✅ paymentRoutes OK');
-    
+
     console.log('✅ Todas las rutas registradas exitosamente');
   } catch (error: any) {
     logger.error('❌ Error registrando rutas:', error);
