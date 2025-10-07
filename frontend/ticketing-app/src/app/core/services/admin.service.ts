@@ -62,11 +62,18 @@ export interface UserStats {
 export interface Category {
   id: number;
   name: string;
+  slug?: string;
+  description?: string; // ✅ NUEVO
+  icon?: string; // ✅ NUEVO
+  image?: string; // ✅ NUEVO
+  images?: string[]; // ✅ NUEVO
   subcategories?: Subcategory[];
   _count?: {
     events: number;
     subcategories: number;
   };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Subcategory {
@@ -87,7 +94,7 @@ export interface CategoryStats {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminService {
   private baseUrl = 'http://localhost:3003/api';
@@ -97,13 +104,16 @@ export class AdminService {
   private getAuthHeaders() {
     const token = localStorage.getItem('token');
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
   }
 
   getEvents(): Observable<{ success: boolean; data: Event[]; total: number }> {
-    return this.http.get<{ success: boolean; data: Event[]; total: number }>(`${this.baseUrl}/events?isActive=true`, { headers: this.getAuthHeaders() });
+    return this.http.get<{ success: boolean; data: Event[]; total: number }>(
+      `${this.baseUrl}/events?isActive=true`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   getEvent(id: string): Observable<{ success: boolean; data: Event }> {
@@ -127,7 +137,9 @@ export class AdminService {
   }
 
   getVenues(): Observable<{ venues: Venue[]; pagination: any }> {
-    return this.http.get<{ venues: Venue[]; pagination: any }>(`${this.baseUrl}/venues?isActive=true&limit=50`);
+    return this.http.get<{ venues: Venue[]; pagination: any }>(
+      `${this.baseUrl}/venues?isActive=true&limit=50`
+    );
   }
 
   getVenue(id: string): Observable<{ success: boolean; data: Venue }> {
@@ -147,7 +159,9 @@ export class AdminService {
   }
 
   getUsers(): Observable<{ success: boolean; users: User[]; total: number }> {
-    return this.http.get<{ success: boolean; users: User[]; total: number }>(`${this.baseUrl}/user-management`);
+    return this.http.get<{ success: boolean; users: User[]; total: number }>(
+      `${this.baseUrl}/user-management`
+    );
   }
 
   getUser(id: string): Observable<{ success: boolean; user: User }> {
@@ -155,7 +169,9 @@ export class AdminService {
   }
 
   getUserStats(): Observable<{ success: boolean; stats: UserStats }> {
-    return this.http.get<{ success: boolean; stats: UserStats }>(`${this.baseUrl}/user-management/stats`);
+    return this.http.get<{ success: boolean; stats: UserStats }>(
+      `${this.baseUrl}/user-management/stats`
+    );
   }
 
   promoteToVip(userId: string, data: { reason: string; notes: string }): Observable<any> {
@@ -172,59 +188,105 @@ export class AdminService {
 
   getCategories(params?: any): Observable<{ success: boolean; data: Category[]; pagination: any }> {
     const queryParams = new URLSearchParams(params).toString();
-    return this.http.get<{ success: boolean; data: Category[]; pagination: any }>(`${this.baseUrl}/categories?${queryParams}`);
+    return this.http.get<{ success: boolean; data: Category[]; pagination: any }>(
+      `${this.baseUrl}/categories?${queryParams}`
+    );
   }
 
   getCategory(id: number): Observable<{ success: boolean; data: Category }> {
     return this.http.get<{ success: boolean; data: Category }>(`${this.baseUrl}/categories/${id}`);
   }
 
-  createCategory(category: Partial<Category>): Observable<{ success: boolean; data: Category; message: string }> {
-    return this.http.post<{ success: boolean; data: Category; message: string }>(`${this.baseUrl}/categories`, category, { headers: this.getAuthHeaders() });
+  createCategory(
+    category: Partial<Category>
+  ): Observable<{ success: boolean; data: Category; message: string }> {
+    return this.http.post<{ success: boolean; data: Category; message: string }>(
+      `${this.baseUrl}/categories`,
+      category,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
-  updateCategory(id: number, category: Partial<Category>): Observable<{ success: boolean; data: Category; message: string }> {
-    return this.http.put<{ success: boolean; data: Category; message: string }>(`${this.baseUrl}/categories/${id}`, category, { headers: this.getAuthHeaders() });
+  updateCategory(
+    id: number,
+    category: Partial<Category>
+  ): Observable<{ success: boolean; data: Category; message: string }> {
+    return this.http.put<{ success: boolean; data: Category; message: string }>(
+      `${this.baseUrl}/categories/${id}`,
+      category,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   deleteCategory(id: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/categories/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.baseUrl}/categories/${id}`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
-  getSubcategories(params?: any): Observable<{ success: boolean; data: Subcategory[]; pagination: any }> {
-    return this.http.get<{ success: boolean; data: Subcategory[]; pagination: any }>(`${this.baseUrl}/categories/subcategories`);
+  getSubcategories(
+    params?: any
+  ): Observable<{ success: boolean; data: Subcategory[]; pagination: any }> {
+    return this.http.get<{ success: boolean; data: Subcategory[]; pagination: any }>(
+      `${this.baseUrl}/categories/subcategories`
+    );
   }
 
   getSubcategory(id: number): Observable<{ success: boolean; data: Subcategory }> {
-    return this.http.get<{ success: boolean; data: Subcategory }>(`${this.baseUrl}/categories/subcategories/${id}`);
+    return this.http.get<{ success: boolean; data: Subcategory }>(
+      `${this.baseUrl}/categories/subcategories/${id}`
+    );
   }
 
-  createSubcategory(subcategory: Partial<Subcategory>): Observable<{ success: boolean; data: Subcategory; message: string }> {
-    return this.http.post<{ success: boolean; data: Subcategory; message: string }>(`${this.baseUrl}/categories/subcategories`, subcategory, { headers: this.getAuthHeaders() });
+  createSubcategory(
+    subcategory: Partial<Subcategory>
+  ): Observable<{ success: boolean; data: Subcategory; message: string }> {
+    return this.http.post<{ success: boolean; data: Subcategory; message: string }>(
+      `${this.baseUrl}/categories/subcategories`,
+      subcategory,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
-  updateSubcategory(id: number, subcategory: Partial<Subcategory>): Observable<{ success: boolean; data: Subcategory; message: string }> {
-    return this.http.put<{ success: boolean; data: Subcategory; message: string }>(`${this.baseUrl}/categories/subcategories/${id}`, subcategory, { headers: this.getAuthHeaders() });
+  updateSubcategory(
+    id: number,
+    subcategory: Partial<Subcategory>
+  ): Observable<{ success: boolean; data: Subcategory; message: string }> {
+    return this.http.put<{ success: boolean; data: Subcategory; message: string }>(
+      `${this.baseUrl}/categories/subcategories/${id}`,
+      subcategory,
+      { headers: this.getAuthHeaders() }
+    );
   }
+
   deleteSubcategory(id: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/categories/subcategories/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.baseUrl}/categories/subcategories/${id}`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   getEventLocalities(eventId: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/events/${eventId}/localities`, { headers: this.getAuthHeaders() });
+    return this.http.get<any>(`${this.baseUrl}/events/${eventId}/localities`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getCategoryStats(): Observable<{ success: boolean; data: CategoryStats }> {
-    return this.http.get<{ success: boolean; data: CategoryStats }>(`${this.baseUrl}/categories/stats`);
+    return this.http.get<{ success: boolean; data: CategoryStats }>(
+      `${this.baseUrl}/categories/stats`
+    );
   }
 
   getAllReservations(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/reservations/all`, { headers: this.getAuthHeaders() });
+    return this.http.get<any>(`${this.baseUrl}/reservations/all`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getAllOrders(status?: string): Observable<any> {
     const url = status ? `${this.baseUrl}/orders?status=${status}` : `${this.baseUrl}/orders`;
     return this.http.get<any>(url, { headers: this.getAuthHeaders() });
   }
-
 }
