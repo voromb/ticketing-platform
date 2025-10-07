@@ -1064,6 +1064,9 @@ export class EventsListComponent implements OnInit {
       images: this.eventForm.images,
     };
 
+    console.log('📤 Datos que se envían al backend:', eventData);
+    console.log('🆔 ID del evento:', this.eventForm.id);
+
     if (this.isEditing && this.eventForm.id) {
       this.adminService.updateEvent(this.eventForm.id, eventData).subscribe({
         next: (response: any) => {
