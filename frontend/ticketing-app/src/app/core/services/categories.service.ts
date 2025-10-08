@@ -28,4 +28,10 @@ export class CategoryService {
   getCategoryById(id: number): Observable<ICategory> {
     return this.http.get<ICategory>(`${this.baseUrl}/api/categories/${id}`);
   }
+
+  //* Obtener una subcategoria */
+
+  getSubcategories():Observable<ICategory[]>{
+    return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories/subcategories`);
+  }
 }

@@ -12,19 +12,24 @@
 
     <!-- Botones rockeros -->
     <!-- Usuario NO LOGUEADO: Sin botones -->
-            <div *ngIf="!isLoggedIn" class="text-muted small">
+
+            @if(!isLoggedIn){
+            <div  class="text-muted small">
               <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
             </div>
-
+              }
             <!-- Usuario VIP: Botón Reservar + Comprar -->
-          
-          <button *ngIf="canReserve" (click)="reserve()" class="reserve-btn">Reservar VIP</button>
+             
+                      @if (canReserve) {
+              <button (click)="reserve()" class="reserve-btn">Reservar VIP</button>
+            }
 
-          <button *ngIf="canBuy && canReserve" (click)="buy()" class="buy-btn">Comprar</button>
+            @if (canBuy && canReserve) {
+              <button (click)="buy()" class="buy-btn">Comprar</button>
+}
 
             <!-- Usuario NORMAL: Solo Comprar -->
-            <button *ngIf="canBuy && !canReserve" (click)="buy()" class="buy-btn btn-danger btn-lg px-4">
-              <i class="fas fa-shopping-cart me-2"></i>Comprar
-            </button>
+                    @if (canBuy && !canReserve) {
+              <button (click)="buy()" class="buy-btn">Comprar</button>}
   </div>
 </div>
