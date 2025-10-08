@@ -1,5 +1,13 @@
 // frontend/ticketing-app/src/app/shared/components/image-upload/image-upload.component.ts
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImageUploadService } from '../../../core/services/image-upload.service';
 import Swal from 'sweetalert2';
@@ -111,7 +119,7 @@ export type UploadType = 'events' | 'venues' | 'categories' | 'subcategories';
     </div>
   `,
 })
-export class ImageUploadComponent implements OnInit {
+export class ImageUploadComponent implements OnInit, OnChanges {
   @Input() label = 'Imágenes';
   @Input() description = '';
   @Input() uploadType: UploadType = 'events';
@@ -135,8 +143,29 @@ export class ImageUploadComponent implements OnInit {
   constructor(private imageUploadService: ImageUploadService) {}
 
   ngOnInit() {
-    if (this.existingImages.length > 0) {
-      this.previewUrls = [...this.existingImages];
+    this.loadExistingImages();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // Detectar cuando cambia existingImages
+    if (changes['existingImages']) {
+      this.loadExistingImages();
+    }
+  }
+
+  loadExistingImages() {
+    // Filtrar imágenes válidas (que tengan contenido)
+    const validImages = this.existingImages.filter((img) => img && img.trim() !== '');
+
+    if (validImages.length > 0) {
+      // Solo actualizar si hay cambios
+      if (JSON.stringify(this.previewUrls) !== JSON.stringify(validImages)) {
+        this.previewUrls = [...validImages];
+        console.log('🖼️ Cargando imágenes existentes:', this.previewUrls);
+      }
+    } else if (this.previewUrls.length > 0) {
+      // Si no hay imágenes existentes, limpiar previews solo si tenían URLs del servidor
+      this.previewUrls = this.previewUrls.filter((url) => url.startsWith('data:'));
     }
   }
 
@@ -172,7 +201,10 @@ export class ImageUploadComponent implements OnInit {
 
   handleFiles(files: File[]) {
     // Validar número de archivos
-    if (this.selectedFiles.length + files.length > this.maxFiles) {
+    const currentServerImages = this.previewUrls.filter((url) => url.startsWith('http')).length;
+    const totalAfterUpload = currentServerImages + this.selectedFiles.length + files.length;
+
+    if (totalAfterUpload > this.maxFiles) {
       Swal.fire({
         icon: 'warning',
         title: 'Demasiados archivos',
@@ -241,7 +273,14 @@ export class ImageUploadComponent implements OnInit {
     }
 
     this.previewUrls.splice(index, 1);
-    this.selectedFiles.splice(index, 1);
+
+    // Solo eliminar de selectedFiles si es un data URL (archivo pendiente de subir)
+    if (removedUrl.startsWith('data:')) {
+      const dataUrlIndex = this.previewUrls
+        .slice(0, index)
+        .filter((url) => url.startsWith('data:')).length;
+      this.selectedFiles.splice(dataUrlIndex, 1);
+    }
   }
 
   async uploadImages() {
@@ -281,16 +320,19 @@ export class ImageUploadComponent implements OnInit {
             timer: 3000,
           });
 
+          console.log('✅ Imágenes subidas al servidor:', response.images);
+
           // Emitir URLs de las imágenes subidas
           this.imagesUploaded.emit(response.images);
 
-          // Limpiar archivos seleccionados pero mantener previews con URLs del servidor
+          // Limpiar archivos seleccionados
           this.selectedFiles = [];
 
           // Reemplazar data URLs con URLs del servidor
-          const dataUrlCount = this.previewUrls.filter((url) => url.startsWith('data:')).length;
-          this.previewUrls = this.previewUrls.filter((url) => !url.startsWith('data:'));
+          this.previewUrls = this.previewUrls.filter((url) => url.startsWith('http'));
           this.previewUrls.push(...response.images);
+
+          console.log('🖼️ Preview URLs actualizadas:', this.previewUrls);
         },
         error: (error) => {
           this.uploading = false;

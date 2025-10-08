@@ -4,9 +4,14 @@ import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-// Schemas básicos
+// Schemas con campos de imágenes
 const createCategorySchema = z.object({
     name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+    icon: z.string().optional(),
+    image: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    description: z.string().optional(),
+    slug: z.string().optional(),
 });
 
 const updateCategorySchema = createCategorySchema.partial();
@@ -14,6 +19,10 @@ const updateCategorySchema = createCategorySchema.partial();
 const createSubcategorySchema = z.object({
     categoryId: z.number().int().positive('ID de categoría requerido'),
     name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+    icon: z.string().optional(),
+    image: z.string().optional(),
+    description: z.string().optional(),
+    slug: z.string().optional(),
 });
 
 const updateSubcategorySchema = createSubcategorySchema.partial();
@@ -232,7 +241,10 @@ export const deleteCategory = async (req: FastifyRequest, reply: FastifyReply): 
 
 // ============= SUBCATEGORÍAS =============
 
-export const getAllSubcategories = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+export const getAllSubcategories = async (
+    req: FastifyRequest,
+    reply: FastifyReply
+): Promise<void> => {
     try {
         const subcategories = await prisma.eventSubcategory.findMany({
             include: {
@@ -267,16 +279,22 @@ export const getAllSubcategories = async (req: FastifyRequest, reply: FastifyRep
     }
 };
 
-export const createSubcategory = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+export const createSubcategory = async (
+    req: FastifyRequest,
+    reply: FastifyReply
+): Promise<void> => {
     try {
         console.log('Datos recibidos para crear subcategoría:', req.body);
         const data = createSubcategorySchema.parse(req.body);
         console.log('Datos validados:', data);
 
-        // Asegurar que categoryId es un número
         const subcategoryData = {
             categoryId: Number(data.categoryId),
-            name: data.name
+            name: data.name,
+            icon: data.icon,
+            image: data.image,
+            description: data.description,
+            slug: data.slug,
         };
 
         console.log('Datos para Prisma:', subcategoryData);
@@ -306,12 +324,15 @@ export const createSubcategory = async (req: FastifyRequest, reply: FastifyReply
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
-            details: error.message
+            details: error.message,
         });
     }
 };
 
-export const updateSubcategory = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+export const updateSubcategory = async (
+    req: FastifyRequest,
+    reply: FastifyReply
+): Promise<void> => {
     try {
         const { id } = req.params as { id: string };
         const subcategoryId = parseInt(id, 10);
@@ -352,7 +373,10 @@ export const updateSubcategory = async (req: FastifyRequest, reply: FastifyReply
     }
 };
 
-export const deleteSubcategory = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+export const deleteSubcategory = async (
+    req: FastifyRequest,
+    reply: FastifyReply
+): Promise<void> => {
     try {
         const { id } = req.params as { id: string };
         const subcategoryId = parseInt(id, 10);

@@ -1165,15 +1165,21 @@ export class CategoriesListComponent implements OnInit {
   }
 
   openEditCategoryModal(category: Category) {
+    console.log('📝 Abriendo modal de edición para categoría:', category);
+
+    this.selectedCategory = category;
     this.categoryForm = {
       id: category.id,
       name: category.name,
       description: (category as any).description || '',
       icon: (category as any).icon || '',
       image: (category as any).image || '',
-      images: (category as any).images || []
+      images: (category as any).images || [],
     };
-    this.selectedCategory = category;
+
+    console.log('📝 selectedCategory:', this.selectedCategory);
+    console.log('📝 categoryForm:', this.categoryForm);
+
     this.showEditCategoryModal = true;
   }
 
@@ -1212,6 +1218,12 @@ export class CategoriesListComponent implements OnInit {
 
   createCategory() {
     if (!this.categoryForm.name.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la categoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
@@ -1232,20 +1244,44 @@ export class CategoriesListComponent implements OnInit {
           image: '',
           images: []
         };
-        this.loadData();
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Categoría creada!',
+          text: `La categoría "${response.data.name}" se ha creado exitosamente`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        this.loadData();
+        setTimeout(() => this.cdr.detectChanges(), 100);
       },
       error: (error) => {
         console.error('Error al crear categoría:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear',
+          text: error.error?.error || 'No se pudo crear la categoría',
+          confirmButtonColor: '#3b82f6',
+        });
       },
     });
   }
 
   updateCategory() {
-    if (!this.categoryForm.name.trim() || !this.selectedCategory) return;
+    console.log('🔄 updateCategory() llamado');
+
+    if (!this.categoryForm.name.trim() || !this.selectedCategory) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la categoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
+      return;
+    }
+
+    console.log('✅ Validación OK, enviando PUT...');
 
     this.adminService
       .updateCategory(this.selectedCategory.id, {
@@ -1257,17 +1293,39 @@ export class CategoriesListComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
+          console.log('✅ Actualización exitosa:', response);
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Categoría actualizada!',
+            text: `Los cambios en "${response.data.name}" se guardaron correctamente`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
-          console.error('Error al actualizar categoría:', error);
+          console.error('❌ Error al actualizar categoría:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar',
+            text: error.error?.error || 'No se pudo actualizar la categoría',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
   }
 
   createSubcategory() {
     if (!this.subcategoryForm.name.trim() || !this.subcategoryForm.categoryId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos requeridos',
+        text: 'Debes seleccionar una categoría y escribir un nombre',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
@@ -1280,20 +1338,40 @@ export class CategoriesListComponent implements OnInit {
       next: (response) => {
         this.showCreateSubcategoryModal = false;
         this.subcategoryForm = { id: 0, categoryId: 0, name: '' };
-        this.loadData();
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Subcategoría creada!',
+          text: `La subcategoría "${response.data.name}" se ha creado exitosamente`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        this.loadData();
+        setTimeout(() => this.cdr.detectChanges(), 100);
       },
       error: (error) => {
         console.error('Error al crear subcategoría:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear',
+          text: error.error?.error || 'No se pudo crear la subcategoría',
+          confirmButtonColor: '#3b82f6',
+        });
       },
     });
   }
 
   updateSubcategory() {
-    if (!this.subcategoryForm.name.trim() || !this.selectedSubcategory) return;
+    if (!this.subcategoryForm.name.trim() || !this.selectedSubcategory) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la subcategoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
+      return;
+    }
 
     this.adminService
       .updateSubcategory(this.selectedSubcategory.id, {
@@ -1303,10 +1381,25 @@ export class CategoriesListComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Subcategoría actualizada!',
+            text: `Los cambios en "${response.data.name}" se guardaron correctamente`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al actualizar subcategoría:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar',
+            text: error.error?.error || 'No se pudo actualizar la subcategoría',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
   }
@@ -1318,25 +1411,60 @@ export class CategoriesListComponent implements OnInit {
       this.adminService.deleteCategory(this.deleteTarget.item.id).subscribe({
         next: (response) => {
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Categoría eliminada!',
+            text: 'La categoría se ha eliminado correctamente',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al eliminar categoría:', error);
+          this.closeModals();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text:
+              error.error?.error ||
+              'No se pudo eliminar la categoría. Puede que tenga eventos asociados.',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
     } else {
       this.adminService.deleteSubcategory(this.deleteTarget.item.id).subscribe({
         next: (response) => {
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Subcategoría eliminada!',
+            text: 'La subcategoría se ha eliminado correctamente',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al eliminar subcategoría:', error);
+          this.closeModals();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text:
+              error.error?.error ||
+              'No se pudo eliminar la subcategoría. Puede que tenga eventos asociados.',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
     }
   }
-
   viewCategoryDetails(category: Category) {
     this.selectedCategory = category;
     this.showCategoryDetailsModal = true;
@@ -1370,14 +1498,18 @@ export class CategoriesListComponent implements OnInit {
   }
 
   onCategoryIconUploaded(imageUrls: string[]) {
+    console.log('🖼️ Icono subido:', imageUrls);
     if (imageUrls.length > 0) {
       this.categoryForm.icon = imageUrls[0];
     }
+    console.log('📝 categoryForm actualizado:', this.categoryForm);
   }
 
   onCategoryImageUploaded(imageUrls: string[]) {
+    console.log('🖼️ Imagen subida:', imageUrls);
     if (imageUrls.length > 0) {
       this.categoryForm.image = imageUrls[0];
     }
+    console.log('📝 categoryForm actualizado:', this.categoryForm);
   }
 }

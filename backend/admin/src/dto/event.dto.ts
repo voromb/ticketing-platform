@@ -9,10 +9,14 @@ export const createEventSchema = z.object({
   saleEndDate: z.string(),
   venueId: z.string(),
   totalCapacity: z.number(),
-  categoryId: z.number(),       // ← aquí
-  subcategoryId: z.number().optional(), // ← si puede ser nula
+  categoryId: z.number(),
+  subcategoryId: z.number().optional(),
   minPrice: z.number(),
-  maxPrice: z.number()
+  maxPrice: z.number(),
+  ageRestriction: z.string().optional(),
+  bannerImage: z.string().optional(),
+  thumbnailImage: z.string().optional(),
+  images: z.array(z.string()).optional()
 });
 
 export const updateEventSchema = createEventSchema.partial();
