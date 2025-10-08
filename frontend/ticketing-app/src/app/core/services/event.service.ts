@@ -35,12 +35,12 @@ getEventsByVenue(venueId: string): Observable<{ success: boolean; data: IEvent[]
 
 
 getEventsFiltered(params: {
-  categoryId?: number | string;
-  subcategoryId?: number | string;
+  categoryId?: number | string | null;
+  subcategoryId?: number | string | null;
   venueId?: string;
   query?: string;
-  minPrice?: number | string;  
-  maxPrice?: number | string;  
+  minPrice?: number | string | null;  
+  maxPrice?: number | string | null;  
 }): Observable<{ success: boolean; data: IEvent[] }> {
   let httpParams = new HttpParams();
 

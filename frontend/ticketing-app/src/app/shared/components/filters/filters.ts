@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 export interface FiltersPayload {
-  categoryId?: number | null;
+  categoryId?: number | string | null;
   minPrice?: number | null;
   maxPrice?: number | null;
 }

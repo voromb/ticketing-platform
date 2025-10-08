@@ -1,13 +1,15 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { EventService } from '~/app/core/services/event.service';
+import { AuthService } from '~/app/core/services/auth.service';
 import { IEvent } from '~/app/core/models/Event.model';
 import { EventFilterParams } from './events.types';
 
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnChanges {
@@ -17,7 +19,10 @@ export class EventsComponent implements OnChanges {
   loading = false;
   error = '';
 
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private authService: AuthService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filters']) {
@@ -41,5 +46,30 @@ export class EventsComponent implements OnChanges {
         this.loading = false;
       },
     });
+  }
+
+  // Getters para el template
+  get isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  get canReserve(): boolean {
+    const user = this.authService.getCurrentUser();
+    return user !== null && ['vip', 'VIP'].includes(user.role);
+  }
+
+  get canBuy(): boolean {
+    return this.isLoggedIn;
+  }
+
+  // Métodos de acciones
+  onReserve(event: IEvent): void {
+    console.log('Reservar evento:', event);
+    // TODO: Implementar lógica de reserva
+  }
+
+  onBuy(event: IEvent): void {
+    console.log('Comprar evento:', event);
+    // TODO: Implementar lógica de compra
   }
 }
