@@ -17,8 +17,8 @@
     </p> -->
 
     <!-- Listado de subcategorías (opcional) -->
-    <ul *ngIf="category.EventSubcategory?.length" class="list-unstyled mb-3">
-      <li *ngFor="let sub of category.EventSubcategory">
+    <ul *ngIf="category.subcategories?.length" class="list-unstyled mb-3">
+      <li *ngFor="let sub of category.subcategories">
         {{ sub.name }}
       </li>
     </ul>

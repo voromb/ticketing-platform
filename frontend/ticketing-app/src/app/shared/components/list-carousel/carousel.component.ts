@@ -69,7 +69,7 @@ export class CarouselComponent implements OnInit, OnDestroy {
         imageUrl: 'assets/categories/rock-metal.jpg'
       }));
     this.categories.forEach(cat => {
-      console.log(`Categoría: ${cat.name}`, cat.EventSubcategory);
+      console.log(`Categoría: ${cat.name}`, cat.subcategories);
     });
     });
   }

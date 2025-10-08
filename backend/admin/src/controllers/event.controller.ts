@@ -160,9 +160,9 @@ class EventController {
 
     // Construir filtro dinámico
     const where: any = {};
-    if (venueId) where.venueId = venueId;
-    if (categoryId) where.categoryId = categoryId;
-    if (subcategoryId) where.subcategoryId = subcategoryId;
+    if (venueId) where.venueId = Number(venueId);
+    if (categoryId) where.categoryId = Number(categoryId);
+    if (subcategoryId) where.subcategoryId = Number(subcategoryId);
 
     // Obtener eventos
     const events = await prisma.event.findMany({
