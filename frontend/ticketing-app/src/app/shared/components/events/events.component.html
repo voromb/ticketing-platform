@@ -1,8 +1,14 @@
+<!-- <app-search (searchEvent)="get_list_filtered($event)"></app-search> -->
+<app-filters
+  [listCategories]="listCategories"
+  (eventofiltros)="get_list_filtered($event)">
+</app-filters>
 <div class="container py-5">
   <div class="text-center mb-5">
     <h1 class="display-4 fw-bold text-dark">🤘 </h1>
     <p class="lead text-muted">Los mejores festivales de rock y metal del mundo</p>
   </div>
+
 
 
   <!-- Loading -->

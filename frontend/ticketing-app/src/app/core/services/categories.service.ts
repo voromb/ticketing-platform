@@ -2,23 +2,30 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { ICategory } from "../models/Categories.model";
+import { environment } from "~/environments/environment"; 
 
-@Injectable({
-  providedIn: 'root',
-})
+
+@Injectable({ providedIn: 'root' })
+
 export class CategoryService {
-  
-  private baseUrl = 'http://localhost:3003'; // base para las rutas de categorías
+
+  private baseUrl = environment.apiUrl ?? 'http://localhost:3003';
 
   constructor(private http: HttpClient) {}
 
-  // Obtener todas las categorías (con subcategorías)
+  /** Todas las categorías (opcionalmente incluyen subcategorías) */
   getAllCategories(): Observable<ICategory[]> {
     return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories`);
   }
 
-  // Obtener solo las categorías disponibles (con eventos activos)
+  /** Categorías disponibles (con eventos activos) -> ajusta la ruta a tu API */
   getAvailableCategories(): Observable<ICategory[]> {
-    return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories/:id`);
+    // si tu backend expone /api/categories/available:
+    return this.http.get<ICategory[]>(`${this.baseUrl}/api/categories/available`);
+  }
+
+  /** Obtener una categoría concreta por id */
+  getCategoryById(id: number): Observable<ICategory> {
+    return this.http.get<ICategory>(`${this.baseUrl}/api/categories/${id}`);
   }
 }

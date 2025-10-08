@@ -1,0 +1,27 @@
+<form [formGroup]="form" (ngSubmit)="emitir()" class="filters">
+  <label>
+    <span>Categoría</span>
+    <select formControlName="categoryId">
+      <option [ngValue]="null">Todas</option>
+      <option *ngFor="let c of listCategories" [ngValue]="c.id">
+        {{ c.name }}
+      </option>
+    </select>
+  </label>
+
+  <label>
+    <span>Precio mín.</span>
+    <input type="number" formControlName="minPrice" placeholder="Mínimo" />
+  </label>
+
+  <label>
+    <span>Precio máx.</span>
+    <input type="number" formControlName="maxPrice" placeholder="Máximo" />
+  </label>
+
+  <div class="actions">
+    <button type="submit">Aplicar</button>
+    <button type="button" (click)="reset()">Limpiar</button>
+  </div>
+</form>
+
