@@ -11,7 +11,7 @@ export function startReservationCron() {
   cron.schedule('* * * * *', async () => {
     try {
       const result = await ReservationController.expireReservations();
-      
+
       if (result.expired > 0) {
         logger.info(`🕒 Cron: ${result.expired} reservas expiradas y liberadas`);
       }
