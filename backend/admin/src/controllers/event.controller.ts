@@ -148,47 +148,86 @@ class EventController {
 
 
   // ==================== LISTAR EVENTOS ====================
- async listRockEvents(
-  request: FastifyRequest<{ Querystring: EventQueryDTO }>,
+async listRockEvents(
+  request: FastifyRequest<{ Querystring: any }>,
   reply: FastifyReply
 ) {
   try {
-    // Log para depuración
-    console.log('Query params:', request.query);
+    const {
+      venueId,
+      categoryId,
+      subcategoryId,
+      minPrice,
+      maxPrice,
+      query
+    } = request.query;
 
-    const { venueId, categoryId, subcategoryId } = request.query;
+    // 🔹 Log para ver qué llega desde Angular / Postman
+    console.log('📥 Query params:', request.query);
 
-    // Construir filtro dinámico
+    // 🔹 Construcción dinámica del filtro
     const where: any = {};
-    if (venueId) where.venueId = Number(venueId);
-    if (categoryId) where.categoryId = Number(categoryId);
-    if (subcategoryId) where.subcategoryId = Number(subcategoryId);
 
-    // Obtener eventos
+    if (venueId && venueId !== 'null' && venueId !== '') {
+      where.venueId = Number(venueId);
+    }
+
+    if (categoryId && categoryId !== 'null' && categoryId !== '') {
+      where.categoryId = Number(categoryId);
+    }
+
+    if (subcategoryId && subcategoryId !== 'null' && subcategoryId !== '') {
+      where.subcategoryId = Number(subcategoryId);
+    }
+
+    if (minPrice || maxPrice) {
+  // Prisma no soporta comparación entre dos campos, así que hacemos OR
+  const priceConditions: any[] = [];
+
+  if (minPrice && !isNaN(Number(minPrice))) {
+    priceConditions.push({ minPrice: { gte: Number(minPrice) } });
+    priceConditions.push({ maxPrice: { gte: Number(minPrice) } });
+  }
+
+  if (maxPrice && !isNaN(Number(maxPrice))) {
+    priceConditions.push({ minPrice: { lte: Number(maxPrice) } });
+    priceConditions.push({ maxPrice: { lte: Number(maxPrice) } });
+  }
+
+  // Si hay condiciones, las combinamos con OR
+  if (priceConditions.length > 0) {
+    where.OR = priceConditions;
+  }
+}
+
+    if (query && typeof query === 'string' && query.trim() !== '') {
+      where.name = { contains: query, mode: 'insensitive' };
+    }
+
+    // 🔍 Debug: ver el objeto final
+    console.log('🧩 Prisma where:', JSON.stringify(where, null, 2));
+
     const events = await prisma.event.findMany({
       where,
-            include: {
+      include: {
         venue: true,
-        category: true,            
-        subcategory: true,         
+        category: true,
+        subcategory: true,
       },
-      orderBy: {
-        eventDate: 'asc'
-      }
+      orderBy: { eventDate: 'asc' },
     });
 
-    // Respuesta
+    console.log(`✅ ${events.length} eventos encontrados.`);
     return reply.send({ success: true, data: events });
   } catch (error: any) {
-    console.error('Error listing events:', error);
-
-    // Responder sin exponer detalles de Prisma
+    console.error('❌ Error listing events:', error);
     return reply.status(500).send({
       success: false,
-      error: 'Error interno al listar eventos'
+      error: 'Error interno al listar eventos',
     });
   }
 }
+
   // ==================== GET EVENTO POR ID ====================
   async getEventById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
