@@ -87,9 +87,9 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // Servir archivos estáticos (imágenes subidas)
   await server.register(fastifyStatic, {
-    root: path.join(__dirname, '../../uploads'),
-    prefix: '/uploads/',
-    constraints: {},
+      root: path.join(__dirname, '../uploads'),
+      prefix: '/uploads/',
+      constraints: {},
   });
 
   // Inicializar servicio de imágenes
