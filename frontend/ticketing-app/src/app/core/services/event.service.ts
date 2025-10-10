@@ -33,7 +33,6 @@ getEventsByVenue(venueId: string): Observable<{ success: boolean; data: IEvent[]
   );
 }
 
-
 getEventsFiltered(params: {
   categoryId?: number | string | null;
   subcategoryId?: number | string | null;
@@ -41,7 +40,15 @@ getEventsFiltered(params: {
   query?: string;
   minPrice?: number | string | null;  
   maxPrice?: number | string | null;  
-}): Observable<{ success: boolean; data: IEvent[] }> {
+  page?: number;      // 👈 nueva
+  limit?: number;     // 👈 nueva
+}): Observable<{ 
+  success: boolean; 
+  data: IEvent[]; 
+  total: number; 
+  page: number; 
+  totalPages: number; 
+}> {
   let httpParams = new HttpParams();
 
   if (params.categoryId != null && params.categoryId !== '') {
@@ -52,16 +59,22 @@ getEventsFiltered(params: {
   }
   if (params.venueId) httpParams = httpParams.set('venueId', params.venueId);
   if (params.query) httpParams = httpParams.set('query', params.query);
-
-  // 👇 nuevos filtros
   if (params.minPrice != null) httpParams = httpParams.set('minPrice', String(params.minPrice));
   if (params.maxPrice != null) httpParams = httpParams.set('maxPrice', String(params.maxPrice));
 
-  return this.http.get<{ success: boolean; data: IEvent[] }>(
-    `${this.apiUrl}/api/events`,
-    { params: httpParams }
-  );
+  // 👇 paginación
+  if (params.page) httpParams = httpParams.set('page', String(params.page));
+  if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
+
+  return this.http.get<{
+    success: boolean;
+    data: IEvent[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }>(`${this.apiUrl}/api/events`, { params: httpParams });
 }
+
 
 
 }

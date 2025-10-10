@@ -1,0 +1,17 @@
+
+@if(totalPages>1){
+<nav class="pagination">
+  <button (click)="previous()" [disabled]="currentPage === 1">« Prev</button>
+
+
+   @for (page of pages; track page) {
+  <button
+    (click)="goToPage(page)"
+    [class.active]="page === currentPage">
+    {{ page }}
+  </button>
+}
+ 
+
+  <button (click)="next()" [disabled]="currentPage === totalPages">Next »</button>
+</nav>}

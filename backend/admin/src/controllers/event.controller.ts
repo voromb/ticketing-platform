@@ -148,71 +148,65 @@ class EventController {
     }
 
     // ==================== LISTAR EVENTOS ====================
-    async listRockEvents(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
-        try {
-            const { venueId, categoryId, subcategoryId, minPrice, maxPrice, query } = request.query;
+   async listRockEvents(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
+    try {
+        const { venueId, categoryId, subcategoryId, minPrice, maxPrice, query, page = 1, limit = 10 } = request.query;
 
-            console.log('📥 Query params:', request.query);
+        const pageNumber = Number(page) || 1;
+        const pageSize = Number(limit) || 10;
 
-            const where: any = {};
+        const where: any = {};
 
-            if (venueId && venueId !== 'null' && venueId !== '') {
-                where.venueId = Number(venueId);
+        if (venueId && venueId !== 'null' && venueId !== '') where.venueId = Number(venueId);
+        if (categoryId && categoryId !== 'null' && categoryId !== '') where.categoryId = Number(categoryId);
+        if (subcategoryId && subcategoryId !== 'null' && subcategoryId !== '') where.subcategoryId = Number(subcategoryId);
+
+        if (minPrice || maxPrice) {
+            const priceConditions: any[] = [];
+            if (minPrice && !isNaN(Number(minPrice))) {
+                priceConditions.push({ minPrice: { gte: Number(minPrice) } });
+                priceConditions.push({ maxPrice: { gte: Number(minPrice) } });
             }
-
-            if (categoryId && categoryId !== 'null' && categoryId !== '') {
-                where.categoryId = Number(categoryId);
+            if (maxPrice && !isNaN(Number(maxPrice))) {
+                priceConditions.push({ minPrice: { lte: Number(maxPrice) } });
+                priceConditions.push({ maxPrice: { lte: Number(maxPrice) } });
             }
-
-            if (subcategoryId && subcategoryId !== 'null' && subcategoryId !== '') {
-                where.subcategoryId = Number(subcategoryId);
-            }
-
-            if (minPrice || maxPrice) {
-                const priceConditions: any[] = [];
-
-                if (minPrice && !isNaN(Number(minPrice))) {
-                    priceConditions.push({ minPrice: { gte: Number(minPrice) } });
-                    priceConditions.push({ maxPrice: { gte: Number(minPrice) } });
-                }
-
-                if (maxPrice && !isNaN(Number(maxPrice))) {
-                    priceConditions.push({ minPrice: { lte: Number(maxPrice) } });
-                    priceConditions.push({ maxPrice: { lte: Number(maxPrice) } });
-                }
-
-                if (priceConditions.length > 0) {
-                    where.OR = priceConditions;
-                }
-            }
-
-            if (query && typeof query === 'string' && query.trim() !== '') {
-                where.name = { contains: query, mode: 'insensitive' };
-            }
-
-            console.log('🧩 Prisma where:', JSON.stringify(where, null, 2));
-
-            const events = await prisma.event.findMany({
-                where,
-                include: {
-                    venue: true,
-                    category: true,
-                    subcategory: true,
-                },
-                orderBy: { eventDate: 'asc' },
-            });
-
-            console.log(`✅ ${events.length} eventos encontrados.`);
-            return reply.send({ success: true, data: events });
-        } catch (error: any) {
-            console.error('❌ Error listing events:', error);
-            return reply.status(500).send({
-                success: false,
-                error: 'Error interno al listar eventos',
-            });
+            if (priceConditions.length > 0) where.OR = priceConditions;
         }
-    }
 
+        if (query && typeof query === 'string' && query.trim() !== '') {
+            where.name = { contains: query, mode: 'insensitive' };
+        }
+
+        const totalEvents = await prisma.event.count({ where });
+
+        const events = await prisma.event.findMany({
+            where,
+            include: {
+                venue: true,
+                category: true,
+                subcategory: true,
+            },
+            orderBy: { eventDate: 'asc' },
+            skip: (pageNumber - 1) * pageSize,
+            take: pageSize,
+        });
+
+        return reply.send({
+            success: true,
+            data: events,
+            total: totalEvents,
+            page: pageNumber,
+            totalPages: Math.ceil(totalEvents / pageSize),
+        });
+    } catch (error: any) {
+        console.error('❌ Error listing events:', error);
+        return reply.status(500).send({
+            success: false,
+            error: 'Error interno al listar eventos',
+        });
+    }
+}
     // ==================== GET EVENTO POR ID ====================
     async getEventById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
         try {

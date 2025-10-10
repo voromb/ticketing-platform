@@ -5,11 +5,12 @@ import { EventService } from '~/app/core/services/event.service';
 import { AuthService } from '~/app/core/services/auth.service';
 import { IEvent } from '~/app/core/models/Event.model';
 import { EventFilterParams } from './events.types';
+import { PaginationComponent } from '../../pagination/pagination';
 
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PaginationComponent],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnChanges {
@@ -19,6 +20,14 @@ export class EventsComponent implements OnChanges {
   loading = false;
   error = '';
 
+  // Paginación
+  currentPage = 1;
+  totalPages = 1;
+  pageSize = 10;
+  onPageChange(page: number): void {
+  this.loadEvents(page);
+}
+
   constructor(
     private eventService: EventService,
     private authService: AuthService
@@ -27,17 +36,22 @@ export class EventsComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filters']) {
       console.log('🟣 Filtros cambiaron:', this.filters);
+      this.currentPage = 1; // Resetear página al cambiar filtros
       this.loadEvents();
     }
   }
 
-  private loadEvents(): void {
+  private loadEvents(page: number = 1): void {
     this.loading = true;
     this.error = '';
 
-    this.eventService.getEventsFiltered(this.filters ?? {}).subscribe({
+    const params = { ...this.filters, page, limit: this.pageSize };
+
+    this.eventService.getEventsFiltered(params).subscribe({
       next: (res) => {
         this.events = res.data;
+        this.currentPage = res.page;
+        this.totalPages = res.totalPages;
         this.loading = false;
       },
       error: (err) => {
@@ -46,6 +60,20 @@ export class EventsComponent implements OnChanges {
         this.loading = false;
       },
     });
+  }
+
+  // Métodos de paginación
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.loadEvents(page);
+  }
+
+  previousPage() {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage + 1);
   }
 
   // Getters para el template
