@@ -397,4 +397,24 @@ docker-compose restart
 
 ---
 
-**FIN DEL DOCUMENTO**
+# Ir a la carpeta de backups
+cd 'C:\Programacion_2DAW\ticketing-platform\docker\bd_backup'
+
+# 1. Backup PostgreSQL completo
+docker exec ticketing-postgres pg_dump -U admin -d ticketing > 'backups\2025-10-05\postgres_full_backup_11-36.sql'
+
+# 2. Backup MongoDB usuarios
+docker exec ticketing-mongodb mongoexport --username admin --password admin123 --authenticationDatabase admin --db ticketing_users --collection users --out /mongodb_users_11-36.json
+docker cp ticketing-mongodb:/mongodb_users_11-36.json 'backups\2025-10-05\mongodb_users_11-36.json'
+
+# 3. Backup Prisma Schema
+Copy-Item '..\..\backend\admin\prisma\schema.prisma' 'backups\2025-10-05\prisma_schema_11-36.prisma'
+
+# 4. Backup categorías PostgreSQL
+docker exec ticketing-postgres psql -U admin -d ticketing -c 'COPY (SELECT * FROM "PriceCategory") TO STDOUT WITH CSV HEADER;' > 'backups\2025-10-05\postgres_categories_11-36.json'
+
+# 5. Backup localidades PostgreSQL  
+docker exec ticketing-postgres psql -U admin -d ticketing -c 'COPY (SELECT * FROM "Venue") TO STDOUT WITH CSV HEADER;' > 'backups\2025-10-05\postgres_venues_11-36.json'
+
+# 6. Backup eventos PostgreSQL
+docker exec ticketing-postgres psql -U admin -d ticketing -c 'COPY (SELECT * FROM "Event") TO STDOUT WITH CSV HEADER;' > 'backups\2025-10-05\postgres_events_11-36.json'
