@@ -1,20 +1,20 @@
-import { Component } from '@angular/core';
-import { Input } from '@angular/core';
-import { Category } from '../../../core/models/Categories.model';
+import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ICategory } from '../../../core/models/Categories.model';
+
 
 @Component({
   selector: 'app-card-categories',
-  imports: [],
+  imports: [CommonModule]  ,
   templateUrl: './card-categories.html',
-  styleUrl: './card-categories.css'
+  styleUrls: ['./card-categories.css']
 })
-export class CardCategories {
+export class CardCategories implements OnInit {
 
-   @Input() category: Category = {} as Category;
+  @Input() category: ICategory = {} as ICategory;
 
   constructor() { }
 
-  ngOnInit(): void {
-}
+  ngOnInit(): void { }
 
 }

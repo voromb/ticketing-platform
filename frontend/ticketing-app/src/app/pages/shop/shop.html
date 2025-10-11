@@ -1,4 +1,10 @@
+<div class="container py-4">
+  <h2 class="mb-3">Explorar eventos</h2>
 
+  <app-filters
+    [listCategories]="listCategories"
+    (filtersChanged)="onFiltersChanged($event)">
+  </app-filters>
 
-<!-- Aquí se renderiza tu lista de venues -->
-<app-events></app-events>
+  <app-events [filters]="filters"></app-events>
+</div>

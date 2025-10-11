@@ -20,18 +20,13 @@ export const routes: Routes = [
       import('./shared/components/register/register.component').then((m) => m.RegisterComponent),
   },
   {
-    path: 'details',
-    loadComponent: () =>
-     import('./pages/detail-event/detail-event').then((m) => m.DetailEvent),
-  },
-  {
     path: 'shop',
     loadComponent: () =>
       import('./pages/shop/shop').then((m) => m.Shop),
   },
   {
-    path: 'venues/:id',
-    loadComponent: () => import('./pages/venue-detail/venue-detail').then(m => m.VenueDetail),
+    path: 'event/:id',
+    loadComponent: () => import('./pages/detail-event/detail-event').then(m => m.DetailEvent),
   },
   {
     path: 'profile',

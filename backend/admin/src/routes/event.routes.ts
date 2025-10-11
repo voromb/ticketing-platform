@@ -3,6 +3,7 @@ import EventController from '../controllers/event.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 export async function eventRoutes(fastify: FastifyInstance) {
+
   // ==================== RUTAS PÚBLICAS ====================
   fastify.get('/public', EventController.listRockEvents.bind(EventController)); // lista pública de eventos
   fastify.get('/public/:id', EventController.getEventById.bind(EventController));
@@ -12,11 +13,11 @@ export async function eventRoutes(fastify: FastifyInstance) {
   fastify.register(async function (fastify) {
     fastify.addHook('preHandler', authMiddleware);
 
-    fastify.post('/', EventController.createEvent.bind(EventController));
-    fastify.get('/', EventController.listRockEvents.bind(EventController)); // lista filtrando por rock/metal
-    fastify.get('/:id', EventController.getEventById.bind(EventController));
-    fastify.put('/:id', EventController.updateEvent.bind(EventController));
-    fastify.patch('/:id', EventController.updateEvent.bind(EventController));
-    fastify.delete('/:id', EventController.deleteEvent.bind(EventController));
+    fastify.post('/', EventController.createEvent);
+    fastify.get('/', EventController.listRockEvents);
+    fastify.get('/:id', EventController.getEventById);
+    fastify.put('/:id', EventController.updateEvent);
+    fastify.patch('/:id', EventController.updateEvent);
+    fastify.delete('/:id', EventController.deleteEvent);
   });
 }

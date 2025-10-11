@@ -1,20 +1,24 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { Category } from "../models/Categories.model";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { ICategory } from '../models/Categories.model';
+import { environment } from '~/environments/environment';
 
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class CategoryService {
-  constructor(private http: HttpClient) { }
+  private baseUrl = environment.apiUrl ?? 'http://localhost:3003';
 
-  all_categories(params: any): Observable<Category[]> {
-    return this.http.get<Category[]>('/categories/_id_cat');
-  }
+  constructor(private http: HttpClient) {}
 
-  all_categories_select(): Observable<Category[]> {
-    return this.http.get<Category[]>(`/categories`)
+  /** 🔹 Obtiene todas las categorías (con subcategorías) */
+  getAllCategories(): Observable<ICategory[]> {
+    return this.http
+      .get<{ success: boolean; data: ICategory[] }>(`${this.baseUrl}/categories`)
+      .pipe(
+        map((res) => {
+          console.log('📦 Categorías API:', res); // 🔍 para depurar
+          return res.data ?? [];
+        })
+      );
   }
 }

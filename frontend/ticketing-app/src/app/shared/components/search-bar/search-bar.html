@@ -1,0 +1,25 @@
+<div class="search-bar d-flex">
+  <input 
+    type="text" 
+    [formControl]="searchControl" 
+    class="form-control" 
+    placeholder="Buscar productos..."
+  />
+  <button 
+    class="btn btn-primary ms-2"
+    (click)="onSearch(searchControl.value || '')"
+  >
+    Buscar
+  </button>
+
+  <!-- Sugerencias -->
+  <ul *ngIf="(suggestions$ | async) as suggestions" class="suggestions list-group position-absolute mt-1 w-100">
+    <li 
+      *ngFor="let suggestion of suggestions" 
+      class="list-group-item list-group-item-action"
+      (click)="selectSuggestion(suggestion)"
+    >
+      {{ suggestion }}
+    </li>
+  </ul>
+</div>

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CarouselDetails, CarouselHome } from '~/app/core/models/Carousel.model';
-import { CarouselService } from '~/app/core/services/carousel.service';
+import { CategoryService } from '~/app/core/services/categories.service';
+import { ICategory } from '~/app/core/models/Categories.model';
 
 @Component({
   selector: 'app-carousel',
@@ -11,22 +11,20 @@ import { CarouselService } from '~/app/core/services/carousel.service';
   styleUrls: ['./carousel.component.css']
 })
 export class CarouselComponent implements OnInit, OnDestroy {
-  @Input() slides: { imageUrl: string; title: string }[] = [];
   @Input() autoPlay: boolean = false;
   @Input() autoPlayInterval: number = 5000;
   @Input() page!: string;
-  items_carousel!: CarouselHome[];
-  items_details!: CarouselDetails[];
-  slug_details!: string | null;
+
+  categories: ICategory[] = [];
+  slides: { imageUrl: string; title: string }[] = [];
 
   currentIndex: number = 0;
   intervalId?: any;
 
-  constructor(
-    private carouselService: CarouselService
-  ) {}
+  constructor(private categoryService: CategoryService) {}
 
   ngOnInit(): void {
+    this.loadCarouselItems();
     if (this.autoPlay) this.startAutoPlay();
   }
 
@@ -55,23 +53,24 @@ export class CarouselComponent implements OnInit, OnDestroy {
   }
 
   loadCarouselItems(): void {
-    if (this.page === 'home'){
-      this.carousel_categories();
-    }else if (this.page === 'details' && this.slug_details ){
-      this.carousel_shop_details();
-    }
+  if (this.page === 'categories' || this.page === 'home') {
+    this.loadCategories();
   }
-    carousel_categories(): void {
-    this.carouselService.getCarouselHome().subscribe((data: any) => {
-      this.items_carousel = data.categories;
-    });
-  }
+}
 
-  carousel_shop_details(): void {
-    this.carouselService
-      .getCarouselDetails(this.slug_details)
-      .subscribe((data: any) => {
-        this.items_details = data.events.images;
-      });
+
+  loadCategories(): void {
+    this.categoryService.getAllCategories().subscribe((data: ICategory[]) => {
+      this.categories = data;
+
+      // Mapear al formato del carousel
+      this.slides = this.categories.map(cat => ({
+        title: cat.name,
+        imageUrl: 'assets/categories/rock-metal.jpg'
+      }));
+    this.categories.forEach(cat => {
+      console.log(`Categoría: ${cat.name}`, cat.subcategories);
+    });
+    });
   }
 }

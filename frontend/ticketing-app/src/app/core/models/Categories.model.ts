@@ -1,9 +1,15 @@
-import { IEvent } from "./Event.model";
+export interface ISubcategory {
+  id: number;
+  categoryId: number;
+  name: string;
+}
 
-export interface Category {
-    slug: string;
-    id_cat: string;
-    category_name: string;
-    image: string;
-    events: IEvent[];
+export interface ICategory {
+  id: number;
+  name: string;
+  subcategories: ISubcategory[];
+  _count?: {
+    events: number;
+    subcategories: number;
+  };
 }

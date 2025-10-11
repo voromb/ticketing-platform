@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService, User } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
+import { SearchBarComponent } from '../search-bar/search-bar';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SearchBarComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })

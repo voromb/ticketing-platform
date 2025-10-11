@@ -44,7 +44,7 @@ const venueQuerySchema = z.object({
     isActive: z
         .string()
         .optional()
-        .transform(val => val === 'true'),
+        .transform(val => (val === undefined ? undefined : val === 'true')),
     minCapacity: z.string().optional().transform(Number),
     maxCapacity: z.string().optional().transform(Number),
 });

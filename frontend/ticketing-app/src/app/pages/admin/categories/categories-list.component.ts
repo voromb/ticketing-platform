@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { AdminService, type Category, type Subcategory, type CategoryStats } from '../../../core/services/admin.service';
 import Swal from 'sweetalert2';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-categories-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ImageUploadComponent],
   template: `
     <div class="p-8 pb-16 space-y-8">
       <!-- Header con estadísticas -->
@@ -367,12 +368,6 @@ import Swal from 'sweetalert2';
 
         <!-- Tabla de Subcategorías -->
         <div *ngIf="activeTab === 'subcategories'" class="p-8">
-          <!-- Debug info -->
-          <div class="mb-4 text-xs text-slate-400">
-            Debug: {{ filteredSubcategories.length }} subcategorías filtradas de
-            {{ subcategories.length }} totales
-          </div>
-
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-700">
               <thead>
@@ -401,7 +396,7 @@ import Swal from 'sweetalert2';
               </thead>
               <tbody class="divide-y divide-slate-700">
                 <tr
-                  *ngFor="let subcategory of filteredSubcategories; let i = index"
+                  *ngFor="let subcategory of filteredSubcategories"
                   class="hover:bg-slate-700/50 transition-colors duration-200"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -517,17 +512,56 @@ import Swal from 'sweetalert2';
         *ngIf="showCreateCategoryModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
-        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
+        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
           <h3 class="text-lg font-medium text-white mb-4">Nueva Categoría</h3>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-white mb-2">Nombre</label>
+              <label class="block text-sm font-medium text-white mb-2">Nombre *</label>
               <input
                 [(ngModel)]="categoryForm.name"
                 type="text"
                 placeholder="Nombre de la categoría"
                 class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+            </div>
+
+            <!-- Descripción -->
+            <div>
+              <label class="block text-sm font-medium text-white mb-2">Descripción</label>
+              <textarea
+                [(ngModel)]="categoryForm.description"
+                name="description"
+                rows="2"
+                placeholder="Descripción de la categoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              ></textarea>
+            </div>
+
+            <!-- Icono -->
+            <div>
+              <app-image-upload
+                label="Icono de Categoría"
+                description="Icono pequeño para menús (1 archivo, máx. 1MB)"
+                uploadType="categories"
+                [multiple]="false"
+                [maxFiles]="1"
+                [maxSizeMB]="1"
+                [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
+                (imagesUploaded)="onCategoryIconUploaded($event)"
+              ></app-image-upload>
+            </div>
+
+            <!-- Imagen Principal -->
+            <div>
+              <app-image-upload
+                label="Imagen Principal"
+                description="Imagen de portada de la categoría"
+                uploadType="categories"
+                [multiple]="false"
+                [maxFiles]="1"
+                [existingImages]="categoryForm.image ? [categoryForm.image] : []"
+                (imagesUploaded)="onCategoryImageUploaded($event)"
+              ></app-image-upload>
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
@@ -552,17 +586,56 @@ import Swal from 'sweetalert2';
         *ngIf="showEditCategoryModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
-        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
+        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
           <h3 class="text-lg font-medium text-white mb-4">Editar Categoría</h3>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-white mb-2">Nombre</label>
+              <label class="block text-sm font-medium text-white mb-2">Nombre *</label>
               <input
                 [(ngModel)]="categoryForm.name"
                 type="text"
                 placeholder="Nombre de la categoría"
                 class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
+            </div>
+
+            <!-- Descripción -->
+            <div>
+              <label class="block text-sm font-medium text-white mb-2">Descripción</label>
+              <textarea
+                [(ngModel)]="categoryForm.description"
+                name="description"
+                rows="2"
+                placeholder="Descripción de la categoría"
+                class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              ></textarea>
+            </div>
+
+            <!-- Icono -->
+            <div>
+              <app-image-upload
+                label="Icono de Categoría"
+                description="Icono pequeño para menús (1 archivo, máx. 1MB)"
+                uploadType="categories"
+                [multiple]="false"
+                [maxFiles]="1"
+                [maxSizeMB]="1"
+                [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
+                (imagesUploaded)="onCategoryIconUploaded($event)"
+              ></app-image-upload>
+            </div>
+
+            <!-- Imagen Principal -->
+            <div>
+              <app-image-upload
+                label="Imagen Principal"
+                description="Imagen de portada de la categoría"
+                uploadType="categories"
+                [multiple]="false"
+                [maxFiles]="1"
+                [existingImages]="categoryForm.image ? [categoryForm.image] : []"
+                (imagesUploaded)="onCategoryImageUploaded($event)"
+              ></app-image-upload>
             </div>
           </div>
           <div class="flex justify-end space-x-3 mt-6">
@@ -712,7 +785,6 @@ import Swal from 'sweetalert2';
       <div
         class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
       >
-        <!-- Header del Modal -->
         <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
           <div>
             <h3 class="text-lg font-medium text-white">Detalles de la Categoría</h3>
@@ -730,9 +802,7 @@ import Swal from 'sweetalert2';
           </button>
         </div>
 
-        <!-- Contenido del Modal -->
         <div class="p-6 overflow-y-auto max-h-[70vh]">
-          <!-- Información Principal -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="bg-slate-700/30 rounded-lg p-4">
               <h4 class="text-sm font-medium text-slate-300 mb-3">Información de la Categoría</h4>
@@ -766,7 +836,6 @@ import Swal from 'sweetalert2';
           </div>
         </div>
 
-        <!-- Footer del Modal -->
         <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
           <button
             (click)="closeCategoryDetailsModal()"
@@ -786,7 +855,6 @@ import Swal from 'sweetalert2';
       <div
         class="bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
       >
-        <!-- Header del Modal -->
         <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
           <div>
             <h3 class="text-lg font-medium text-white">Detalles de la Subcategoría</h3>
@@ -804,9 +872,7 @@ import Swal from 'sweetalert2';
           </button>
         </div>
 
-        <!-- Contenido del Modal -->
         <div class="p-6 overflow-y-auto max-h-[70vh]">
-          <!-- Información Principal -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="bg-slate-700/30 rounded-lg p-4">
               <h4 class="text-sm font-medium text-slate-300 mb-3">
@@ -844,7 +910,6 @@ import Swal from 'sweetalert2';
           </div>
         </div>
 
-        <!-- Footer del Modal -->
         <div class="px-6 py-4 border-t border-slate-700 flex justify-end">
           <button
             (click)="closeSubcategoryDetailsModal()"
@@ -878,9 +943,14 @@ export class CategoriesListComponent implements OnInit {
   showDeleteModal = false;
   showCategoryDetailsModal = false;
   showSubcategoryDetailsModal = false;
+
   categoryForm = {
     id: 0,
     name: '',
+    description: '',
+    icon: '',
+    image: '',
+    images: [] as string[]
   };
 
   subcategoryForm = {
@@ -888,6 +958,7 @@ export class CategoriesListComponent implements OnInit {
     categoryId: 0,
     name: '',
   };
+
   selectedCategory: Category | null = null;
   selectedSubcategory: Subcategory | null = null;
   deleteTarget: { type: 'category' | 'subcategory'; item: any } | null = null;
@@ -928,15 +999,10 @@ export class CategoriesListComponent implements OnInit {
   }
 
   loadSubcategories() {
-    console.log('Cargando subcategorías...');
     this.adminService.getSubcategories().subscribe({
       next: (response) => {
-        console.log('Subcategorías recibidas:', response);
-        console.log('Datos de subcategorías:', response.data);
         this.subcategories = response.data || [];
         this.filteredSubcategories = [...this.subcategories];
-        console.log('Subcategorías asignadas:', this.subcategories);
-        console.log('Subcategorías filtradas:', this.filteredSubcategories);
         this.applySubcategoryFilters();
 
         setTimeout(() => {
@@ -976,14 +1042,12 @@ export class CategoriesListComponent implements OnInit {
   applyFilters() {
     let filtered = [...this.categories];
 
-    // Filtro por búsqueda
     if (this.searchTerm) {
       filtered = filtered.filter((category) =>
         category.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
 
-    // Ordenación
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
 
@@ -1017,7 +1081,6 @@ export class CategoriesListComponent implements OnInit {
   applySubcategoryFilters() {
     let filtered = [...this.subcategories];
 
-    // Filtro por búsqueda
     if (this.searchTerm) {
       filtered = filtered.filter(
         (subcategory) =>
@@ -1026,7 +1089,6 @@ export class CategoriesListComponent implements OnInit {
       );
     }
 
-    // Ordenación
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
 
@@ -1077,7 +1139,6 @@ export class CategoriesListComponent implements OnInit {
   }
 
   switchTab(tab: 'categories' | 'subcategories') {
-    console.log('Cambiando a tab:', tab);
     this.activeTab = tab;
     this.searchTerm = '';
     this.sortBy = 'name';
@@ -1086,20 +1147,39 @@ export class CategoriesListComponent implements OnInit {
     if (tab === 'categories') {
       this.applyFilters();
     } else {
-      console.log('Cargando subcategorías para el tab...');
-      this.loadSubcategories(); // Recargar subcategorías cuando cambias al tab
+      this.loadSubcategories();
       this.applySubcategoryFilters();
     }
   }
 
   openCreateCategoryModal() {
-    this.categoryForm = { id: 0, name: '' };
+    this.categoryForm = {
+      id: 0,
+      name: '',
+      description: '',
+      icon: '',
+      image: '',
+      images: []
+    };
     this.showCreateCategoryModal = true;
   }
 
   openEditCategoryModal(category: Category) {
-    this.categoryForm = { id: category.id, name: category.name };
+    console.log('📝 Abriendo modal de edición para categoría:', category);
+
     this.selectedCategory = category;
+    this.categoryForm = {
+      id: category.id,
+      name: category.name,
+      description: (category as any).description || '',
+      icon: (category as any).icon || '',
+      image: (category as any).image || '',
+      images: (category as any).images || [],
+    };
+
+    console.log('📝 selectedCategory:', this.selectedCategory);
+    console.log('📝 categoryForm:', this.categoryForm);
+
     this.showEditCategoryModal = true;
   }
 
@@ -1137,84 +1217,161 @@ export class CategoriesListComponent implements OnInit {
   }
 
   createCategory() {
-    console.log('Intentando crear categoría:', this.categoryForm.name);
     if (!this.categoryForm.name.trim()) {
-      console.log('Nombre vacío, cancelando');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la categoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
-    this.adminService.createCategory({ name: this.categoryForm.name }).subscribe({
+    this.adminService.createCategory({
+      name: this.categoryForm.name,
+      description: this.categoryForm.description,
+      icon: this.categoryForm.icon,
+      image: this.categoryForm.image,
+      images: this.categoryForm.images
+    }).subscribe({
       next: (response) => {
-        console.log('Categoría creada exitosamente:', response);
-        console.log('Cerrando modal de categoría...');
         this.showCreateCategoryModal = false;
-        this.categoryForm = { id: 0, name: '' };
-        this.loadData();
+        this.categoryForm = {
+          id: 0,
+          name: '',
+          description: '',
+          icon: '',
+          image: '',
+          images: []
+        };
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Categoría creada!',
+          text: `La categoría "${response.data.name}" se ha creado exitosamente`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        this.loadData();
+        setTimeout(() => this.cdr.detectChanges(), 100);
       },
       error: (error) => {
         console.error('Error al crear categoría:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear',
+          text: error.error?.error || 'No se pudo crear la categoría',
+          confirmButtonColor: '#3b82f6',
+        });
       },
     });
   }
 
   updateCategory() {
-    if (!this.categoryForm.name.trim() || !this.selectedCategory) return;
+    console.log('🔄 updateCategory() llamado');
+
+    if (!this.categoryForm.name.trim() || !this.selectedCategory) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la categoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
+      return;
+    }
+
+    console.log('✅ Validación OK, enviando PUT...');
 
     this.adminService
       .updateCategory(this.selectedCategory.id, {
         name: this.categoryForm.name,
+        description: this.categoryForm.description,
+        icon: this.categoryForm.icon,
+        image: this.categoryForm.image,
+        images: this.categoryForm.images
       })
       .subscribe({
         next: (response) => {
-          console.log('Categoría actualizada:', response.message);
+          console.log('✅ Actualización exitosa:', response);
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Categoría actualizada!',
+            text: `Los cambios en "${response.data.name}" se guardaron correctamente`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
-          console.error('Error al actualizar categoría:', error);
+          console.error('❌ Error al actualizar categoría:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar',
+            text: error.error?.error || 'No se pudo actualizar la categoría',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
   }
 
   createSubcategory() {
-    console.log('Intentando crear subcategoría:', this.subcategoryForm);
     if (!this.subcategoryForm.name.trim() || !this.subcategoryForm.categoryId) {
-      console.log('Datos incompletos para crear subcategoría');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos requeridos',
+        text: 'Debes seleccionar una categoría y escribir un nombre',
+        confirmButtonColor: '#3b82f6',
+      });
       return;
     }
 
     const subcategoryData = {
-      categoryId: Number(this.subcategoryForm.categoryId), // Asegurar que es número
+      categoryId: Number(this.subcategoryForm.categoryId),
       name: this.subcategoryForm.name.trim(),
     };
 
-    console.log('Datos a enviar:', subcategoryData);
-
     this.adminService.createSubcategory(subcategoryData).subscribe({
       next: (response) => {
-        console.log('Subcategoría creada exitosamente:', response);
-        console.log('Cerrando modal...');
         this.showCreateSubcategoryModal = false;
         this.subcategoryForm = { id: 0, categoryId: 0, name: '' };
-        this.loadData(); // Esto recarga todo incluyendo subcategorías
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Subcategoría creada!',
+          text: `La subcategoría "${response.data.name}" se ha creado exitosamente`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        this.loadData();
+        setTimeout(() => this.cdr.detectChanges(), 100);
       },
       error: (error) => {
         console.error('Error al crear subcategoría:', error);
-        console.error('Detalles del error:', error.error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear',
+          text: error.error?.error || 'No se pudo crear la subcategoría',
+          confirmButtonColor: '#3b82f6',
+        });
       },
     });
   }
 
   updateSubcategory() {
-    if (!this.subcategoryForm.name.trim() || !this.selectedSubcategory) return;
+    if (!this.subcategoryForm.name.trim() || !this.selectedSubcategory) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la subcategoría es obligatorio',
+        confirmButtonColor: '#3b82f6',
+      });
+      return;
+    }
 
     this.adminService
       .updateSubcategory(this.selectedSubcategory.id, {
@@ -1223,12 +1380,26 @@ export class CategoriesListComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          console.log('Subcategoría actualizada:', response.message);
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Subcategoría actualizada!',
+            text: `Los cambios en "${response.data.name}" se guardaron correctamente`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al actualizar subcategoría:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar',
+            text: error.error?.error || 'No se pudo actualizar la subcategoría',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
   }
@@ -1239,47 +1410,74 @@ export class CategoriesListComponent implements OnInit {
     if (this.deleteTarget.type === 'category') {
       this.adminService.deleteCategory(this.deleteTarget.item.id).subscribe({
         next: (response) => {
-          console.log('Categoría eliminada:', response.message);
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Categoría eliminada!',
+            text: 'La categoría se ha eliminado correctamente',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al eliminar categoría:', error);
+          this.closeModals();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text:
+              error.error?.error ||
+              'No se pudo eliminar la categoría. Puede que tenga eventos asociados.',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
     } else {
       this.adminService.deleteSubcategory(this.deleteTarget.item.id).subscribe({
         next: (response) => {
-          console.log('Subcategoría eliminada:', response.message);
           this.closeModals();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Subcategoría eliminada!',
+            text: 'La subcategoría se ha eliminado correctamente',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
           this.loadData();
         },
         error: (error) => {
           console.error('Error al eliminar subcategoría:', error);
+          this.closeModals();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text:
+              error.error?.error ||
+              'No se pudo eliminar la subcategoría. Puede que tenga eventos asociados.',
+            confirmButtonColor: '#3b82f6',
+          });
         },
       });
     }
   }
-
   viewCategoryDetails(category: Category) {
-    console.log('🔍 Abriendo modal de categoría:', category);
     this.selectedCategory = category;
     this.showCategoryDetailsModal = true;
-    console.log('🔍 Estado del modal:', this.showCategoryDetailsModal);
-    
-    // Forzar detección de cambios
+
     setTimeout(() => {
       this.cdr.detectChanges();
     }, 100);
   }
 
   viewSubcategoryDetails(subcategory: Subcategory) {
-    console.log('🔍 Abriendo modal de subcategoría:', subcategory);
     this.selectedSubcategory = subcategory;
     this.showSubcategoryDetailsModal = true;
-    console.log('🔍 Estado del modal:', this.showSubcategoryDetailsModal);
-    
-    // Forzar detección de cambios
+
     setTimeout(() => {
       this.cdr.detectChanges();
     }, 100);
@@ -1297,5 +1495,21 @@ export class CategoriesListComponent implements OnInit {
 
   trackBySubcategoryId(index: number, subcategory: Subcategory): number {
     return subcategory.id;
+  }
+
+  onCategoryIconUploaded(imageUrls: string[]) {
+    console.log('🖼️ Icono subido:', imageUrls);
+    if (imageUrls.length > 0) {
+      this.categoryForm.icon = imageUrls[0];
+    }
+    console.log('📝 categoryForm actualizado:', this.categoryForm);
+  }
+
+  onCategoryImageUploaded(imageUrls: string[]) {
+    console.log('🖼️ Imagen subida:', imageUrls);
+    if (imageUrls.length > 0) {
+      this.categoryForm.image = imageUrls[0];
+    }
+    console.log('📝 categoryForm actualizado:', this.categoryForm);
   }
 }
