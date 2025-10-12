@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export enum ApprovalService {
   TRAVEL = 'TRAVEL',
@@ -13,8 +13,8 @@ export enum ApprovalPriority {
 }
 
 export class CreateApprovalDto {
-  @IsEnum(ApprovalService)
-  service: ApprovalService;
+  @IsString()
+  service: string;
 
   @IsString()
   entityId: string;
@@ -26,10 +26,9 @@ export class CreateApprovalDto {
   requestedBy: string;
 
   @IsOptional()
-  @IsEnum(ApprovalPriority)
-  priority?: ApprovalPriority;
+  @IsString()
+  priority?: string;
 
   @IsOptional()
-  @IsObject()
   metadata?: any;
 }

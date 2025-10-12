@@ -1,31 +1,28 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import appConfig from './config/app.config';
 import { TravelModule } from './travel/travel.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { MerchandisingModule } from './merchandising/merchandising.module';
 import { ApprovalModule } from './approval/approval.module';
+import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
+import { SecurityMiddleware } from './auth/middleware/security.middleware';
+import appConfig from './config/app.config';
 
 @Module({
   imports: [
-    // Configuración global
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
     }),
-
-    // Conexión a MongoDB
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('mongodb.uri'),
-      }),
-      inject: [ConfigService],
-    }),
-
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/festival_services'),
+    RabbitmqModule,
+    PrismaModule,
+    AuthModule,
     TravelModule,
     RestaurantModule,
     MerchandisingModule,
@@ -34,4 +31,10 @@ import { ApprovalModule } from './approval/approval.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(SecurityMiddleware)
+      .forRoutes('*'); // Aplicar a todas las rutas
+  }
+}

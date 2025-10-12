@@ -14,6 +14,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { MerchandisingService } from './merchandising.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AddToCartDto, UpdateCartItemDto, ApplyCouponDto } from './dto/cart.dto';
+import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
 
 @ApiTags('merchandising')
 @Controller('merchandising')
@@ -89,5 +91,133 @@ export class MerchandisingController {
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   remove(@Param('id') id: string) {
     return this.merchandisingService.remove(id);
+  }
+
+  // ==================== CART ENDPOINTS ====================
+
+  @Get('cart/:userId')
+  @ApiOperation({ summary: 'Obtener carrito del usuario' })
+  @ApiResponse({ status: 200, description: 'Carrito del usuario' })
+  getCart(@Param('userId') userId: string) {
+    return this.merchandisingService.getCart(userId);
+  }
+
+  @Post('cart/:userId/add')
+  @ApiOperation({ summary: 'Añadir producto al carrito' })
+  @ApiResponse({ status: 200, description: 'Producto añadido al carrito' })
+  @ApiResponse({ status: 400, description: 'Stock insuficiente' })
+  addToCart(
+    @Param('userId') userId: string,
+    @Body() addToCartDto: AddToCartDto,
+  ) {
+    return this.merchandisingService.addToCart(userId, addToCartDto);
+  }
+
+  @Patch('cart/:userId/item/:productId')
+  @ApiOperation({ summary: 'Actualizar cantidad de producto en carrito' })
+  @ApiResponse({ status: 200, description: 'Carrito actualizado' })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado en carrito' })
+  updateCartItem(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+    @Body() updateCartItemDto: UpdateCartItemDto,
+  ) {
+    return this.merchandisingService.updateCartItem(userId, productId, updateCartItemDto);
+  }
+
+  @Delete('cart/:userId/item/:productId')
+  @ApiOperation({ summary: 'Eliminar producto del carrito' })
+  @ApiResponse({ status: 200, description: 'Producto eliminado del carrito' })
+  removeFromCart(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+    @Query('size') size?: string,
+  ) {
+    return this.merchandisingService.removeFromCart(userId, productId, size);
+  }
+
+  @Delete('cart/:userId')
+  @ApiOperation({ summary: 'Vaciar carrito completo' })
+  @ApiResponse({ status: 200, description: 'Carrito vaciado' })
+  clearCart(@Param('userId') userId: string) {
+    return this.merchandisingService.clearCart(userId);
+  }
+
+  @Post('cart/:userId/coupon')
+  @ApiOperation({ summary: 'Aplicar cupón de descuento' })
+  @ApiResponse({ status: 200, description: 'Cupón aplicado' })
+  @ApiResponse({ status: 400, description: 'Cupón inválido' })
+  applyCoupon(
+    @Param('userId') userId: string,
+    @Body() applyCouponDto: ApplyCouponDto,
+  ) {
+    return this.merchandisingService.applyCoupon(userId, applyCouponDto);
+  }
+
+  // ==================== ORDER ENDPOINTS ====================
+
+  @Post('orders')
+  @ApiOperation({ summary: 'Crear pedido desde carrito' })
+  @ApiResponse({ status: 201, description: 'Pedido creado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Carrito vacío o stock insuficiente' })
+  createOrder(@Body() createOrderDto: CreateOrderDto) {
+    return this.merchandisingService.createOrderFromCart(createOrderDto);
+  }
+
+  @Get('orders')
+  @ApiOperation({ summary: 'Obtener todos los pedidos' })
+  @ApiQuery({ name: 'userId', required: false, description: 'Filtrar por ID de usuario' })
+  @ApiResponse({ status: 200, description: 'Lista de pedidos' })
+  findAllOrders(@Query('userId') userId?: string) {
+    if (userId) {
+      return this.merchandisingService.findOrdersByUser(userId);
+    }
+    return this.merchandisingService.findAllOrders();
+  }
+
+  @Get('orders/stats')
+  @ApiOperation({ summary: 'Obtener estadísticas de pedidos' })
+  @ApiQuery({ name: 'userId', required: false, description: 'Estadísticas de un usuario específico' })
+  @ApiResponse({ status: 200, description: 'Estadísticas de pedidos' })
+  getOrderStats(@Query('userId') userId?: string) {
+    return this.merchandisingService.getOrderStats(userId);
+  }
+
+  @Get('orders/:id')
+  @ApiOperation({ summary: 'Obtener pedido por ID' })
+  @ApiResponse({ status: 200, description: 'Pedido encontrado' })
+  @ApiResponse({ status: 404, description: 'Pedido no encontrado' })
+  findOrderById(@Param('id') id: string) {
+    return this.merchandisingService.findOrderById(id);
+  }
+
+  @Get('orders/number/:orderNumber')
+  @ApiOperation({ summary: 'Obtener pedido por número' })
+  @ApiResponse({ status: 200, description: 'Pedido encontrado' })
+  @ApiResponse({ status: 404, description: 'Pedido no encontrado' })
+  findOrderByNumber(@Param('orderNumber') orderNumber: string) {
+    return this.merchandisingService.findOrderByNumber(orderNumber);
+  }
+
+  @Patch('orders/:id')
+  @ApiOperation({ summary: 'Actualizar pedido' })
+  @ApiResponse({ status: 200, description: 'Pedido actualizado' })
+  @ApiResponse({ status: 404, description: 'Pedido no encontrado' })
+  updateOrder(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    return this.merchandisingService.updateOrder(id, updateOrderDto);
+  }
+
+  @Post('orders/:id/cancel')
+  @ApiOperation({ summary: 'Cancelar pedido' })
+  @ApiResponse({ status: 200, description: 'Pedido cancelado' })
+  @ApiResponse({ status: 400, description: 'No se puede cancelar el pedido' })
+  cancelOrder(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.merchandisingService.cancelOrder(id, reason);
   }
 }

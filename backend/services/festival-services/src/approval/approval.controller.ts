@@ -11,6 +11,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ApprovalService } from './approval.service';
 import { CreateApprovalDto } from './dto/create-approval.dto';
 import { ApprovalDecisionDto } from './dto/approval-decision.dto';
+import { AdminOnly, ModeratorOrAdmin, Public } from '../auth/decorators/auth.decorators';
 
 @ApiTags('approval')
 @Controller('approval')
@@ -18,6 +19,7 @@ export class ApprovalController {
   constructor(private readonly approvalService: ApprovalService) {}
 
   @Post()
+  @Public() // Las solicitudes pueden venir de otros servicios
   @ApiOperation({ summary: 'Crear solicitud de aprobación' })
   @ApiResponse({ status: 201, description: 'Solicitud creada exitosamente' })
   create(@Body() createApprovalDto: CreateApprovalDto) {
@@ -25,6 +27,7 @@ export class ApprovalController {
   }
 
   @Get()
+  @ModeratorOrAdmin() // Moderadores y admins pueden ver aprobaciones
   @ApiOperation({ summary: 'Obtener todas las aprobaciones' })
   @ApiQuery({
     name: 'status',
@@ -37,6 +40,7 @@ export class ApprovalController {
   }
 
   @Get('pending')
+  @ModeratorOrAdmin() // Moderadores y admins pueden ver pendientes
   @ApiOperation({ summary: 'Obtener aprobaciones pendientes' })
   @ApiResponse({ status: 200, description: 'Lista de aprobaciones pendientes' })
   findPending() {
@@ -44,6 +48,7 @@ export class ApprovalController {
   }
 
   @Get('stats')
+  @ModeratorOrAdmin() // Moderadores y admins pueden ver estadísticas
   @ApiOperation({ summary: 'Obtener estadísticas de aprobaciones' })
   @ApiResponse({ status: 200, description: 'Estadísticas' })
   getStats() {
@@ -51,6 +56,7 @@ export class ApprovalController {
   }
 
   @Get('service/:service')
+  @ModeratorOrAdmin() // Moderadores y admins pueden filtrar por servicio
   @ApiOperation({ summary: 'Obtener aprobaciones por servicio' })
   @ApiResponse({
     status: 200,
@@ -61,6 +67,7 @@ export class ApprovalController {
   }
 
   @Get(':id')
+  @ModeratorOrAdmin() // Moderadores y admins pueden ver detalles
   @ApiOperation({ summary: 'Obtener una aprobación por ID' })
   @ApiResponse({ status: 200, description: 'Aprobación encontrada' })
   @ApiResponse({ status: 404, description: 'Aprobación no encontrada' })
@@ -69,6 +76,7 @@ export class ApprovalController {
   }
 
   @Patch(':id/decision')
+  @AdminOnly() // Solo admins pueden aprobar/rechazar
   @ApiOperation({ summary: 'Aprobar o rechazar solicitud' })
   @ApiResponse({ status: 200, description: 'Decisión registrada' })
   makeDecision(
