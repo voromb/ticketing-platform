@@ -6,19 +6,11 @@ import { ListCard } from "../../shared/components/list-card/list-card";
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, CarouselComponent, ListCard], // <--- solo una vez
+  imports: [CommonModule, CarouselComponent, ListCard], 
   templateUrl: './home.html',
 })
 export class Home  {
   
-  // Array de conciertos de ejemplo (temporal)
-  // concerts = [
-  //   { imageUrl: 'assets/metal1.jpg', title: 'Concierto Metallica' },
-  //   { imageUrl: 'assets/rock1.jpg', title: 'Festival Rock Nacional' },
-  //   { imageUrl: 'assets/metal2.jpg', title: 'Iron Maiden Live' },
-  // ];
+  events: any[] = []; 
 
-  // ngOnInit() {
-  //   console.log('Concerts en OnInit:', this.concerts);
-  // }
 }

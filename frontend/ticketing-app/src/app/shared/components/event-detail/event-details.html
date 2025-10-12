@@ -1,35 +1,50 @@
-<div class="event-details" *ngIf="event">
-  <div class="hero-image" [style.backgroundImage]="'url(' + event.image + ')'">
-    <div class="overlay">
+@if(event) {
+  <div class="event-details">
+    <div class="event-layout">
+      
+      <!-- IZQUIERDA: información -->
+      <div class="event-info">
       <h1 class="title">{{ event.name }}</h1>
       <p class="date">{{ event.eventDate | date:'fullDate' }}</p>
+      
+      
+  
+      </div>
+
+      <!-- DERECHA: imagen -->
+      <div class="banner">
+        <img [src]="event.bannerImage" alt="Banner del evento" />
+      </div>
+
+    </div>
+     
+    <div class="info"> 
+      <ul>
+      <li class="description">{{ event.description }}</li>
+      <li class="ubicacion">Lugar del evento: {{ event.venue.name }} - {{ event.venue.city }}</li>
+      <li class="tickets"> Entradas disponibles: {{event.availableTickets}}</li>
+      <li class="precioVip"> Entradas VIP:  {{event.maxPrice}} €</li>  
+      <li class="precioEstandar"> Entradas a pie de pista: {{event.minPrice}} €</li>
+      </ul>
+      
+      
+
+  <div class="actions">
+    @if(!isLoggedIn) {
+      <div class="text-muted small">
+        <i class="fas fa-info-circle me-1"></i>
+        Inicia sesión para comprar entradas
+      </div>
+    }
+
+    @if (canReserve) {
+      <button (click)="reserve()" class="reserve-btn">Reservar (VIP)</button>
+    }
+
+    @if (canBuy) {
+      <button (click)="buy()" class="buy-btn">Comprar</button>
+    }
+  </div>
     </div>
   </div>
-
-  <div class="event-info">
-    <p class="description">{{ event.description }}</p>
-    <p class="ubicacion">{{ event.venue.city }}</p>
-
-    <!-- Botones rockeros -->
-    <!-- Usuario NO LOGUEADO: Sin botones -->
-
-            @if(!isLoggedIn){
-            <div  class="text-muted small">
-              <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
-            </div>
-              }
-            <!-- Usuario VIP: Botón Reservar + Comprar -->
-             
-                      @if (canReserve) {
-              <button (click)="reserve()" class="reserve-btn">Reservar VIP</button>
-            }
-
-            @if (canBuy && canReserve) {
-              <button (click)="buy()" class="buy-btn">Comprar</button>
 }
-
-            <!-- Usuario NORMAL: Solo Comprar -->
-                    @if (canBuy && !canReserve) {
-              <button (click)="buy()" class="buy-btn">Comprar</button>}
-  </div>
-</div>

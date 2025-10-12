@@ -5,6 +5,7 @@ import { ICategory } from '../../../core/models/Categories.model';
 
 @Component({
   selector: 'app-card-categories',
+  standalone: true,
   imports: [CommonModule]  ,
   templateUrl: './card-categories.html',
   styleUrls: ['./card-categories.css']

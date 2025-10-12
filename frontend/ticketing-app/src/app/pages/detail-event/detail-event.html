@@ -1,3 +1,14 @@
 
-<app-carousel [autoPlay]="true" [autoPlayInterval]="4000" page="details"/>
-<app-event-details/>
+@if(!loading && events.length;)
+{
+  <app-carousel
+    [eventImages]="events"
+    [autoPlay]="true"
+    [autoPlayInterval]="4000"
+    page="details">
+  </app-carousel>
+
+
+}
+<app-event-details></app-event-details>
+

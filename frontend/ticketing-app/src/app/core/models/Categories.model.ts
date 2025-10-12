@@ -12,4 +12,5 @@ export interface ICategory {
     events: number;
     subcategories: number;
   };
+   image?: string; 
 }

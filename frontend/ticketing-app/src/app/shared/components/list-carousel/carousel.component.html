@@ -1,20 +1,25 @@
-<div class="carousel-container" (mouseenter)="stopAutoPlay()" (mouseleave)="startAutoPlay()">
-  <div class="carousel-slide" *ngFor="let slide of slides; let i = index"
-       [class.active]="i === currentIndex"
-       [style.backgroundImage]="'url(' + slide.imageUrl + ')'">
-    <div class="overlay">
-      <h2>{{ slide.title }}</h2>
+<div class="carousel-container">
+  <button class="nav prev" (click)="prev()">❮</button>
+
+  <div class="carousel-content">
+    <div
+      class="carousel-slide"
+      *ngFor="let slide of slides; let i = index"
+      [class.active]="i === currentIndex"
+    >
+      <img [src]="slide.imageUrl" [alt]="slide.title || 'Slide'" class="slide-image" />
+
+      <h3 *ngIf="slide.title" class="slide-title">{{ slide.title }}</h3>
     </div>
   </div>
 
-  <!-- Botones -->
-  <button class="nav prev" (click)="prev()">&lt;</button>
-  <button class="nav next" (click)="next()">&gt;</button>
+  <button class="nav next" (click)="next()">❯</button>
 
-  <!-- Indicadores -->
-  <div class="indicators">
-    <span *ngFor="let slide of slides; let i = index"
-          (click)="goTo(i)"
-          [class.active]="i === currentIndex"></span>
+  <div class="dots">
+<span
+  *ngFor="let slide of slides; let i = index"
+  [class.active]="i === currentIndex"
+  (click)="goTo(i)"
+></span>
   </div>
 </div>

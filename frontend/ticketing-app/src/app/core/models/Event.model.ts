@@ -5,9 +5,11 @@ export interface IEvent {
   id?: string;           // opcional, por si lo recibes del backend
   name: string;
   description?: string;
+  bannerImage: string;
   slug: string;
-  image:[];
-  eventDate: string;      // puedes usar Date si quieres convertirlo en frontend
+  images:[];
+  eventDate: string; 
+  availableTickets: number;     // puedes usar Date si quieres convertirlo en frontend
   saleStartDate: string;
   saleEndDate: string;
   venueId: string;

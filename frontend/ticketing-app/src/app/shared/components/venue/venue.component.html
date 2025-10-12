@@ -1,7 +1,9 @@
-<a *ngIf="venue"
+
+@if(venue){
+<a 
    class="card venue-card h-100 shadow-sm text-decoration-none text-dark d-flex flex-column"
    [routerLink]="['/shop']"
-   [queryParams]="{ venueId: venue.id }">
+   [queryParams]="{ venueId: venue.slug }">
 
   <!-- 🔵 Cabecera azul / imagen -->
   <div class="venue-header">
@@ -33,3 +35,4 @@
   </div>
 
 </a>
+}

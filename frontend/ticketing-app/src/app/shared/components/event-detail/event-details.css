@@ -1,150 +1,116 @@
-/* Fondo global y tipografía */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #111; /* fondo oscuro global */
-  font-family: 'Rock Salt', cursive, Arial, sans-serif;
-  overflow-x: hidden;
-  color: #fff;
-}
-
-/* Contenedor principal de la página */
-.event-details {
-  min-height: 100vh; /* ocupa toda la pantalla */
+.event-layout {
+  background-color: rgb(3, 5, 18);
   display: flex;
-  flex-direction: column;
-  background-color: #111;
-}
-
-/* Imagen de héroe con overlay */
-.hero-image {
-  position: relative;
-  height: 60vh; /* ocupa el 60% de la pantalla */
-  background-size: cover;
-  background-position: center;
-  flex-shrink: 0;
-}
-
-.hero-image .overlay {
-  background: rgba(0, 0, 0, 0.6); /* oscurece la imagen para resaltar texto */
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0 20px;
-}
-
-/* Título del evento */
-.title {
-  font-size: 3rem;
-  color: #ff3c00; /* naranja/rojo */
-  text-shadow: 2px 2px 6px #000;
-  margin: 0;
-}
-
-/* Fecha del evento */
-.date {
-  font-size: 1.2rem;
-  margin-top: 10px;
-  color: #fff;
-}
-
-/* Información adicional del evento */
-.event-info {
-  max-width: 900px;
-  margin: 20px auto 40px auto;
-  padding: 20px;
-  flex: 1;
-}
-
-.description, .ubicacion {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-/* Sección de tickets */
-.tickets {
-  text-align: center;
-}
-
-.buy-btn {
-  background-color: #ff3c00;
-  border: none;
-  padding: 15px 40px;
-  font-size: 1.3rem;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px #ff3c00;
-  border-radius: 8px;
-}
-
-.buy-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 20px #ff3c00, 0 0 30px #ff5733;
-}
-
-/* Ajustes responsivos */
-@media (max-width: 768px) {
-  .title {
-    font-size: 2rem;
-  }
-  .hero-image {
-    height: 50vh;
-  }
-  .buy-btn {
-    padding: 12px 30px;
-    font-size: 1.1rem;
-  }
-}
-
-.ticket-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.rock-btn {
-  font-family: 'Rock Salt', cursive, Arial, sans-serif;
-  font-size: 1.2rem;
-  padding: 12px 30px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 8px #ff3c00;
-  color: #fff;
-}
-
-/* Botón Comprar */
-.buy-btn {
-  background-color: #ff3c00;
-}
-
-.buy-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 15px #ff3c00, 0 0 25px #ff5733;
-}
-
-/* Botón Reservar VIP */
-.reserve-btn {
-  background-color: #ffc107; /* amarillo rockero */
-  color: #111;
-}
-
-.reserve-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 15px #ffc107, 0 0 25px #ffeb3b;
-}
-
-/* Mensaje de usuario no logueado */
-.ticket-actions .text-muted {
   width: 100%;
-  text-align: center;
-  font-size: 0.9rem;
+  height: 50vh; /* pantalla completa */
+  justify-content: space-between;
+  text-align: end;
+  align-items: center; /* centra verticalmente los dos lados */
+  padding: 0 5%;
+  box-sizing: border-box;
 }
+
+.event-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* empuja el contenido hacia abajo */
+  height: 100%;
+  padding-bottom: 15vh; /* controla cuán abajo queda la descripción */
+}
+
+.event-info .title {
+  font-size: 3rem;
+  color: #e63946;
+  margin-bottom: 0.5rem;
+}
+
+.event-info .date {
+  font-size: 1.2rem;
+  color: #aaa;
+  margin-bottom: 1.5rem;
+}
+
+.info .description {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: rgb(162, 170, 176);
+}
+
+.ubicacion {
+  font-size: 1.5rem;
+  color: rgb(255, 255, 255);
+  margin-bottom: 2rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: center; /* centra horizontalmente */
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+
+.buy-btn {
+  background-color: #e10909;
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.reserve-btn{
+  background-color: #f9ed04;
+  border: none;
+  color: black;
+  padding: 1rem 2rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+
+}
+
+.reserve-btn:hover,
+.buy-btn:hover {
+  background-color: #a0182e;
+}
+
+.banner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  object-fit: cover;
+}
+
+.info{
+
+  background-color: rgb(3, 5, 18);
+  display: flex;
+  width: 100%;
+  height: 50vh; 
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 5%;
+  box-sizing: border-box;
+
+}
+.info .tickets, .precioVip, .precioEstandar{
+  font-size: 1.3rem;
+  color: rgb(241, 241, 241);
+  margin-bottom: 2rem;
+}
+
+
+
