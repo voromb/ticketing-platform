@@ -37,9 +37,12 @@ export class AuthService {
 
   // Passwords hasheadas para los usuarios por defecto
   private passwords: Record<string, string> = {
-    'admin@festival.com': '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    'moderator@festival.com': '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-    'user@festival.com': '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    'admin@festival.com':
+      '$2b$10$sdvY64hFdIFbs/xS4mKHYu6lE7bRRb0voLbDhWG2AkFPV.r3/Zf2C', // password
+    'moderator@festival.com':
+      '$2b$10$sdvY64hFdIFbs/xS4mKHYu6lE7bRRb0voLbDhWG2AkFPV.r3/Zf2C', // password
+    'user@festival.com':
+      '$2b$10$sdvY64hFdIFbs/xS4mKHYu6lE7bRRb0voLbDhWG2AkFPV.r3/Zf2C', // password
   };
 
   constructor(private jwtService: JwtService) {}
@@ -48,14 +51,14 @@ export class AuthService {
     const { email, password } = loginDto;
 
     // Buscar usuario
-    const user = this.users.find(u => u.email === email);
+    const user = this.users.find((u) => u.email === email);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     // Verificar contraseña
     const storedPassword = this.passwords[email];
-    if (!storedPassword || !await bcrypt.compare(password, storedPassword)) {
+    if (!storedPassword || !(await bcrypt.compare(password, storedPassword))) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
@@ -85,7 +88,7 @@ export class AuthService {
     const { email, password, name, role = UserRole.USER } = registerDto;
 
     // Verificar si el usuario ya existe
-    const existingUser = this.users.find(u => u.email === email);
+    const existingUser = this.users.find((u) => u.email === email);
     if (existingUser) {
       throw new ConflictException('El usuario ya existe');
     }
@@ -116,7 +119,9 @@ export class AuthService {
 
     const access_token = this.jwtService.sign(payload);
 
-    console.log(`✅ Nuevo usuario registrado: ${newUser.email} (${newUser.role})`);
+    console.log(
+      `✅ Nuevo usuario registrado: ${newUser.email} (${newUser.role})`,
+    );
 
     return {
       access_token,
@@ -130,16 +135,18 @@ export class AuthService {
   }
 
   async validateUser(payload: JwtPayload): Promise<User | null> {
-    const user = this.users.find(u => u.id === payload.id && u.email === payload.email);
+    const user = this.users.find(
+      (u) => u.id === payload.id && u.email === payload.email,
+    );
     return user || null;
   }
 
   async getUserById(id: string): Promise<User | null> {
-    return this.users.find(u => u.id === id) || null;
+    return this.users.find((u) => u.id === id) || null;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.users.map(user => ({
+    return this.users.map((user) => ({
       ...user,
       // No devolver información sensible
     }));
