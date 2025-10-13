@@ -5,13 +5,14 @@ import { EventService } from '~/app/core/services/event.service';
 import { AuthService } from '~/app/core/services/auth.service';
 import { IEvent } from '~/app/core/models/Event.model';
 import { EventFilterParams } from './events.types';
-import { PaginationComponent } from '../../pagination/pagination';
+import { PaginationComponent } from '../pagination/pagination';
 
 @Component({
   selector: 'app-events',
   standalone: true,
   imports: [CommonModule, RouterModule, PaginationComponent],
   templateUrl: './events.component.html',
+  styleUrl: './events.component.css',
 })
 export class EventsComponent implements OnChanges {
   @Input() filters: EventFilterParams | null = null;

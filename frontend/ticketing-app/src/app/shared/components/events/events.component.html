@@ -1,13 +1,8 @@
-<!-- <app-search (searchEvent)="get_list_filtered($event)"></app-search> -->
-<!-- <app-filters
-  [listCategories]="listCategories"
-  (eventofiltros)="get_list_filtered($event)">
-</app-filters> -->
+
 <div class="container py-5">
-  <div class="text-center mb-5">
-    <h1 class="display-4 fw-bold text-dark">🤘 </h1>
-    <p class="lead text-muted">Los mejores festivales de rock y metal del mundo</p>
-  </div>
+  <h1 class="rock-title text-center mt-4">
+  Los mejores festivales de rock y metal del mundo
+</h1>
 
 
 
@@ -28,7 +23,7 @@
   <div class="row" *ngIf="!loading && !error && events.length > 0">
     <div class="col-lg-6 mb-4" *ngFor="let event of events">
       <div class="card h-100 shadow-sm border-0">
-         <a [routerLink]="['/event', event.id]" class="text-decoration-none">
+         <a [routerLink]="['/event', event.slug]" class="text-decoration-none">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <h4 class="card-title fw-bold text-dark mb-0">{{ event.name }}</h4>

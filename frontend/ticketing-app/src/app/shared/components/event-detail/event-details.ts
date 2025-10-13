@@ -75,11 +75,10 @@ export class EventDetailComponent implements OnInit {
   constructor(private ticketService: TicketService,private route: ActivatedRoute, private authService: AuthService,  private router: Router,
     private eventService: EventService,
   ) {}
-
   ngOnInit(): void {
-     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.eventService.getEventById(id).subscribe({
+    const slug = this.route.snapshot.paramMap.get('slug');
+    if (slug) {
+      this.eventService.getEventBySlug(slug).subscribe({
         next: (res) => {
           if (res.success) {
             this.event = res.data;
@@ -89,6 +88,7 @@ export class EventDetailComponent implements OnInit {
       });
     }
   }
+
 
   get isLoggedIn(): boolean {
     return !!this.authService.isAuthenticated();

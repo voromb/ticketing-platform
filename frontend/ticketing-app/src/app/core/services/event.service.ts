@@ -23,6 +23,12 @@ getEventById(id: string): Observable<{ success: boolean; data: IEvent }> {
   return this.http.get<{ success: boolean; data: IEvent }>(`${this.apiUrl}/api/events/${id}`);
 }
 
+getEventBySlug(slug: string): Observable<{ success: boolean; data: IEvent }> {
+  return this.http.get<{ success: boolean; data: IEvent }>(
+    `${this.apiUrl}/api/events/${slug}`
+  );
+}
+
 searchEvents(query: string): Observable<{ success: boolean; data: IEvent[] }> {
   return this.http.get<{ success: boolean; data: IEvent[] }>(`${this.apiUrl}/events/search?q=${query}`);
 }
@@ -62,7 +68,6 @@ getEventsFiltered(params: {
   if (params.minPrice != null) httpParams = httpParams.set('minPrice', String(params.minPrice));
   if (params.maxPrice != null) httpParams = httpParams.set('maxPrice', String(params.maxPrice));
 
-  // 👇 paginación
   if (params.page) httpParams = httpParams.set('page', String(params.page));
   if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
 

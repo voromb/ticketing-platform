@@ -2,19 +2,22 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
-  standalone:true,
+  standalone: true,
   templateUrl: './pagination.html',
   styleUrls: ['./pagination.css']
 })
 export class PaginationComponent {
   @Input() totalPages: number = 1;
   @Input() currentPage: number = 1;
-  
   @Output() pageChange = new EventEmitter<number>();
 
-  
+  // cantidad de botones visibles a la vez
+  visibleCount = 3;
+
   get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const start = Math.floor((this.currentPage - 1) / this.visibleCount) * this.visibleCount + 1;
+    const end = Math.min(start + this.visibleCount - 1, this.totalPages);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   goToPage(page: number) {

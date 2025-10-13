@@ -13,6 +13,7 @@ export interface FiltersPayload {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './filters.html',
+  styleUrl: './filters.css'
 })
 export class FiltersComponent {
   @Input() listCategories: { id: number; name: string }[] = [];

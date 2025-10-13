@@ -1,4 +1,4 @@
-<div class="carousel-container">
+<!-- <div class="carousel-container">
   <button class="nav prev" (click)="prev()">❮</button>
 
   <div class="carousel-content">
@@ -22,4 +22,48 @@
   (click)="goTo(i)"
 ></span>
   </div>
+</div> -->
+
+<div class="carousel-container">
+  <!-- Botones -->
+  <button class="nav prev" (click)="prev()">❮</button>
+
+  <div class="carousel-slide-container">
+    <!-- 🏠 SHOP / HOME: tarjetas con título -->
+    <ng-container *ngIf="page === 'home' || page === 'shop'; else eventTemplate">
+      <div
+        class="carousel-slide category-style"
+        *ngFor="let slide of slides; let i = index"
+        [class.active]="i === currentIndex"
+      >
+        <div class="category-card">
+          <img [src]="slide.imageUrl" [alt]="slide.title" />
+          <h3 class="category-title">{{ slide.title }}</h3>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- 🎟️ DETAILS: galería de imágenes -->
+    <ng-template #eventTemplate>
+      <div
+        class="carousel-slide event-style"
+        *ngFor="let slide of slides; let i = index"
+        [class.active]="i === currentIndex"
+      >
+        <img [src]="slide.imageUrl" class="event-image" [alt]="'Imagen ' + (i + 1)" />
+      </div>
+    </ng-template>
+  </div>
+
+  <button class="nav next" (click)="next()">❯</button>
+
+  <!-- Dots -->
+  <div class="dots">
+    <span
+      *ngFor="let slide of slides; let i = index"
+      [class.active]="i === currentIndex"
+      (click)="goTo(i)"
+    ></span>
+  </div>
 </div>
+

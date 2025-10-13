@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rock+Salt&display=swap');
+
+.rock-title {
+  font-family: 'Metal Mania', cursive;
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #ff3333;
+  text-shadow: 
+    2px 2px 0 #000,
+    4px 4px 8px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(to right, #ff0000, #660000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 10px 0;
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.rock-title:hover {
+  transform: scale(1.05);
+  text-shadow: 
+    3px 3px 15px #ff0000,
+    0 0 20px #ff6600;
+}
