@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EventService } from '~/app/core/services/event.service';
@@ -12,17 +12,19 @@ import { EventFilterParams } from './events.types';
   imports: [CommonModule, RouterModule],
   templateUrl: './events.component.html',
 })
-export class EventsComponent implements OnChanges {
+export class EventsComponent implements OnInit, OnChanges {
   @Input() filters: EventFilterParams | null = null;
 
   events: IEvent[] = [];
   loading = false;
   error = '';
 
-  constructor(
-    private eventService: EventService,
-    private authService: AuthService
-  ) {}
+  constructor(private eventService: EventService, private authService: AuthService) {}
+
+  ngOnInit() {
+    // Cargar eventos inicialmente
+    this.loadEvents();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['filters']) {

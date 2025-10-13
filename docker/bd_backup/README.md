@@ -1,242 +1,131 @@
-# SISTEMA DE BACKUP - TICKETING PLATFORM
+# Scripts de Backup y Restauración - Ticketing Platform
 
-**Version:** 4.0 FINAL  
-**Fecha:** 12 de octubre de 2025  
-**Estado:** PROBADO Y FUNCIONAL - PUERTO CORREGIDO
-
----
-
-## RESUMEN
-
-Sistema de backup integral para el proyecto Ticketing Platform que incluye:
-- Backend Admin (PostgreSQL + Prisma)
-- Backend Festival Services (MongoDB + PostgreSQL + Prisma)
-- Documentacion automatica de restauracion
-
-**PROBADO EXITOSAMENTE:**
-- Backup completo: FUNCIONA
-- Restore completo: FUNCIONA
-- Verificacion de datos: FUNCIONA
-- Puerto corregido: 3004 para Festival Services
+**Versión:** 6.0 SIMPLIFICADO  
+**Fecha:** 13 de octubre de 2025  
+**Estado:** PROBADO Y FUNCIONAL - NOMBRES SIMPLIFICADOS
 
 ---
 
-## USO RAPIDO
+## ARCHIVOS DISPONIBLES
 
-### Crear Backup Completo
+### Scripts Principales
+
+-   `backup.ps1` - Backup completo Windows (PowerShell)
+-   `backup.sh` - Backup completo Linux/macOS (Bash)
+-   `restore.ps1` - Restauración completa Windows (PowerShell)
+-   `restore.sh` - Restauración completa Linux/macOS (Bash)
+
+---
+
+## USO RÁPIDO
+
+### Windows
+
 ```powershell
-cd docker\bd_backup
-.\backup-databases.ps1
+# Backup
+.\backup.ps1 -BackupName "mi-backup"
+
+# Restauración
+.\restore.ps1 -BackupFolder "2025-10-13" -SkipConfirmation
 ```
 
-### Restaurar Solo Festival Services
+### Linux/macOS
+
+```bash
+# Backup
+./backup.sh --backup-name "mi-backup"
+
+# Restauración
+./restore.sh --backup-folder "2025-10-13" --skip-confirmation
+```
+
+---
+
+## ESTRUCTURA DE DIRECTORIOS
+
+```
+backups/
+└── 2025-10-13/  (solo fecha)
+    ├── postgres_ticketing_full_2025-10-13_19-09-20.sql (con hora)
+    ├── mongodb_users_2025-10-13_19-09-20.json
+    ├── prisma_admin_schema_2025-10-13_19-09-20.prisma
+    ├── prisma_services_schema_2025-10-13_19-09-20.prisma
+    ├── BACKUP_INFO.json (metadatos)
+    └── SYSTEM_INFO_2025-10-13_19-09-20.txt
+```
+
+---
+
+## COMPONENTES RESPALDADOS
+
+-   ✅ **PostgreSQL**: ticketing (419 eventos) + approvals_db
+-   ✅ **MongoDB**: users + festival_services (7 colecciones)
+-   ✅ **Prisma Schemas**: Admin + Services con `prisma generate` automático
+-   ✅ **Configuraciones**: .env y docker configs (opcional)
+-   ✅ **Metadatos**: Git commit, estadísticas, información del sistema
+
+---
+
+## CARACTERÍSTICAS
+
+### ✅ Implementado
+
+-   Sin emoticonos (compatible UTF-8)
+-   Verificación automática de servicios Docker
+-   Backup de seguridad automático antes de restaurar
+-   Generación automática de clientes Prisma
+-   Un directorio por fecha, múltiples backups por día
+-   Backups de seguridad centralizados en directorio unificado
+-   Compatible Windows (PowerShell) y Linux (Bash)
+
+### ❌ NO incluye
+
+-   `prisma pull` (correcto, no debe sobreescribir esquemas)
+-   Backups incrementales (solo completos)
+-   Compresión automática (excepto MongoDB dumps)
+
+---
+
+## ESTADO ACTUAL DEL SISTEMA
+
+**Verificado:** 2025-10-13 19:09
+
+-   ✅ Eventos: 419 registros
+-   ✅ Venues: 85 registros
+-   ✅ Docker: postgres, mongodb, redis, rabbitmq operativos
+-   ✅ Prisma: Esquemas sincronizados y clientes generados
+-   ✅ Scripts: Probados en Windows
+
+---
+
+## COMANDOS COMPLETOS
+
+### Windows PowerShell
+
 ```powershell
-cd docker\bd_backup
-.\restore-festival-services.ps1 -BackupFolder "backups\2025-10-12"
+# Backup completo con configuraciones
+.\backup.ps1 -BackupName "backup-$(Get-Date -Format 'yyyy-MM-dd')" -IncludeConfigs
+
+# Restauración completa sin confirmación
+.\restore.ps1 -BackupFolder "2025-10-13" -SkipConfirmation -RestoreConfigs
 ```
 
----
-
-## ARQUITECTURA DE DATOS
-
-### Backend Admin (Puerto 3003)
-- **PostgreSQL**: `ticketing` database
-- **Prisma**: ORM para PostgreSQL
-- **Contenido**: Venues, eventos, localidades, usuarios admin
-
-### Backend Festival Services (Puerto 3004)
-
-- **MongoDB**: `festival_services` database
-  - Collections: travels, restaurants, products, bookings, orders, carts, reservations
-- **PostgreSQL**: `approvals_db` database
-  - Tables: Approval (sistema de aprobaciones)
-- **Prisma**: ORM para PostgreSQL approvals
-- **Redis**: Cache y sesiones
-
----
-
-## ARCHIVOS GENERADOS POR BACKUP
-
-```
-backups/2025-10-12/
-├── PostgreSQL Dumps
-│   ├── postgres_full_backup_22-18.sql (Base principal)
-│   └── postgres_approvals_db_22-18.sql (Festival Services)
-├── MongoDB Exports
-│   ├── mongodb_users_22-18.json (Usuarios principales)
-│   ├── mongodb_travels_22-18.json (Viajes)
-│   ├── mongodb_restaurants_22-18.json (Restaurantes)
-│   ├── mongodb_products_22-18.json (Productos)
-│   └── festival_services_dump_22-18.tar.gz (Dump completo)
-├── Prisma Schemas
-│   ├── prisma_admin_schema_22-18.prisma
-│   └── prisma_services_schema_22-18.prisma
-└── Documentacion
-    └── BACKUP_INFO.md (Instrucciones de restauracion)
-```
-
----
-
-## RESULTADOS DE LA PRUEBA
-
-### BACKUP
-
-- PostgreSQL principal: OK (12 venues, 19 eventos, 57 localidades)
-- PostgreSQL approvals: OK (2 aprobaciones)
-- MongoDB usuarios: OK (2 usuarios)
-- MongoDB festival_services: OK (1 restaurant, 1 product, 1 trip, 2 bookings)
-- Prisma schemas: OK (ambos copiados)
-
-### RESTORE
-
-- PostgreSQL approvals_db: RESTAURADO (2 records)
-- MongoDB festival_services: RESTAURADO (5 documents, 7 collections, 23 indexes)
-- Prisma configuration: GENERADO
-- Verificacion: EXITOSA
-
----
-
-## COMANDOS DE VERIFICACION
-
-### PostgreSQL
+### Linux Bash
 
 ```bash
-# Base principal
-docker exec ticketing-postgres psql -U admin -d ticketing -c 'SELECT COUNT(*) FROM "Venue";'
+# Backup completo con configuraciones
+./backup.sh --backup-name "backup-$(date +%Y-%m-%d)" --include-configs
 
-# Festival Services approvals
-docker exec ticketing-postgres psql -U admin -d approvals_db -c 'SELECT COUNT(*) FROM "Approval";'
-```
-
-### MongoDB
-
-```bash
-# Usuarios principales
-docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 ticketing --eval "db.users.countDocuments()"
-
-# Festival Services
-docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 festival_services --eval "db.stats()"
-```
-
----
-
-## VARIABLES DE ENTORNO
-
-### backend/admin/.env
-
-```
-DATABASE_URL="postgresql://admin:admin123@localhost:5432/ticketing?schema=public"
-```
-
-### backend/services/festival-services/.env
-
-```
-PORT=3004
-MONGODB_URI=mongodb://admin:admin123@localhost:27017/festival_services?authSource=admin
-DATABASE_URL="postgresql://admin:admin123@localhost:5432/approvals_db?schema=public"
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=redis123
-```
-
----
-
-## INSTRUCCIONES PARA OTRO EQUIPO
-
-### 1. Prerequisitos
-
-- Docker y Docker Compose
-- Node.js (para Prisma)
-- Git
-
-### 2. Clonar proyecto
-
-```bash
-git clone [repo]
-cd ticketing-platform
-```
-
-### 3. Levantar infraestructura
-
-```bash
-cd docker
-docker-compose up -d
-```
-
-### 4. Restaurar datos
-
-```bash
-cd bd_backup
-# Opcion A: Solo Festival Services
-.\restore-festival-services.ps1 -BackupFolder "backups\[FECHA]"
-
-# Opcion B: Todo manual
-docker cp backups\[FECHA]\postgres_full_backup_[TIME].sql ticketing-postgres:/tmp/
-docker exec ticketing-postgres psql -U admin -d ticketing -f /tmp/postgres_full_backup_[TIME].sql
-.\restore-festival-services.ps1 -BackupFolder "backups\[FECHA]"
-```
-
-### 5. Configurar aplicaciones
-
-```bash
-# Backend admin
-cd backend/admin
-npm install
-npx prisma generate
-
-# Backend services
-cd backend/services/festival-services
-npm install
-npx prisma generate
-
-# Frontend
-cd frontend/ticketing-app
-npm install
-```
-
-### 6. Iniciar servicios
-
-```bash
-# Admin backend (puerto 3003)
-cd backend/admin
-npm run dev
-
-# Festival services (puerto 3004)
-cd backend/services/festival-services
-npm run dev
-
-# Frontend (puerto 4200)
-cd frontend/ticketing-app
-ng serve
+# Restauración completa sin confirmación
+./restore.sh --backup-folder "2025-10-13" --skip-confirmation --restore-configs
 ```
 
 ---
 
 ## NOTAS IMPORTANTES
 
-- Los scripts NO contienen emoticonos (problema resuelto)
-- **Puerto corregido**: Festival Services usa puerto 3004 (no 3000)
-- El backup es incremental por fecha (no sobrescribe)
-- El restore es seguro (hace backup del schema actual)
-- La verificacion es automatica
-- Compatible con Windows y Linux
-- Documentacion auto-generada en cada backup
-
-## CORRECCION DE PUERTO APLICADA
-
-**Se corrigió el puerto del Festival Services de 3000 a 3004:**
-- ✅ `backend/services/festival-services/.env` → PORT=3004
-- ✅ `backup-databases.ps1` → URLs cambiadas a localhost:3004
-- ✅ Documentación actualizada
-
-**Para aplicar completamente, reiniciar el servicio:**
-```bash
-cd backend/services/festival-services
-npm run dev  # Ahora corre en puerto 3004
-```
-
----
-
-**SISTEMA COMPLETO Y FUNCIONAL**  
-**LISTO PARA PRODUCCION Y MIGRACION**  
-**PUERTO CORREGIDO: 3004**
+1. **Antes de restaurar**: `taskkill /f /im node.exe` (Windows) o `pkill node` (Linux)
+2. **Docker requerido**: Todos los servicios deben estar corriendo
+3. **Prisma automático**: Se ejecuta `npx prisma generate` automáticamente
+4. **Backups seguros**: Los esquemas actuales se respaldan antes de restaurar
+5. **UTF-8 compatible**: Sin emoticonos, funciona en todos los sistemas
