@@ -1,0 +1,65 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
+import { LoggingInterceptor } from './auth/interceptors/logging.interceptor';
+import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
+import { PerformanceInterceptor } from './auth/interceptors/performance.interceptor';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Configuración global
+  app.enableCors();
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // Interceptors globales para logging y auditoría
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new AuditInterceptor(),
+    new PerformanceInterceptor(),
+  );
+
+  // Configurar puerto
+  const port = 3004; // Forzado a 3004
+
+  // Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Festival Services API')
+    .setDescription('Backend para servicios del festival: Travel, Restaurant, Merchandising y Approvals')
+    .setVersion('1.0')
+    .addServer(`http://localhost:${port}`, 'Servidor de desarrollo')
+    .addTag('auth', 'Autenticación y autorización')
+    .addTag('travel', 'Gestión de viajes')
+    .addTag('restaurant', 'Gestión de restaurantes')
+    .addTag('merchandising', 'Gestión de productos')
+    .addTag('approval', 'Sistema de aprobaciones')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  // Conectar microservicio RabbitMQ
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+      queue: process.env.RABBITMQ_QUEUE_APPROVAL_REQUESTS || 'approval_requests',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
+  console.log('🐰 RabbitMQ conectado');
+  await app.listen(port);
+  
+  console.log(`🚀 Festival Services: http://localhost:${port}`);
+  console.log(`📚 Documentación: http://localhost:${port}/api/docs`);
+}
+
+bootstrap();
