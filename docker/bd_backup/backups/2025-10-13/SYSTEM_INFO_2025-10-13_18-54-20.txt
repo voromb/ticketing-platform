@@ -1,0 +1,35 @@
+﻿===================================================================
+            INFORMACION DEL SISTEMA - BACKUP
+===================================================================
+
+Fecha del Backup: 2025-10-13 18:54:26
+Nombre del Backup: test-unified-backup
+Directorio: C:\Users\yop\Documents\Servidor_DAW\ticketing-platform\docker\bd_backup\backups\2025-10-13_18-54-20
+
+===================================================================
+            INFORMACION DE GIT
+===================================================================
+
+Commit Hash: b10fc00728aa3ce4420e46be88858ee0bbdb6bdd
+Branch: feature_Voro_2
+
+===================================================================
+            SERVICIOS DOCKER
+===================================================================
+
+NAMES                     STATUS       PORTS ticketing-mongo-express   Up 3 hours   0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp ticketing-rabbitmq        Up 3 hours   0.0.0.0:5672->5672/tcp, [::]:5672->5672/tcp, 0.0.0.0:15672->15672/tcp, [::]:15672->15672/tcp ticketing-redis           Up 3 hours   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp ticketing-mongodb         Up 3 hours   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp ticketing-postgres        Up 3 hours   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+===================================================================
+            ESTADISTICAS DE BASES DE DATOS
+===================================================================
+
+PostgreSQL (ticketing):
+              List of relations  Schema |        Name        | Type  | Owner  --------+--------------------+-------+-------  public | AuditLog           | table | admin  public | Event              | table | admin  public | EventCategory      | table | admin  public | EventLocality      | table | admin  public | EventSubcategory   | table | admin  public | Order              | table | admin  public | PriceCategory      | table | admin  public | Reservation        | table | admin  public | Ticket             | table | admin  public | Venue              | table | admin  public | VenueSection       | table | admin  public | _prisma_migrations | table | admin  public | admins             | table | admin (13 rows) 
+
+MongoDB (ticketing):
+switched to db ticketing;
+
+MongoDB (festival_services):
+switched to db festival_services;
+
+===================================================================
