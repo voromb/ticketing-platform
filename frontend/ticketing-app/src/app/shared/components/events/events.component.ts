@@ -1,4 +1,5 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EventService } from '~/app/core/services/event.service';
@@ -12,10 +13,10 @@ import { PaginationComponent } from '../pagination/pagination';
   standalone: true,
   imports: [CommonModule, RouterModule, PaginationComponent],
   templateUrl: './events.component.html',
-  styleUrl: './events.component.css',
+  styleUrls: ['./events.component.css'], // CORREGIDO
 })
-export class EventsComponent implements OnChanges {
-  @Input() filters: EventFilterParams | null = null;
+export class EventsComponent implements OnInit, OnChanges {
+  @Input() filters: EventFilterParams = {}; // Inicializar como objeto vacío
 
   events: IEvent[] = [];
   loading = false;
@@ -25,19 +26,23 @@ export class EventsComponent implements OnChanges {
   currentPage = 1;
   totalPages = 1;
   pageSize = 10;
-  onPageChange(page: number): void {
-  this.loadEvents(page);
-}
 
   constructor(
     private eventService: EventService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
+  ngOnInit() {
+    // Cargar eventos al inicializar
+    this.loadEvents();
+  }
+
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['filters']) {
-      console.log('🟣 Filtros cambiaron:', this.filters);
-      this.currentPage = 1; // Resetear página al cambiar filtros
+    // Solo recargar si los filtros cambian después de la primera carga
+    if (changes['filters'] && !changes['filters'].firstChange) {
+      
+      this.currentPage = 1; // Resetear página
       this.loadEvents();
     }
   }
@@ -48,17 +53,21 @@ export class EventsComponent implements OnChanges {
 
     const params = { ...this.filters, page, limit: this.pageSize };
 
+    
     this.eventService.getEventsFiltered(params).subscribe({
       next: (res) => {
+        console.log('Eventos recibidos:', res); 
         this.events = res.data;
         this.currentPage = res.page;
         this.totalPages = res.totalPages;
         this.loading = false;
+         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando eventos', err);
         this.error = 'Error al cargar eventos';
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -75,6 +84,10 @@ export class EventsComponent implements OnChanges {
 
   nextPage() {
     this.goToPage(this.currentPage + 1);
+  }
+
+  onPageChange(page: number): void {
+    this.loadEvents(page);
   }
 
   // Getters para el template

@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
+import { environment } from '~/environments/environment';
 import { Observable } from 'rxjs';
 import { IEvent } from '../models/Event.model';
 
@@ -11,21 +11,21 @@ import { IEvent } from '../models/Event.model';
   providedIn: 'root'
 })
 export class EventService {
-  private apiUrl = 'http://localhost:3003';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
 getEvents(): Observable<{ success: boolean; data: IEvent[] }> {
-  return this.http.get<{ success: boolean; data: IEvent[] }>(`${this.apiUrl}/api/events`);
+  return this.http.get<{ success: boolean; data: IEvent[] }>(`${this.apiUrl}/events`);
 }
 
 getEventById(id: string): Observable<{ success: boolean; data: IEvent }> {
-  return this.http.get<{ success: boolean; data: IEvent }>(`${this.apiUrl}/api/events/${id}`);
+  return this.http.get<{ success: boolean; data: IEvent }>(`${this.apiUrl}/events/${id}`);
 }
 
 getEventBySlug(slug: string): Observable<{ success: boolean; data: IEvent }> {
   return this.http.get<{ success: boolean; data: IEvent }>(
-    `${this.apiUrl}/api/events/${slug}`
+    `${this.apiUrl}/events/${slug}`
   );
 }
 
@@ -77,7 +77,7 @@ getEventsFiltered(params: {
     total: number;
     page: number;
     totalPages: number;
-  }>(`${this.apiUrl}/api/events`, { params: httpParams });
+  }>(`${this.apiUrl}/events`, { params: httpParams });
 }
 
 
