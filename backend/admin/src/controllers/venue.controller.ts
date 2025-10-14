@@ -38,7 +38,7 @@ const updateVenueSchema = createVenueSchema.partial();
 
 const venueQuerySchema = z.object({
     page: z.string().optional().default('1').transform(Number),
-    limit: z.string().optional().default('50').transform(Number),
+    limit: z.string().optional().default('1000').transform(Number),
     search: z.string().optional(),
     city: z.string().optional(),
     isActive: z

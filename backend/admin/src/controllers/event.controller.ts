@@ -150,10 +150,19 @@ class EventController {
     // ==================== LISTAR EVENTOS ====================
   async listRockEvents(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
   try {
-    const { venueId, categoryId, subcategoryId, minPrice, maxPrice, query, page = 1, limit = 10 } = request.query;
+    const {
+        venueId,
+        categoryId,
+        subcategoryId,
+        minPrice,
+        maxPrice,
+        query,
+        page = 1,
+        limit = 1000,
+    } = request.query;
 
     const pageNumber = Number(page) || 1;
-    const pageSize = Number(limit) || 10;
+    const pageSize = Number(limit) || 1000;
 
     const where: any = {};
 

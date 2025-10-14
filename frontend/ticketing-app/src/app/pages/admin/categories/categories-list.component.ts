@@ -548,6 +548,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxSizeMB]="1"
                 [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
                 (imagesUploaded)="onCategoryIconUploaded($event)"
+                (imageRemoved)="onCategoryIconRemoved($event)"
               ></app-image-upload>
             </div>
 
@@ -622,6 +623,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxSizeMB]="1"
                 [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
                 (imagesUploaded)="onCategoryIconUploaded($event)"
+                (imageRemoved)="onCategoryIconRemoved($event)"
               ></app-image-upload>
             </div>
 
@@ -635,6 +637,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxFiles]="1"
                 [existingImages]="categoryForm.image ? [categoryForm.image] : []"
                 (imagesUploaded)="onCategoryImageUploaded($event)"
+                (imageRemoved)="onCategoryImageRemoved($event)"
               ></app-image-upload>
             </div>
           </div>
@@ -1525,3 +1528,4 @@ export class CategoriesListComponent implements OnInit {
     this.categoryForm.image = '';
   }
 }
+
