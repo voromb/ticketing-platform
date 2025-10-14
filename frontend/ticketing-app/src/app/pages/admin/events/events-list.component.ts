@@ -520,6 +520,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
               [maxFiles]="1"
               [existingImages]="eventForm.bannerImage ? [eventForm.bannerImage] : []"
               (imagesUploaded)="onBannerUploaded($event)"
+              (imageRemoved)="onBannerImageRemoved($event)"
             ></app-image-upload>
           </div>
 
@@ -1454,5 +1455,9 @@ export class EventsListComponent implements OnInit {
     if (this.eventForm.images) {
       this.eventForm.images = this.eventForm.images.filter((url) => url !== imageUrl);
     }
+  }
+
+  onBannerImageRemoved(imageUrl: string) {
+    this.eventForm.bannerImage = '';
   }
 }

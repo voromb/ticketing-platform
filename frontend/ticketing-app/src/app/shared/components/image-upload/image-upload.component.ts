@@ -264,25 +264,6 @@ export class ImageUploadComponent implements OnInit, OnChanges {
     });
   }
 
-  removeImage(index: number) {
-    const removedUrl = this.previewUrls[index];
-
-    // Si es una URL existente (no un data URL), emitir evento para eliminar del servidor
-    if (removedUrl.startsWith('http')) {
-      this.imageRemoved.emit(removedUrl);
-    }
-
-    this.previewUrls.splice(index, 1);
-
-    // Solo eliminar de selectedFiles si es un data URL (archivo pendiente de subir)
-    if (removedUrl.startsWith('data:')) {
-      const dataUrlIndex = this.previewUrls
-        .slice(0, index)
-        .filter((url) => url.startsWith('data:')).length;
-      this.selectedFiles.splice(dataUrlIndex, 1);
-    }
-  }
-
   async uploadImages() {
     if (this.selectedFiles.length === 0) return;
 
@@ -350,6 +331,45 @@ export class ImageUploadComponent implements OnInit, OnChanges {
       this.uploading = false;
       console.error('Error uploading images:', error);
     }
+  }
+
+  removeImage(index: number) {
+    const imageUrl = this.previewUrls[index];
+
+    Swal.fire({
+      title: '¿Eliminar imagen?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Remover de previewUrls
+        this.previewUrls.splice(index, 1);
+
+        // Si es una imagen del servidor (existente), emitir evento para notificar al padre
+        if (imageUrl.startsWith('http')) {
+          this.imageRemoved.emit(imageUrl);
+        }
+
+        // Si es una imagen en preview (selectedFiles), también removerla
+        if (index < this.selectedFiles.length) {
+          this.selectedFiles.splice(index, 1);
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Imagen eliminada',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    });
   }
 
   getUploadedUrls(): string[] {
