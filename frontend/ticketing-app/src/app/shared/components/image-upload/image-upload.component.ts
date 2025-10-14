@@ -87,10 +87,10 @@ export type UploadType = 'events' | 'venues' | 'categories' | 'subcategories';
           <button
             type="button"
             (click)="removeImage(i)"
-            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            class="absolute top-2 right-2 bg-violet-500 hover:bg-violet-600 text-white rounded-full p-2 shadow-lg transition-colors border-2 border-white"
             title="Eliminar imagen"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
@@ -264,25 +264,6 @@ export class ImageUploadComponent implements OnInit, OnChanges {
     });
   }
 
-  removeImage(index: number) {
-    const removedUrl = this.previewUrls[index];
-
-    // Si es una URL existente (no un data URL), emitir evento para eliminar del servidor
-    if (removedUrl.startsWith('http')) {
-      this.imageRemoved.emit(removedUrl);
-    }
-
-    this.previewUrls.splice(index, 1);
-
-    // Solo eliminar de selectedFiles si es un data URL (archivo pendiente de subir)
-    if (removedUrl.startsWith('data:')) {
-      const dataUrlIndex = this.previewUrls
-        .slice(0, index)
-        .filter((url) => url.startsWith('data:')).length;
-      this.selectedFiles.splice(dataUrlIndex, 1);
-    }
-  }
-
   async uploadImages() {
     if (this.selectedFiles.length === 0) return;
 
@@ -350,6 +331,45 @@ export class ImageUploadComponent implements OnInit, OnChanges {
       this.uploading = false;
       console.error('Error uploading images:', error);
     }
+  }
+
+  removeImage(index: number) {
+    const imageUrl = this.previewUrls[index];
+
+    Swal.fire({
+      title: '¿Eliminar imagen?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Remover de previewUrls
+        this.previewUrls.splice(index, 1);
+
+        // Si es una imagen del servidor (existente), emitir evento para notificar al padre
+        if (imageUrl.startsWith('http')) {
+          this.imageRemoved.emit(imageUrl);
+        }
+
+        // Si es una imagen en preview (selectedFiles), también removerla
+        if (index < this.selectedFiles.length) {
+          this.selectedFiles.splice(index, 1);
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Imagen eliminada',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    });
   }
 
   getUploadedUrls(): string[] {

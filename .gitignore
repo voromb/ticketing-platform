@@ -1,6 +1,6 @@
-# Environment
-.env              
-**/.env          
+# Environment - .env files allowed for development
+# .env              
+# **/.env          
 .env.local
 **/.env.local
 *.local

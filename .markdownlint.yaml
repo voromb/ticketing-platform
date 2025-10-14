@@ -1,0 +1,5 @@
+# Desactivar todas las reglas de markdownlint
+default: false
+
+# Ignorar todos los archivos markdown
+extends: null

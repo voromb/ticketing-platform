@@ -1,4 +1,11 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -14,13 +21,15 @@ import { PaginationComponent } from '../pagination/pagination';
   imports: [CommonModule, RouterModule, PaginationComponent],
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css'], // CORREGIDO
+  changeDetection: ChangeDetectionStrategy.Default, // Asegurar estrategia por defecto
 })
 export class EventsComponent implements OnInit, OnChanges {
-  @Input() filters: EventFilterParams = {}; // Inicializar como objeto vacío
+  @Input() filters: EventFilterParams | null = null;
 
   events: IEvent[] = [];
   loading = false;
   error = '';
+  private hasInitialized = false; // Flag para evitar doble carga
 
   // Paginación
   currentPage = 1;
@@ -31,43 +40,53 @@ export class EventsComponent implements OnInit, OnChanges {
     private eventService: EventService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    console.log('🏗️ EventsComponent constructor called');
+  }
 
   ngOnInit() {
-    // Cargar eventos al inicializar
+    console.log('🚀 EventsComponent ngOnInit called');
+    // Cargar eventos al inicializar SIEMPRE
+    this.hasInitialized = true;
     this.loadEvents();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Solo recargar si los filtros cambian después de la primera carga
-    if (changes['filters'] && !changes['filters'].firstChange) {
-      
+    console.log('🔄 ngOnChanges called:', changes);
+    // Solo recargar si ya se inicializó y los filtros cambian
+    if (changes['filters'] && this.hasInitialized) {
+      console.log('🔄 Filtros cambiaron después de init, recargando');
       this.currentPage = 1; // Resetear página
       this.loadEvents();
     }
   }
 
   private loadEvents(page: number = 1): void {
+    console.log('🔄 loadEvents called with page:', page);
+    console.log('🔄 Current filters:', this.filters);
     this.loading = true;
     this.error = '';
+    this.cdr.detectChanges(); // Forzar detección de cambios
 
     const params = { ...this.filters, page, limit: this.pageSize };
+    console.log('🔄 Request params:', params);
 
-    
     this.eventService.getEventsFiltered(params).subscribe({
       next: (res) => {
-        console.log('Eventos recibidos:', res); 
+        console.log('✅ Eventos recibidos:', res);
         this.events = res.data;
         this.currentPage = res.page;
         this.totalPages = res.totalPages;
         this.loading = false;
-         this.cdr.detectChanges();
+        this.cdr.detectChanges(); // Forzar detección de cambios
+        console.log('✅ Loading set to false with detectChanges()');
       },
       error: (err) => {
-        console.error('Error cargando eventos', err);
+        console.error('❌ Error cargando eventos', err);
         this.error = 'Error al cargar eventos';
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // Forzar detección de cambios
+        console.log('❌ Loading set to false due to error with detectChanges()');
       },
     });
   }

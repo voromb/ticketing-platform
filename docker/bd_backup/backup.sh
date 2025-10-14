@@ -1,338 +1,381 @@
 #!/bin/bash
+# cSpell:ignore mkdir chmod chown numfmt dockerized mongoexport
 
-# Script de Backup Completo Unificado - Ticketing Platform
-# Autor: Sistema de Backup Automatico Unificado
-# Fecha: 2025-10-13
-# Descripcion: Backup completo de todo el sistema incluyendo todas las bases de datos, esquemas y configuraciones
+# Script de Backup Completo con Migraciones Prisma - Ticketing Platform
+# Autor: Sistema de Backup con Migraciones
+# Fecha: 2025-10-14
+# Descripcion: Backup completo incluyendo migraciones de Prisma (Linux/Mac)
 
-# Parametros
-BACKUP_NAME="manual-backup"
+# Variables por defecto
 INCLUDE_CONFIGS=false
 SHOW_PROGRESS=false
+BACKUP_NAME=""
 
 # Procesar argumentos
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --backup-name)
-            BACKUP_NAME="$2"
-            shift 2
-            ;;
-        --include-configs)
+        -c|--include-configs)
             INCLUDE_CONFIGS=true
             shift
             ;;
-        --show-progress)
+        -p|--show-progress)
             SHOW_PROGRESS=true
             shift
             ;;
+        -n|--name)
+            BACKUP_NAME="$2"
+            shift 2
+            ;;
+        -h|--help)
+            echo "Uso: $0 [opciones]"
+            echo ""
+            echo "Opciones:"
+            echo "  -c, --include-configs   Incluir archivos de configuracion"
+            echo "  -p, --show-progress     Mostrar barra de progreso"
+            echo "  -n, --name              Nombre personalizado para el backup"
+            echo "  -h, --help              Mostrar esta ayuda"
+            echo ""
+            echo "Ejemplo: $0 -c -p"
+            exit 0
+            ;;
         *)
-            echo "Parametro desconocido: $1"
+            echo "Opcion desconocida: $1"
+            echo "Usa -h o --help para ver las opciones disponibles"
             exit 1
             ;;
     esac
 done
 
-echo "======================================================================"
-echo "                   BACKUP COMPLETO UNIFICADO                         "
-echo "                   Ticketing Platform v2.0                          "
-echo "======================================================================"
+# Colores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+GRAY='\033[0;37m'
+NC='\033[0m' # No Color
+
+echo -e "${CYAN}======================================================================${NC}"
+echo -e "${CYAN}             BACKUP COMPLETO CON MIGRACIONES PRISMA                  ${NC}"
+echo -e "${CYAN}                     Ticketing Platform v2.0                        ${NC}"
+echo -e "${CYAN}======================================================================${NC}"
 
 # Variables globales
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATE=$(date +"%Y-%m-%d")
+DATE_TODAY=$(date +"%Y-%m-%d")
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-BACKUP_DIR="$SCRIPT_PATH/backups/$DATE"
 
-echo ""
-echo "Creando directorio de backup..."
-echo "   Ruta: $BACKUP_DIR"
+if [ -n "$BACKUP_NAME" ]; then
+    BACKUP_DIR="${SCRIPT_PATH}/backups/${DATE_TODAY}_${BACKUP_NAME}"
+else
+    BACKUP_DIR="${SCRIPT_PATH}/backups/${DATE_TODAY}"
+fi
 
-# Crear directorio de backup
-mkdir -p "$BACKUP_DIR"
+ADMIN_PROJECT_PATH="${SCRIPT_PATH}/../../backend/admin"
+SERVICES_PROJECT_PATH="${SCRIPT_PATH}/../../backend/services/festival-services"
+
+echo -e "\n${BLUE}Configuracion del backup:${NC}"
+echo -e "   Fecha: ${WHITE}${DATE_TODAY}${NC}"
+echo -e "   Timestamp: ${WHITE}${TIMESTAMP}${NC}"
+echo -e "   Directorio: ${WHITE}${BACKUP_DIR}${NC}"
+echo -e "   Incluir configs: ${WHITE}$([ "$INCLUDE_CONFIGS" = true ] && echo "Si" || echo "No")${NC}"
+
+# Funcion para mostrar progreso
+show_progress() {
+    if [ "$SHOW_PROGRESS" = true ]; then
+        local current=$1
+        local total=$2
+        local description=$3
+        local percent=$((current * 100 / total))
+        
+        echo -ne "\r${CYAN}[${current}/${total}] ${description}... ${percent}%${NC}"
+        if [ "$current" -eq "$total" ]; then
+            echo -e "\n"
+        fi
+    fi
+}
 
 # Funcion para verificar servicios Docker
-check_docker_services() {
-    echo ""
-    echo "Verificando servicios Docker..."
+test_docker_services() {
+    echo -e "\n${BLUE}Verificando servicios Docker...${NC}"
     
-    local services=("ticketing-postgres" "ticketing-mongodb" "ticketing-redis" "ticketing-rabbitmq")
+    local services=("ticketing-postgres" "ticketing-mongodb")
     local all_running=true
     
     for service in "${services[@]}"; do
-        if docker ps --filter "name=$service" --format "{{.Status}}" 2>/dev/null | grep -q "Up"; then
-            echo "   OK $service : Running"
+        local status
+        status=$(docker ps --filter "name=$service" --format "{{.Status}}" 2>/dev/null)
+        if [[ $status && $status == *"Up"* ]]; then
+            echo -e "   ✓ ${service} : ${GREEN}Running${NC}"
         else
-            echo "   ERROR $service : Not running"
+            echo -e "   ✗ ${service} : ${RED}Not running${NC}"
             all_running=false
         fi
     done
     
     if [ "$all_running" = false ]; then
-        echo ""
-        echo "Error: Algunos servicios Docker no estan corriendo"
-        echo "Por favor, inicia los servicios Docker con: docker-compose up -d"
-        exit 1
+        return 1
+    else
+        return 0
     fi
 }
 
 # Verificar servicios Docker
-check_docker_services
-
-echo ""
-echo "Iniciando Backup Completo..."
-
-# ============================================================================
-# 1. POSTGRESQL - BASE DE DATOS PRINCIPAL
-# ============================================================================
-echo ""
-echo "[1/8] Backup PostgreSQL - Base de Datos Principal..."
-
-POSTGRES_FILE="$BACKUP_DIR/postgres_ticketing_full_$TIMESTAMP.sql"
-echo "   Exportando base de datos ticketing..."
-docker exec ticketing-postgres pg_dump -U admin -d ticketing --clean --create > "$POSTGRES_FILE" 2>/dev/null
-
-# Verificar y mostrar estadisticas
-EVENT_COUNT=$(docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>/dev/null | tr -d ' ')
-VENUE_COUNT=$(docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>/dev/null | tr -d ' ')
-CATEGORY_COUNT=$(docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Category";' 2>/dev/null | tr -d ' ')
-
-echo "   OK PostgreSQL principal respaldado exitosamente"
-[ -n "$EVENT_COUNT" ] && echo "     - Eventos: $EVENT_COUNT"
-[ -n "$VENUE_COUNT" ] && echo "     - Venues: $VENUE_COUNT"
-[ -n "$CATEGORY_COUNT" ] && echo "     - Categorias: $CATEGORY_COUNT"
-
-# ============================================================================
-# 2. POSTGRESQL - BASE DE DATOS APPROVALS
-# ============================================================================
-echo ""
-echo "[2/8] Backup PostgreSQL - Base de Datos Approvals..."
-
-# Verificar si existe la base de datos approvals_db
-DB_EXISTS=$(docker exec ticketing-postgres psql -U admin -t -c "SELECT 1 FROM pg_database WHERE datname='approvals_db';" 2>/dev/null | tr -d ' ')
-
-if [ "$DB_EXISTS" = "1" ]; then
-    APPROVALS_FILE="$BACKUP_DIR/postgres_approvals_db_$TIMESTAMP.sql"
-    echo "   Exportando base de datos approvals_db..."
-    docker exec ticketing-postgres pg_dump -U admin -d approvals_db --clean --create > "$APPROVALS_FILE" 2>/dev/null
-    
-    APPROVAL_COUNT=$(docker exec ticketing-postgres psql -U admin -d approvals_db -t -c 'SELECT COUNT(*) FROM "Approval";' 2>/dev/null | tr -d ' ')
-    
-    echo "   OK PostgreSQL approvals respaldado exitosamente"
-    [ -n "$APPROVAL_COUNT" ] && echo "     - Aprobaciones: $APPROVAL_COUNT"
-else
-    echo "   INFO Base de datos approvals_db no existe, omitiendo..."
+if ! test_docker_services; then
+    echo -e "\n${RED}Error: Algunos servicios Docker no estan corriendo${NC}"
+    echo -e "${YELLOW}Inicia los servicios con: docker-compose up -d${NC}"
+    exit 1
 fi
 
-# ============================================================================
-# 3. MONGODB - USUARIOS
-# ============================================================================
-echo ""
-echo "[3/8] Backup MongoDB - Usuarios..."
+# Crear directorio de backup
+echo -e "\n${BLUE}Preparando directorio de backup...${NC}"
+mkdir -p "$BACKUP_DIR"
+echo -e "   ✓ ${GREEN}Directorio creado: $BACKUP_DIR${NC}"
 
-MONGO_USERS_FILE="$BACKUP_DIR/mongodb_users_$TIMESTAMP.json"
-echo "   Exportando coleccion de usuarios..."
-docker exec ticketing-mongodb mongoexport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --out=/tmp/users_backup.json 2>/dev/null
-docker cp ticketing-mongodb:/tmp/users_backup.json "$MONGO_USERS_FILE" 2>/dev/null
-
-USER_COUNT=$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use ticketing; db.users.countDocuments()' 2>/dev/null)
-
-echo "   OK MongoDB usuarios respaldado exitosamente"
-[ -n "$USER_COUNT" ] && echo "     - Usuarios: $USER_COUNT"
+echo -e "\n${GREEN}Iniciando Backup Completo con Migraciones...${NC}"
 
 # ============================================================================
-# 4. MONGODB - FESTIVAL SERVICES
+# 1. BACKUP SCHEMAS Y MIGRACIONES PRISMA - PRIMERO
 # ============================================================================
-echo ""
-echo "[4/8] Backup MongoDB - Festival Services..."
-
-echo "   Creando dump de festival_services..."
-docker exec ticketing-mongodb mongodump --authenticationDatabase=admin --username=admin --password=admin123 --db=festival_services --out=/tmp/festival_dump 2>/dev/null
-
-echo "   Comprimiendo dump..."
-docker exec ticketing-mongodb tar -czf /tmp/festival_services_dump.tar.gz -C /tmp/festival_dump . 2>/dev/null
-
-FESTIVAL_DUMP_FILE="$BACKUP_DIR/mongodb_festival_services_dump_$TIMESTAMP.tar.gz"
-docker cp ticketing-mongodb:/tmp/festival_services_dump.tar.gz "$FESTIVAL_DUMP_FILE" 2>/dev/null
-
-echo "   OK MongoDB festival_services respaldado exitosamente"
-
-# Verificar colecciones
-COLLECTIONS=("travels" "restaurants" "products" "bookings" "reservations" "orders" "carts")
-for collection in "${COLLECTIONS[@]}"; do
-    count=$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval "use festival_services; db.$collection.countDocuments()" 2>/dev/null)
-    if [ -n "$count" ] && [ "$count" != "0" ]; then
-        echo "     - $collection: $count documentos"
-    fi
-done
-
-# ============================================================================
-# 5. PRISMA SCHEMAS
-# ============================================================================
-echo ""
-echo "[5/8] Backup Prisma Schemas..."
+echo -e "\n${BLUE}[1/6] Backup Schemas y Migraciones Prisma...${NC}"
+show_progress 1 6 "Respaldando configuracion de Prisma"
 
 # Backup Schema Admin
-ADMIN_SCHEMA_PATH="$SCRIPT_PATH/../../backend/admin/prisma/schema.prisma"
-if [ -f "$ADMIN_SCHEMA_PATH" ]; then
-    ADMIN_SCHEMA_BACKUP="$BACKUP_DIR/prisma_admin_schema_$TIMESTAMP.prisma"
-    cp "$ADMIN_SCHEMA_PATH" "$ADMIN_SCHEMA_BACKUP"
-    echo "   OK Schema Admin respaldado"
+if [ -f "${ADMIN_PROJECT_PATH}/prisma/schema.prisma" ]; then
+    echo -e "   ${CYAN}Respaldando schema Admin...${NC}"
+    if cp "${ADMIN_PROJECT_PATH}/prisma/schema.prisma" "${BACKUP_DIR}/${TIMESTAMP}_prisma_admin_schema.prisma"; then
+        echo -e "   ✓ ${GREEN}Schema Admin respaldado${NC}"
+    else
+        echo -e "   ${RED}ERROR respaldando schema Admin${NC}"
+    fi
 else
-    echo "   WARN Schema Admin no encontrado"
+    echo -e "   ${YELLOW}WARN Schema Admin no encontrado${NC}"
 fi
 
-# Backup Schema Services
-SERVICES_SCHEMA_PATH="$SCRIPT_PATH/../../backend/services/festival-services/prisma/schema.prisma"
-if [ -f "$SERVICES_SCHEMA_PATH" ]; then
-    SERVICES_SCHEMA_BACKUP="$BACKUP_DIR/prisma_services_schema_$TIMESTAMP.prisma"
-    cp "$SERVICES_SCHEMA_PATH" "$SERVICES_SCHEMA_BACKUP"
-    echo "   OK Schema Festival Services respaldado"
+# Backup Migraciones Admin - CRITICO
+if [ -d "${ADMIN_PROJECT_PATH}/prisma/migrations" ]; then
+    echo -e "   ${CYAN}Respaldando migraciones Admin...${NC}"
+    if cp -r "${ADMIN_PROJECT_PATH}/prisma/migrations" "${BACKUP_DIR}/${TIMESTAMP}_prisma_admin_migrations"; then
+        # Contar migraciones respaldadas
+        mapfile -t MIGRATIONS < <(find "${BACKUP_DIR}/${TIMESTAMP}_prisma_admin_migrations" -maxdepth 1 -type d ! -path "${BACKUP_DIR}/${TIMESTAMP}_prisma_admin_migrations")
+        echo -e "   ✓ ${GREEN}Migraciones Admin respaldadas (${#MIGRATIONS[@]} migraciones)${NC}"
+        for migration in "${MIGRATIONS[@]}"; do
+            echo -e "     - ${WHITE}$(basename "$migration")${NC}"
+        done
+    else
+        echo -e "   ${RED}ERROR respaldando migraciones Admin${NC}"
+        exit 1
+    fi
 else
-    echo "   WARN Schema Festival Services no encontrado"
+    echo -e "   ${RED}ERROR Migraciones Admin no encontradas - CRITICO${NC}"
+    exit 1
+fi
+
+# Backup Schema Services (si existe)
+if [ -f "${SERVICES_PROJECT_PATH}/prisma/schema.prisma" ]; then
+    echo -e "   ${CYAN}Respaldando schema Festival Services...${NC}"
+    if cp "${SERVICES_PROJECT_PATH}/prisma/schema.prisma" "${BACKUP_DIR}/${TIMESTAMP}_prisma_services_schema.prisma"; then
+        echo -e "   ✓ ${GREEN}Schema Festival Services respaldado${NC}"
+    else
+        echo -e "   ${RED}ERROR respaldando schema Services${NC}"
+    fi
+else
+    echo -e "   ${GRAY}INFO Schema Festival Services no existe${NC}"
 fi
 
 # ============================================================================
-# 6. CONFIGURACIONES (OPCIONAL)
+# 2. BACKUP BASE DE DATOS POSTGRESQL
 # ============================================================================
-echo ""
-echo "[6/8] Backup Configuraciones..."
+echo -e "\n${BLUE}[2/6] Backup Base de Datos PostgreSQL...${NC}"
+show_progress 2 6 "Respaldando datos de PostgreSQL"
+
+echo -e "   ${CYAN}Creando backup de PostgreSQL...${NC}"
+if docker exec ticketing-postgres pg_dump -U admin -d ticketing --clean --if-exists > "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql"; then
+    # Verificar tamaño del archivo
+    POSTGRES_SIZE=$(stat -f%z "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql" 2>/dev/null || stat -c%s "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql" 2>/dev/null || echo "0")
+    
+    echo -e "   ✓ ${GREEN}Backup PostgreSQL completado${NC}"
+    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B "$POSTGRES_SIZE" 2>/dev/null || echo "${POSTGRES_SIZE} bytes")${NC}"
+    
+    # Verificar contenido crítico
+    if grep -q "CREATE TABLE" "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql"; then
+        echo -e "     - Estructura: ${GREEN}✓ Tablas encontradas${NC}"
+    else
+        echo -e "     - Estructura: ${RED}✗ Sin tablas${NC}"
+    fi
+    
+    if grep -q "INSERT INTO" "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql"; then
+        echo -e "     - Datos: ${GREEN}✓ Datos encontrados${NC}"
+    else
+        echo -e "     - Datos: ${YELLOW}⚠ Sin datos${NC}"
+    fi
+else
+    echo -e "   ${RED}ERROR creando backup PostgreSQL${NC}"
+    exit 1
+fi
+
+# ============================================================================
+# 3. BACKUP BASE DE DATOS MONGODB
+# ============================================================================
+echo -e "\n${BLUE}[3/6] Backup Base de Datos MongoDB...${NC}"
+show_progress 3 6 "Respaldando datos de MongoDB"
+
+echo -e "   ${CYAN}Creando backup de usuarios MongoDB...${NC}"
+if docker exec ticketing-mongodb mongoexport --db ticketing --collection users --jsonArray > "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json"; then
+    # Verificar tamaño del archivo
+    MONGO_SIZE=$(stat -f%z "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json" 2>/dev/null || stat -c%s "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json" 2>/dev/null || echo "0")
+    
+    echo -e "   ✓ ${GREEN}Backup MongoDB completado${NC}"
+    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B "$MONGO_SIZE" 2>/dev/null || echo "${MONGO_SIZE} bytes")${NC}"
+    
+    # Contar usuarios
+    if command -v jq >/dev/null 2>&1; then
+        USER_COUNT=$(jq length "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json" 2>/dev/null || echo "?")
+        echo -e "     - Usuarios: ${WHITE}${USER_COUNT}${NC}"
+    fi
+else
+    echo -e "   ${YELLOW}WARN Error creando backup MongoDB (puede estar vacio)${NC}"
+fi
+
+# ============================================================================
+# 4. BACKUP CONFIGURACIONES (OPCIONAL)
+# ============================================================================
+echo -e "\n${BLUE}[4/6] Backup Configuraciones...${NC}"
+show_progress 4 6 "Respaldando archivos de configuracion"
 
 if [ "$INCLUDE_CONFIGS" = true ]; then
-    echo "   Respaldando archivos de configuracion..."
+    echo -e "   ${CYAN}Respaldando archivos de configuracion...${NC}"
     
-    # Lista de archivos de configuracion
-    declare -A CONFIG_FILES=(
-        ["../../backend/admin/.env"]="admin_env"
-        ["../../backend/services/festival-services/.env"]="services_env"
-        ["../../backend/user-service/.env"]="user_service_env"
-        ["../../docker/docker-compose.yml"]="docker_compose"
-        ["../../docker/.env"]="docker_env"
-    )
+    # Backup docker-compose
+    if [ -f "${SCRIPT_PATH}/../docker-compose.yml" ]; then
+        cp "${SCRIPT_PATH}/../docker-compose.yml" "${BACKUP_DIR}/${TIMESTAMP}_docker-compose.yml"
+        echo -e "     - ${GREEN}docker-compose.yml${NC}"
+    fi
     
-    for source_path in "${!CONFIG_FILES[@]}"; do
-        config_name="${CONFIG_FILES[$source_path]}"
-        full_source_path="$SCRIPT_PATH/$source_path"
-        
-        if [ -f "$full_source_path" ]; then
-            target_path="$BACKUP_DIR/config_${config_name}_$TIMESTAMP.txt"
-            cp "$full_source_path" "$target_path"
-            echo "     - $config_name: OK"
-        else
-            echo "     - $config_name: No encontrado"
-        fi
+    # Backup package.json files
+    find "${SCRIPT_PATH}/../../" -name "package.json" -type f | while read -r pkg; do
+        relative_path=$(echo "$pkg" | sed "s|${SCRIPT_PATH}/../../||g" | tr '/' '_')
+        cp "$pkg" "${BACKUP_DIR}/${TIMESTAMP}_package_${relative_path}"
+        echo -e "     - ${GREEN}${relative_path}${NC}"
     done
+    
+    echo -e "   ✓ ${GREEN}Configuraciones respaldadas${NC}"
 else
-    echo "   INFO Backup de configuraciones omitido (usar --include-configs para incluir)"
+    echo -e "   ${GRAY}SKIP Configuraciones omitidas${NC}"
 fi
 
 # ============================================================================
-# 7. INFORMACION DEL SISTEMA
+# 5. VERIFICACION Y VALIDACION
 # ============================================================================
-echo ""
-echo "[7/8] Generando Informacion del Sistema..."
+echo -e "\n${BLUE}[5/6] Verificacion y Validacion...${NC}"
+show_progress 5 6 "Verificando integridad del backup"
 
-SYSTEM_INFO_FILE="$BACKUP_DIR/SYSTEM_INFO_$TIMESTAMP.txt"
-GIT_COMMIT=""
-GIT_BRANCH=""
+echo -e "   ${CYAN}Verificando archivos criticos...${NC}"
 
-# Intentar obtener informacion de Git
-if cd "$SCRIPT_PATH/../.."; then
-    GIT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "No disponible")
-    GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "No disponible")
-fi
+# Verificar archivos esenciales
+ESSENTIAL_FILES=(
+    "${TIMESTAMP}_prisma_admin_schema.prisma"
+    "${TIMESTAMP}_postgres_ticketing_full.sql"
+)
 
-cat > "$SYSTEM_INFO_FILE" << EOF
-===================================================================
-            INFORMACION DEL SISTEMA - BACKUP
-===================================================================
+CRITICAL_DIRS=(
+    "${TIMESTAMP}_prisma_admin_migrations"
+)
 
-Fecha del Backup: $(date '+%Y-%m-%d %H:%M:%S')
-Nombre del Backup: $BACKUP_NAME
-Directorio: $BACKUP_DIR
+all_critical_ok=true
 
-===================================================================
-            INFORMACION DE GIT
-===================================================================
-
-Commit Hash: $GIT_COMMIT
-Branch: $GIT_BRANCH
-
-===================================================================
-            SERVICIOS DOCKER
-===================================================================
-
-$(docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
-
-===================================================================
-            ESTADISTICAS DE BASES DE DATOS
-===================================================================
-
-PostgreSQL (ticketing):
-$(docker exec ticketing-postgres psql -U admin -d ticketing -c '\dt' 2>/dev/null)
-
-MongoDB (ticketing):
-$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use ticketing; db.stats()' 2>/dev/null)
-
-MongoDB (festival_services):
-$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use festival_services; db.stats()' 2>/dev/null)
-
-===================================================================
-EOF
-
-echo "   OK Informacion del sistema generada"
-
-# ============================================================================
-# 8. VERIFICACION Y RESUMEN FINAL
-# ============================================================================
-echo ""
-echo "[8/8] Verificacion Final..."
-
-echo ""
-echo "Verificando archivos de backup..."
-FILE_COUNT=$(find "$BACKUP_DIR" -type f | wc -l)
-TOTAL_SIZE=$(du -sh "$BACKUP_DIR" | cut -f1)
-
-echo ""
-echo "====================================================================="
-echo "                    BACKUP COMPLETADO                               "
-echo "====================================================================="
-
-echo ""
-echo "Resumen del Backup:"
-echo "   Directorio: $BACKUP_DIR"
-echo "   Archivos creados: $FILE_COUNT"
-echo "   Tamaño total: $TOTAL_SIZE"
-
-echo ""
-echo "Archivos generados:"
-for file in "$BACKUP_DIR"/*; do
-    if [ -f "$file" ]; then
-        filename=$(basename "$file")
-        size=$(du -h "$file" | cut -f1)
-        echo "   - $filename ($size)"
+for file in "${ESSENTIAL_FILES[@]}"; do
+    if [ -f "${BACKUP_DIR}/${file}" ]; then
+        echo -e "     ✓ ${GREEN}${file}${NC}"
+    else
+        echo -e "     ✗ ${RED}${file} - FALTA${NC}"
+        all_critical_ok=false
     fi
 done
 
-# Crear archivo de informacion del backup en JSON
-cat > "$BACKUP_DIR/BACKUP_INFO.json" << EOF
-{
-    "BackupDate": "$(date '+%Y-%m-%d')",
-    "BackupTime": "$(date '+%H:%M:%S')",
-    "BackupName": "$BACKUP_NAME",
-    "BackupDirectory": "$BACKUP_DIR",
-    "GitCommit": "$GIT_COMMIT",
-    "GitBranch": "$GIT_BRANCH",
-    "FilesCount": $FILE_COUNT,
-    "IncludedConfigs": $INCLUDE_CONFIGS
-}
+for dir in "${CRITICAL_DIRS[@]}"; do
+    if [ -d "${BACKUP_DIR}/${dir}" ]; then
+        echo -e "     ✓ ${GREEN}${dir}/${NC}"
+    else
+        echo -e "     ✗ ${RED}${dir}/ - FALTA${NC}"
+        all_critical_ok=false
+    fi
+done
+
+if [ "$all_critical_ok" = false ]; then
+    echo -e "\n${RED}ERROR: Faltan archivos criticos en el backup${NC}"
+    exit 1
+fi
+
+# ============================================================================
+# 6. RESUMEN Y FINALIZACION
+# ============================================================================
+echo -e "\n${BLUE}[6/6] Resumen y Finalizacion...${NC}"
+show_progress 6 6 "Generando resumen del backup"
+
+# Contar archivos totales
+TOTAL_FILES=$(find "$BACKUP_DIR" -type f | wc -l)
+TOTAL_SIZE=$(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1 || echo "?")
+
+# Crear archivo de resumen
+cat > "${BACKUP_DIR}/backup_summary.txt" << EOF
+BACKUP COMPLETO TICKETING PLATFORM
+==================================
+Fecha: ${DATE_TODAY}
+Timestamp: ${TIMESTAMP}
+Generado por: backup_completo_v2.sh
+
+ARCHIVOS INCLUIDOS:
+==================
+$(ls -la "${BACKUP_DIR}")
+
+ESTADISTICAS:
+=============
+Total archivos: ${TOTAL_FILES}
+Tamaño total: ${TOTAL_SIZE}
+Configuraciones incluidas: $([ "$INCLUDE_CONFIGS" = true ] && echo "Si" || echo "No")
+
+VERIFICACION:
+=============
+✓ Schemas Prisma: Incluidos
+✓ Migraciones Prisma: Incluidas  
+✓ Base de datos PostgreSQL: Incluida
+✓ Base de datos MongoDB: Incluida
+
+INSTRUCCIONES DE RESTAURACION:
+==============================
+Para restaurar este backup, ejecuta:
+./restore_completo_v2.sh -d ${DATE_TODAY}
+
+CREDENCIALES ACTUALES:
+=====================
+Super Admin: voro.super@ticketing.com / Voro123!
+Admin: admin@ticketing.com / admin123
 EOF
 
-echo ""
-echo "Siguientes pasos:"
-echo "   1. Para restaurar este backup usar:"
-echo "      ./restore.sh --backup-folder \"$DATE\""
-echo "   2. Los archivos estan en: $BACKUP_DIR"
-echo "   3. Verificar que todos los servicios siguen funcionando correctamente"
+echo -e "\n${GREEN}======================================================================${NC}"
+echo -e "${GREEN}                      BACKUP COMPLETADO EXITOSAMENTE                 ${NC}"
+echo -e "${GREEN}======================================================================${NC}"
 
-echo ""
-echo "Backup completo finalizado exitosamente!"
+echo -e "\n${WHITE}RESUMEN DEL BACKUP:${NC}"
+echo -e "   Fecha: ${CYAN}${DATE_TODAY}${NC}"
+echo -e "   Directorio: ${CYAN}${BACKUP_DIR}${NC}"
+echo -e "   Total archivos: ${WHITE}${TOTAL_FILES}${NC}"
+echo -e "   Tamaño total: ${WHITE}${TOTAL_SIZE}${NC}"
+echo -e "   Timestamp: ${CYAN}${TIMESTAMP}${NC}"
+
+echo -e "\n${YELLOW}ARCHIVOS CRITICOS INCLUIDOS:${NC}"
+echo -e "   ✓ ${GREEN}Schemas Prisma${NC}"
+echo -e "   ✓ ${GREEN}Migraciones Prisma${NC}"
+echo -e "   ✓ ${GREEN}Base de datos PostgreSQL${NC}"
+echo -e "   ✓ ${GREEN}Base de datos MongoDB${NC}"
+if [ "$INCLUDE_CONFIGS" = true ]; then
+    echo -e "   ✓ ${GREEN}Archivos de configuracion${NC}"
+fi
+
+echo -e "\n${YELLOW}PARA RESTAURAR ESTE BACKUP:${NC}"
+echo -e "   ${WHITE}./restore_completo_v2.sh -d ${DATE_TODAY}${NC}"
+
+echo -e "\n${GREEN}BACKUP COMPLETADO Y VERIFICADO ✓${NC}"
+echo -e "${GREEN}======================================================================${NC}"

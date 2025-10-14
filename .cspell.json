@@ -1,0 +1,33 @@
+{
+    "version": "0.2",
+    "language": "en,es",
+    "words": [
+        "nestjs",
+        "nodejs",
+        "addgroup",
+        "adduser",
+        "chown",
+        "dockerized",
+        "mongoexport",
+        "numfmt",
+        "mkdir",
+        "chmod",
+        "backend",
+        "frontend",
+        "prisma",
+        "ticketing",
+        "postgresql",
+        "mongodb",
+        "dockerfile",
+        "apk",
+        "dumb",
+        "Descripcion",
+        "configuracion",
+        "Configuracion",
+        "Opcion",
+        "Funcion",
+        "postgres",
+        "estan"
+    ],
+    "ignorePaths": ["node_modules/**", "dist/**", "build/**", ".git/**", "*.log"]
+}

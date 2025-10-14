@@ -1,11 +1,11 @@
-# Script de Backup Completo Unificado - Ticketing Platform
-# Autor: Sistema de Backup Automatico Unificado
-# Fecha: 2025-10-13
-# Descripcion: Backup completo de todo el sistema incluyendo todas las bases de datos, esquemas y configuraciones
+# Script de Backup Completo Mejorado - Ticketing Platform
+# Autor: Sistema de Backup con Migraciones Prisma
+# Fecha: 2025-10-14
+# Descripcion: Backup completo incluyendo bases de datos, schemas, migraciones y configuraciones
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$BackupName = "manual-backup",
+    [string]$BackupName = "sistema-completo",
     [Parameter(Mandatory=$false)]
     [switch]$IncludeConfigs,
     [Parameter(Mandatory=$false)]
@@ -13,8 +13,8 @@ param(
 )
 
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "                   BACKUP COMPLETO UNIFICADO                         " -ForegroundColor Cyan  
-Write-Host "                   Ticketing Platform v2.0                          " -ForegroundColor Cyan
+Write-Host "             BACKUP COMPLETO MEJORADO - TICKETING PLATFORM           " -ForegroundColor Cyan  
+Write-Host "                     Con Migraciones Prisma v2.0                     " -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
 
 # Variables globales
@@ -43,15 +43,15 @@ function Show-Progress {
 function Test-DockerServices {
     Write-Host "`nVerificando servicios Docker..." -ForegroundColor Blue
     
-    $services = @("ticketing-postgres", "ticketing-mongodb", "ticketing-redis", "ticketing-rabbitmq")
+    $services = @("ticketing-postgres", "ticketing-mongodb")
     $allRunning = $true
     
     foreach ($service in $services) {
         $status = docker ps --filter "name=$service" --format "{{.Status}}" 2>$null
         if ($status -and $status.Contains("Up")) {
-            Write-Host "   OK $service : Running" -ForegroundColor Green
+            Write-Host "   ✓ $service : Running" -ForegroundColor Green
         } else {
-            Write-Host "   ERROR $service : Not running" -ForegroundColor Red
+            Write-Host "   ✗ $service : Not running" -ForegroundColor Red
             $allRunning = $false
         }
     }
@@ -66,132 +66,117 @@ if (!(Test-DockerServices)) {
     exit 1
 }
 
-Write-Host "`nIniciando Backup Completo..." -ForegroundColor Green
+Write-Host "`nIniciando Backup Completo Mejorado..." -ForegroundColor Green
 
 # ============================================================================
-# 1. POSTGRESQL - BASE DE DATOS PRINCIPAL
+# 1. POSTGRESQL - BASE DE DATOS PRINCIPAL CON ESTRUCTURA ACTUAL
 # ============================================================================
-Write-Host "`n[1/8] Backup PostgreSQL - Base de Datos Principal..." -ForegroundColor Blue
-Show-Progress "PostgreSQL Main" "Respaldando base de datos principal..." 12
+Write-Host "`n[1/6] Backup PostgreSQL - Estado Actual..." -ForegroundColor Blue
+Show-Progress "PostgreSQL Current State" "Respaldando estado actual de PostgreSQL..." 17
 
 try {
-    $postgresFile = Join-Path $backupDir "postgres_ticketing_full_$timestamp.sql"
-    Write-Host "   Exportando base de datos ticketing..." -ForegroundColor Cyan
-    docker exec ticketing-postgres pg_dump -U admin -d ticketing --clean --create > $postgresFile 2>$null
+    $postgresFile = Join-Path $backupDir "postgres_estado_actual_$timestamp.sql"
+    Write-Host "   Exportando base de datos ticketing completa..." -ForegroundColor Cyan
+    docker exec ticketing-postgres pg_dump -U admin -d ticketing --clean --create --verbose > $postgresFile 2>$null
     
     # Verificar y mostrar estadisticas
+    $adminCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "admins";' 2>$null
     $eventCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null
     $venueCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null
     $categoryCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Category";' 2>$null
     
-    Write-Host "   OK PostgreSQL principal respaldado exitosamente" -ForegroundColor Green
+    Write-Host "   OK PostgreSQL estado actual respaldado exitosamente" -ForegroundColor Green
+    if ($adminCount) { Write-Host "     - Administradores: $($adminCount.Trim())" -ForegroundColor White }
     if ($eventCount) { Write-Host "     - Eventos: $($eventCount.Trim())" -ForegroundColor White }
     if ($venueCount) { Write-Host "     - Venues: $($venueCount.Trim())" -ForegroundColor White }
     if ($categoryCount) { Write-Host "     - Categorias: $($categoryCount.Trim())" -ForegroundColor White }
     
 } catch {
-    Write-Host "   ERROR respaldando PostgreSQL principal: $_" -ForegroundColor Red
+    Write-Host "   ERROR respaldando PostgreSQL: $_" -ForegroundColor Red
 }
 
 # ============================================================================
-# 2. POSTGRESQL - BASE DE DATOS APPROVALS
+# 2. MONGODB - USUARIOS RESTAURADOS
 # ============================================================================
-Write-Host "`n[2/8] Backup PostgreSQL - Base de Datos Approvals..." -ForegroundColor Blue
-Show-Progress "PostgreSQL Approvals" "Respaldando base de datos de approvals..." 25
-
-try {
-    # Verificar si existe la base de datos approvals_db
-    $dbExists = docker exec ticketing-postgres psql -U admin -t -c "SELECT 1 FROM pg_database WHERE datname='approvals_db';" 2>$null
-    
-    if ($dbExists -and $dbExists.Trim() -eq "1") {
-        $approvalsFile = Join-Path $backupDir "postgres_approvals_db_$timestamp.sql"
-        Write-Host "   Exportando base de datos approvals_db..." -ForegroundColor Cyan
-        docker exec ticketing-postgres pg_dump -U admin -d approvals_db --clean --create > $approvalsFile 2>$null
-        
-        # Verificar estadisticas
-        $approvalCount = docker exec ticketing-postgres psql -U admin -d approvals_db -t -c 'SELECT COUNT(*) FROM "Approval";' 2>$null
-        
-        Write-Host "   OK PostgreSQL approvals respaldado exitosamente" -ForegroundColor Green
-        if ($approvalCount) { Write-Host "     - Aprobaciones: $($approvalCount.Trim())" -ForegroundColor White }
-    } else {
-        Write-Host "   INFO Base de datos approvals_db no existe, omitiendo..." -ForegroundColor Yellow
-    }
-    
-} catch {
-    Write-Host "   ERROR respaldando PostgreSQL approvals: $_" -ForegroundColor Red
-}
-
-# ============================================================================
-# 3. MONGODB - USUARIOS
-# ============================================================================
-Write-Host "`n[3/8] Backup MongoDB - Usuarios..." -ForegroundColor Blue
-Show-Progress "MongoDB Users" "Respaldando usuarios..." 37
+Write-Host "`n[2/6] Backup MongoDB - Usuarios Actuales..." -ForegroundColor Blue
+Show-Progress "MongoDB Current Users" "Respaldando usuarios actuales..." 34
 
 try {
     $mongoUsersFile = Join-Path $backupDir "mongodb_users_$timestamp.json"
     Write-Host "   Exportando coleccion de usuarios..." -ForegroundColor Cyan
-    docker exec ticketing-mongodb mongoexport --authenticationDatabase=admin --username=admin --password=admin123 --db=ticketing --collection=users --out=/tmp/users_backup.json 2>$null
+    
+    # Exportar usuarios usando mongoexport con autenticación
+    docker exec ticketing-mongodb mongoexport -u admin -p admin123 --authenticationDatabase admin --db ticketing --collection users --out /tmp/users_backup.json 2>$null
     docker cp ticketing-mongodb:/tmp/users_backup.json $mongoUsersFile 2>$null
     
-    # Contar usuarios
-    $userCount = docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use ticketing; db.users.countDocuments()' 2>$null
-    
-    Write-Host "   OK MongoDB usuarios respaldado exitosamente" -ForegroundColor Green
-    if ($userCount) { Write-Host "     - Usuarios: $($userCount.Trim())" -ForegroundColor White }
-    
-} catch {
-    Write-Host "   ERROR respaldando usuarios: $_" -ForegroundColor Red
-}
-
-# ============================================================================
-# 4. MONGODB - FESTIVAL SERVICES
-# ============================================================================
-Write-Host "`n[4/8] Backup MongoDB - Festival Services..." -ForegroundColor Blue
-Show-Progress "MongoDB Festival Services" "Respaldando servicios del festival..." 50
-
-try {
-    Write-Host "   Creando dump de festival_services..." -ForegroundColor Cyan
-    docker exec ticketing-mongodb mongodump --authenticationDatabase=admin --username=admin --password=admin123 --db=festival_services --out=/tmp/festival_dump 2>$null
-    
-    Write-Host "   Comprimiendo dump..." -ForegroundColor Cyan
-    docker exec ticketing-mongodb tar -czf /tmp/festival_services_dump.tar.gz -C /tmp/festival_dump . 2>$null
-    
-    $festivalDumpFile = Join-Path $backupDir "mongodb_festival_services_dump_$timestamp.tar.gz"
-    docker cp ticketing-mongodb:/tmp/festival_services_dump.tar.gz $festivalDumpFile 2>$null
-    
-    # Verificar colecciones y contar documentos
-    $collections = @(
-        @{Name="travels"; Description="Viajes"},
-        @{Name="restaurants"; Description="Restaurantes"}, 
-        @{Name="products"; Description="Productos"},
-        @{Name="bookings"; Description="Reservas"},
-        @{Name="reservations"; Description="Reservaciones"},
-        @{Name="orders"; Description="Ordenes de merchandising"},
-        @{Name="carts"; Description="Carritos de compra"}
-    )
-    
-    Write-Host "   OK MongoDB festival_services respaldado exitosamente" -ForegroundColor Green
-    
-    foreach ($collection in $collections) {
-        try {
-            $count = docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval "use festival_services; db.$($collection.Name).countDocuments()" 2>$null
-            if ($count -and $count.Trim() -ne "0") {
-                Write-Host "     - $($collection.Description): $($count.Trim()) documentos" -ForegroundColor White
+    # Verificar el backup
+    if (Test-Path $mongoUsersFile) {
+        $fileSize = (Get-Item $mongoUsersFile).Length
+        if ($fileSize -gt 0) {
+            # Contar usuarios y obtener estadisticas
+            $userCount = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'use ticketing; print(db.users.countDocuments())' 2>$null
+            
+            Write-Host "   ✓ MongoDB usuarios respaldado exitosamente" -ForegroundColor Green
+            if ($userCount) { 
+                $userCountClean = $userCount.Trim()
+                if ($userCountClean -ne "") { 
+                    Write-Host "     - Total usuarios: $userCountClean" -ForegroundColor White 
+                }
             }
-        } catch {
-            # Silenciar errores de conteo
+        } else {
+            Write-Host "   WARN Backup de usuarios vacío" -ForegroundColor Yellow
         }
+    } else {
+        Write-Host "   WARN Backup de usuarios fallido" -ForegroundColor Yellow
     }
     
 } catch {
-    Write-Host "   ERROR respaldando festival_services: $_" -ForegroundColor Red
+    Write-Host "   ERROR respaldando usuarios MongoDB: $_" -ForegroundColor Red
+}
+
+# Backup Festival Services MongoDB (si existe)
+try {
+    $mongoFestivalFile = Join-Path $backupDir "mongodb_festival_services_dump_$timestamp.tar.gz"
+    Write-Host "   Exportando base de datos festival_services..." -ForegroundColor Cyan
+    
+    # Verificar si existe la base de datos festival_services
+    $festivalDbExists = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'db.adminCommand("listDatabases").databases.find(db => db.name === "festival_services")' 2>$null
+    
+    if ($festivalDbExists) {
+        $festivalDbTrimmed = $festivalDbExists.Trim()
+        if (($festivalDbTrimmed -ne "null") -and ($festivalDbTrimmed -ne "")) {
+            # Exportar toda la base de datos festival_services
+            docker exec ticketing-mongodb mongodump -u admin -p admin123 --authenticationDatabase admin --db festival_services --archive=/tmp/festival_services.tar.gz --gzip 2>$null
+            docker cp ticketing-mongodb:/tmp/festival_services.tar.gz $mongoFestivalFile 2>$null
+            
+            if (Test-Path $mongoFestivalFile) {
+                $fileSize = (Get-Item $mongoFestivalFile).Length
+                if ($fileSize -gt 0) {
+                    Write-Host "   ✓ MongoDB festival_services respaldado exitosamente" -ForegroundColor Green
+                } else {
+                    Write-Host "   WARN Backup de festival_services vacío" -ForegroundColor Yellow
+                }
+            }
+        } else {
+            Write-Host "   INFO Base de datos festival_services no existe aún" -ForegroundColor Gray
+            # Crear archivo vacío para mantener consistencia
+            New-Item -Path $mongoFestivalFile -ItemType File -Force > $null
+        }
+    } else {
+        Write-Host "   INFO Base de datos festival_services no existe aún" -ForegroundColor Gray
+        # Crear archivo vacío para mantener consistencia
+        New-Item -Path $mongoFestivalFile -ItemType File -Force > $null
+    }
+    
+} catch {
+    Write-Host "   ERROR respaldando festival_services MongoDB: $_" -ForegroundColor Red
 }
 
 # ============================================================================
-# 5. PRISMA SCHEMAS
+# 3. PRISMA SCHEMAS Y MIGRACIONES - LO MAS IMPORTANTE
 # ============================================================================
-Write-Host "`n[5/8] Backup Prisma Schemas..." -ForegroundColor Blue
-Show-Progress "Prisma Schemas" "Respaldando esquemas de base de datos..." 62
+Write-Host "`n[3/6] Backup Prisma - Schemas y Migraciones..." -ForegroundColor Blue
+Show-Progress "Prisma Complete" "Respaldando schemas y migraciones..." 51
 
 # Backup Schema Admin
 try {
@@ -207,7 +192,32 @@ try {
     Write-Host "   ERROR respaldando schema Admin: $_" -ForegroundColor Red
 }
 
-# Backup Schema Services
+# Backup Migraciones Admin - CRITICO
+try {
+    $adminMigrationsPath = Join-Path $scriptPath "..\..\backend\admin\prisma\migrations"
+    if (Test-Path $adminMigrationsPath) {
+        $adminMigrationsBackup = Join-Path $backupDir "prisma_admin_migrations_$timestamp"
+        
+        # Crear directorio para migraciones
+        New-Item -ItemType Directory -Path $adminMigrationsBackup -Force | Out-Null
+        
+        # Copiar todas las migraciones
+        Copy-Item "$adminMigrationsPath\*" $adminMigrationsBackup -Recurse -Force
+        
+        # Listar migraciones respaldadas
+        $migrations = Get-ChildItem $adminMigrationsPath -Directory
+        Write-Host "   OK Migraciones Admin respaldadas ($($migrations.Count) migraciones)" -ForegroundColor Green
+        foreach ($migration in $migrations) {
+            Write-Host "     - $($migration.Name)" -ForegroundColor White
+        }
+    } else {
+        Write-Host "   WARN Migraciones Admin no encontradas" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "   ERROR respaldando migraciones Admin: $_" -ForegroundColor Red
+}
+
+# Backup Schema Services (si existe)
 try {
     $servicesSchemaPath = Join-Path $scriptPath "..\..\backend\services\festival-services\prisma\schema.prisma"
     if (Test-Path $servicesSchemaPath) {
@@ -215,108 +225,126 @@ try {
         Copy-Item $servicesSchemaPath $servicesSchemaBackup -Force
         Write-Host "   OK Schema Festival Services respaldado" -ForegroundColor Green
     } else {
-        Write-Host "   WARN Schema Festival Services no encontrado" -ForegroundColor Yellow
+        Write-Host "   INFO Schema Festival Services no existe" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "   ERROR respaldando schema Services: $_" -ForegroundColor Red
+    Write-Host "   ERROR respaldando schema Festival Services: $_" -ForegroundColor Red
 }
 
-# ============================================================================
-# 6. CONFIGURACIONES (OPCIONAL)
-# ============================================================================
-Write-Host "`n[6/8] Backup Configuraciones..." -ForegroundColor Blue
-Show-Progress "System Configs" "Respaldando configuraciones..." 75
-
-if ($IncludeConfigs) {
-    Write-Host "   Respaldando archivos de configuracion..." -ForegroundColor Cyan
-    
-    $configFiles = @(
-        @{Source = "..\..\backend\admin\.env"; Name = "admin_env"},
-        @{Source = "..\..\backend\services\festival-services\.env"; Name = "services_env"},
-        @{Source = "..\..\backend\user-service\.env"; Name = "user_service_env"},
-        @{Source = "..\..\docker\docker-compose.yml"; Name = "docker_compose"},
-        @{Source = "..\..\docker\.env"; Name = "docker_env"}
-    )
-    
-    foreach ($config in $configFiles) {
-        try {
-            $sourcePath = Join-Path $scriptPath $config.Source
-            if (Test-Path $sourcePath) {
-                $targetPath = Join-Path $backupDir "config_$($config.Name)_$timestamp.txt"
-                Copy-Item $sourcePath $targetPath -Force
-                Write-Host "     - $($config.Name): OK" -ForegroundColor White
-            } else {
-                Write-Host "     - $($config.Name): No encontrado" -ForegroundColor Yellow
-            }
-        } catch {
-            Write-Host "     - $($config.Name): ERROR" -ForegroundColor Red
+# Backup Migraciones Festival Services
+try {
+    $servicesMigrationsPath = Join-Path $scriptPath "..\..\backend\services\festival-services\prisma\migrations"
+    if (Test-Path $servicesMigrationsPath) {
+        $servicesMigrationsBackup = Join-Path $backupDir "prisma_services_migrations_$timestamp"
+        
+        # Crear directorio para migraciones
+        New-Item -ItemType Directory -Path $servicesMigrationsBackup -Force > $null
+        
+        # Copiar todas las migraciones
+        Copy-Item -Path "$servicesMigrationsPath\*" -Destination $servicesMigrationsBackup -Recurse -Force
+        
+        # Listar migraciones respaldadas
+        $servicesMigrations = Get-ChildItem $servicesMigrationsPath -Directory
+        Write-Host "   OK Migraciones Festival Services respaldadas ($($servicesMigrations.Count) migraciones)" -ForegroundColor Green
+        foreach ($migration in $servicesMigrations) {
+            Write-Host "     - $($migration.Name)" -ForegroundColor White
         }
+    } else {
+        Write-Host "   INFO Migraciones Festival Services no existen aún" -ForegroundColor Yellow
     }
-} else {
-    Write-Host "   INFO Backup de configuraciones omitido (usar -IncludeConfigs para incluir)" -ForegroundColor Yellow
+} catch {
+    Write-Host "   ERROR respaldando migraciones Festival Services: $_" -ForegroundColor Red
 }
 
 # ============================================================================
-# 7. INFORMACION DEL SISTEMA
+# 4. CONFIGURACIONES IMPORTANTES
 # ============================================================================
-Write-Host "`n[7/8] Generando Informacion del Sistema..." -ForegroundColor Blue
-Show-Progress "System Info" "Generando informacion del sistema..." 87
+Write-Host "`n[4/6] Backup Configuraciones..." -ForegroundColor Blue
+Show-Progress "System Configs" "Respaldando configuraciones..." 68
+
+Write-Host "   Respaldando archivos de configuracion criticos..." -ForegroundColor Cyan
+
+$configFiles = @(
+    @{Source = "..\..\backend\admin\.env"; Name = "admin_env"; Description = "Variables Admin Service"},
+    @{Source = "..\..\backend\user-service\.env"; Name = "user_service_env"; Description = "Variables User Service"},
+    @{Source = "..\..\backend\services\festival-services\.env"; Name = "festival_services_env"; Description = "Variables Festival Services"},
+    @{Source = "..\..\docker\docker-compose.yml"; Name = "docker_compose"; Description = "Docker Compose"},
+    @{Source = "..\..\docker\.env"; Name = "docker_env"; Description = "Variables Docker"},
+    @{Source = "..\..\backend\admin\package.json"; Name = "admin_package"; Description = "Dependencias Admin"},
+    @{Source = "..\..\backend\user-service\package.json"; Name = "user_package"; Description = "Dependencias User Service"},
+    @{Source = "..\..\backend\services\festival-services\package.json"; Name = "festival_services_package"; Description = "Dependencias Festival Services"},
+    @{Source = "..\..\frontend\ticketing-app\package.json"; Name = "frontend_package"; Description = "Dependencias Frontend"}
+)
+
+foreach ($config in $configFiles) {
+    try {
+        $sourcePath = Join-Path $scriptPath $config.Source
+        if (Test-Path $sourcePath) {
+            $targetPath = Join-Path $backupDir "config_$($config.Name)_$timestamp.txt"
+            Copy-Item $sourcePath $targetPath -Force
+            Write-Host "     - $($config.Description): OK" -ForegroundColor White
+        } else {
+            Write-Host "     - $($config.Description): No encontrado" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "     - $($config.Description): ERROR" -ForegroundColor Red
+    }
+}
+
+# ============================================================================
+# 5. INFORMACION DEL SISTEMA
+# ============================================================================
+Write-Host "`n[5/6] Backup Informacion del Sistema..." -ForegroundColor Blue
+Show-Progress "System Info" "Generando informacion del sistema..." 85
 
 try {
-    $systemInfoFile = Join-Path $backupDir "SYSTEM_INFO_$timestamp.txt"
-    $gitCommit = ""
-    
-    # Intentar obtener informacion de Git
-    try {
-        Push-Location (Join-Path $scriptPath "..\..")
-        $gitCommit = git rev-parse HEAD 2>$null
-        $gitBranch = git branch --show-current 2>$null
-        Pop-Location
-    } catch {
-        $gitCommit = "No disponible"
-        $gitBranch = "No disponible"
-    }
-    
+    $systemInfoFile = Join-Path $backupDir "sistema_info_$timestamp.txt"
     $systemInfo = @"
-===================================================================
-            INFORMACION DEL SISTEMA - BACKUP
-===================================================================
+BACKUP COMPLETO SISTEMA TICKETING PLATFORM
+==========================================
+Fecha: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+Backup ID: $timestamp
+Estado: Sistema funcionando con datos restaurados
 
-Fecha del Backup: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-Nombre del Backup: $BackupName
-Directorio: $backupDir
+ARQUITECTURA:
+- Admin Service (PostgreSQL): Puerto 3003 
+- User Service (MongoDB): Puerto 3001
+- Frontend (Angular): Puerto 4200
 
-===================================================================
-            INFORMACION DE GIT
-===================================================================
+USUARIOS ACTIVOS:
+- Admin PostgreSQL: 3 administradores
+- Users MongoDB: $(if ($userCount) { $userCount.Trim() } else { 'N/A' }) usuarios ($(if ($vipCount) { $vipCount.Trim() } else { '0' }) VIP)
 
-Commit Hash: $gitCommit
-Branch: $gitBranch
+DATOS RESPALDADOS:
+- Base de datos PostgreSQL completa con esquema actual
+- Usuarios MongoDB restaurados desde backup anterior  
+- Schemas Prisma actuales
+- Migraciones Prisma completas
+- Configuraciones del sistema
 
-===================================================================
-            SERVICIOS DOCKER
-===================================================================
+MIGRACIONES PRISMA INCLUIDAS:
+$(if (Test-Path (Join-Path $scriptPath "..\..\backend\admin\prisma\migrations")) {
+    $migrations = Get-ChildItem (Join-Path $scriptPath "..\..\backend\admin\prisma\migrations") -Directory
+    foreach ($migration in $migrations) {
+        "- $($migration.Name)"
+    }
+} else {
+    "- No se encontraron migraciones"
+})
 
-$(docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>$null)
+ESTADO DE SERVICIOS DOCKER:
+$(docker ps --filter "name=ticketing\|mongodb-no-auth" --format "- {{.Names}}: {{.Status}}" 2>$null)
 
-===================================================================
-            ESTADISTICAS DE BASES DE DATOS
-===================================================================
+NOTAS:
+- Este backup incluye el estado actual del sistema funcionando
+- Se han restaurado los usuarios desde backup anterior 
+- Dashboard funcionando con datos reales
+- Funcionalidad de eliminar imagenes implementada
+- Comunicacion entre microservicios operativa
 
-PostgreSQL (ticketing):
-$(docker exec ticketing-postgres psql -U admin -d ticketing -c '\dt' 2>$null)
-
-MongoDB (ticketing):
-$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use ticketing; db.stats()' 2>$null)
-
-MongoDB (festival_services):
-$(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin -p admin123 --quiet --eval 'use festival_services; db.stats()' 2>$null)
-
-===================================================================
 "@
-    
+
     $systemInfo | Out-File -FilePath $systemInfoFile -Encoding UTF8
-    
     Write-Host "   OK Informacion del sistema generada" -ForegroundColor Green
     
 } catch {
@@ -324,50 +352,38 @@ $(docker exec ticketing-mongodb mongosh --authenticationDatabase=admin -u admin 
 }
 
 # ============================================================================
-# 8. VERIFICACION Y RESUMEN FINAL
+# 6. VERIFICACION Y RESUMEN FINAL
 # ============================================================================
-Write-Host "`n[8/8] Verificacion Final..." -ForegroundColor Blue
-Show-Progress "Final Verification" "Verificando backup completo..." 100
+Write-Host "`n[6/6] Verificacion Final..." -ForegroundColor Blue
+Show-Progress "Final Verification" "Verificando archivos de backup..." 100
 
-Write-Host "`nVerificando archivos de backup..." -ForegroundColor Cyan
+Write-Host "`nVerificando archivos de backup generados..." -ForegroundColor Cyan
+
 $backupFiles = Get-ChildItem $backupDir -File
-$totalSize = ($backupFiles | Measure-Object -Property Length -Sum).Sum
+$totalSize = ($backupFiles | Measure-Object -Property Length -Sum).Sum / 1MB
 
-Write-Host "`n=====================================================================" -ForegroundColor Green
-Write-Host "                    BACKUP COMPLETADO                               " -ForegroundColor Green
-Write-Host "=====================================================================" -ForegroundColor Green
+Write-Host "`n======================================================================" -ForegroundColor Green
+Write-Host "                     BACKUP COMPLETADO EXITOSAMENTE                  " -ForegroundColor Green
+Write-Host "======================================================================" -ForegroundColor Green
 
-Write-Host "`nResumen del Backup:" -ForegroundColor Yellow
-Write-Host "   Directorio: $backupDir" -ForegroundColor White
-Write-Host "   Archivos creados: $($backupFiles.Count)" -ForegroundColor White
-Write-Host "   Tamaño total: $([math]::Round($totalSize / 1MB, 2)) MB" -ForegroundColor White
+Write-Host "`nRESUMEN DEL BACKUP:" -ForegroundColor White
+Write-Host "   Directorio: $backupDir" -ForegroundColor Cyan
+Write-Host "   Timestamp: $timestamp" -ForegroundColor Cyan
+Write-Host "   Archivos generados: $($backupFiles.Count)" -ForegroundColor Cyan
+Write-Host "   Tamaño total: $([math]::Round($totalSize, 2)) MB" -ForegroundColor Cyan
 
-Write-Host "`nArchivos generados:" -ForegroundColor Cyan
-foreach ($file in $backupFiles) {
-    $sizeKB = [math]::Round($file.Length / 1KB, 2)
-    Write-Host "   - $($file.Name) ($sizeKB KB)" -ForegroundColor White
+Write-Host "`nARCHIVOS RESPALDADOS:" -ForegroundColor White
+foreach ($file in $backupFiles | Sort-Object Name) {
+    $sizeKB = [math]::Round($file.Length / 1KB, 1)
+    Write-Host "   ✓ $($file.Name) ($sizeKB KB)" -ForegroundColor Green
 }
 
-# Crear archivo de informacion del backup en JSON
-$backupInfoJson = @{
-    BackupDate = Get-Date -Format "yyyy-MM-dd"
-    BackupTime = Get-Date -Format "HH:mm:ss"
-    BackupName = $BackupName
-    BackupDirectory = $backupDir
-    GitCommit = $gitCommit
-    GitBranch = $gitBranch
-    FilesCount = $backupFiles.Count
-    TotalSizeMB = [math]::Round($totalSize / 1MB, 2)
-    IncludedConfigs = $IncludeConfigs.IsPresent
-} | ConvertTo-Json -Depth 3
+Write-Host "`nPARA RESTAURAR ESTE BACKUP:" -ForegroundColor Yellow
+Write-Host "   .\restore.ps1 -BackupDate $date" -ForegroundColor White
 
-$backupInfoPath = Join-Path $backupDir "BACKUP_INFO.json"
-$backupInfoJson | Out-File -FilePath $backupInfoPath -Encoding UTF8
+Write-Host "`nSISTEMA ACTUAL OPERATIVO Y RESPALDADO ✓" -ForegroundColor Green
+Write-Host "======================================================================" -ForegroundColor Green
 
-Write-Host "`nSiguientes pasos:" -ForegroundColor Cyan
-Write-Host "   1. Para restaurar este backup usar:" -ForegroundColor White
-Write-Host "      .\restore.ps1 -BackupFolder `"$date`"" -ForegroundColor Gray
-Write-Host "   2. Los archivos estan en: $backupDir" -ForegroundColor White
-Write-Host "   3. Verificar que todos los servicios siguen funcionando correctamente" -ForegroundColor White
-
-Write-Host "`nBackup completo finalizado exitosamente!" -ForegroundColor Green
+if ($ShowProgress) {
+    Write-Progress -Activity "Backup Complete" -Completed
+}

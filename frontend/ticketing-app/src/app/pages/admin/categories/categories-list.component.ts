@@ -548,6 +548,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxSizeMB]="1"
                 [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
                 (imagesUploaded)="onCategoryIconUploaded($event)"
+                (imageRemoved)="onCategoryIconRemoved($event)"
               ></app-image-upload>
             </div>
 
@@ -622,6 +623,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxSizeMB]="1"
                 [existingImages]="categoryForm.icon ? [categoryForm.icon] : []"
                 (imagesUploaded)="onCategoryIconUploaded($event)"
+                (imageRemoved)="onCategoryIconRemoved($event)"
               ></app-image-upload>
             </div>
 
@@ -635,6 +637,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 [maxFiles]="1"
                 [existingImages]="categoryForm.image ? [categoryForm.image] : []"
                 (imagesUploaded)="onCategoryImageUploaded($event)"
+                (imageRemoved)="onCategoryImageRemoved($event)"
               ></app-image-upload>
             </div>
           </div>
@@ -829,7 +832,9 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-400">Eventos:</span>
-                  <span class="text-white font-bold">{{ selectedCategory._count?.events || 0 }}</span>
+                  <span class="text-white font-bold">{{
+                    selectedCategory._count?.events || 0
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -950,7 +955,7 @@ export class CategoriesListComponent implements OnInit {
     description: '',
     icon: '',
     image: '',
-    images: [] as string[]
+    images: [] as string[],
   };
 
   subcategoryForm = {
@@ -1159,7 +1164,7 @@ export class CategoriesListComponent implements OnInit {
       description: '',
       icon: '',
       image: '',
-      images: []
+      images: [],
     };
     this.showCreateCategoryModal = true;
   }
@@ -1227,45 +1232,47 @@ export class CategoriesListComponent implements OnInit {
       return;
     }
 
-    this.adminService.createCategory({
-      name: this.categoryForm.name,
-      description: this.categoryForm.description,
-      icon: this.categoryForm.icon,
-      image: this.categoryForm.image,
-      images: this.categoryForm.images
-    }).subscribe({
-      next: (response) => {
-        this.showCreateCategoryModal = false;
-        this.categoryForm = {
-          id: 0,
-          name: '',
-          description: '',
-          icon: '',
-          image: '',
-          images: []
-        };
+    this.adminService
+      .createCategory({
+        name: this.categoryForm.name,
+        description: this.categoryForm.description,
+        icon: this.categoryForm.icon,
+        image: this.categoryForm.image,
+        images: this.categoryForm.images,
+      })
+      .subscribe({
+        next: (response) => {
+          this.showCreateCategoryModal = false;
+          this.categoryForm = {
+            id: 0,
+            name: '',
+            description: '',
+            icon: '',
+            image: '',
+            images: [],
+          };
 
-        Swal.fire({
-          icon: 'success',
-          title: '¡Categoría creada!',
-          text: `La categoría "${response.data.name}" se ha creado exitosamente`,
-          timer: 2000,
-          showConfirmButton: false,
-        });
+          Swal.fire({
+            icon: 'success',
+            title: '¡Categoría creada!',
+            text: `La categoría "${response.data.name}" se ha creado exitosamente`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
 
-        this.loadData();
-        setTimeout(() => this.cdr.detectChanges(), 100);
-      },
-      error: (error) => {
-        console.error('Error al crear categoría:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error al crear',
-          text: error.error?.error || 'No se pudo crear la categoría',
-          confirmButtonColor: '#3b82f6',
-        });
-      },
-    });
+          this.loadData();
+          setTimeout(() => this.cdr.detectChanges(), 100);
+        },
+        error: (error) => {
+          console.error('Error al crear categoría:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al crear',
+            text: error.error?.error || 'No se pudo crear la categoría',
+            confirmButtonColor: '#3b82f6',
+          });
+        },
+      });
   }
 
   updateCategory() {
@@ -1289,7 +1296,7 @@ export class CategoriesListComponent implements OnInit {
         description: this.categoryForm.description,
         icon: this.categoryForm.icon,
         image: this.categoryForm.image,
-        images: this.categoryForm.images
+        images: this.categoryForm.images,
       })
       .subscribe({
         next: (response) => {
@@ -1512,4 +1519,13 @@ export class CategoriesListComponent implements OnInit {
     }
     console.log('📝 categoryForm actualizado:', this.categoryForm);
   }
+
+  onCategoryIconRemoved(imageUrl: string) {
+    this.categoryForm.icon = '';
+  }
+
+  onCategoryImageRemoved(imageUrl: string) {
+    this.categoryForm.image = '';
+  }
 }
+

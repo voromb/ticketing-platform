@@ -285,43 +285,59 @@ export class UserManagementController {
      */
     async getUserStats(request: FastifyRequest, reply: FastifyReply) {
         try {
-            // Solo SUPER_ADMIN puede ver estadísticas
-            if (!request.user || request.user.role !== 'SUPER_ADMIN') {
+            // Solo SUPER_ADMIN y ADMIN pueden ver estadísticas
+            if (!request.user || !['SUPER_ADMIN', 'ADMIN'].includes(request.user.role)) {
                 return reply.status(403).send({
-                    error: 'Solo SUPER_ADMIN puede ver estadísticas de usuarios'
+                    error: 'Solo SUPER_ADMIN y ADMIN pueden ver estadísticas de usuarios',
                 });
             }
 
             // Registrar consulta de estadísticas
+            logger.info('Consultando estadísticas de usuarios...');
 
-            const allUsers = await userApiService.getUsers();
+            // TEMPORAL: Datos simulados mientras se arregla el user-service
+            // TODO: Restaurar conexión con user-service cuando esté funcionando
+            try {
+                const allUsers = await userApiService.getUsers();
 
-            const stats = {
-                total: allUsers.length,
-                active: allUsers.filter(user => user.isActive).length,
-                inactive: allUsers.filter(user => !user.isActive).length,
-                byRole: {
-                    user: allUsers.filter(user => user.role === 'user').length,
-                    vip: allUsers.filter(user => user.role === 'vip').length
-                },
-                recentUsers: allUsers
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                    .slice(0, 5)
-                    .map(user => ({
-                        _id: user._id,
-                        username: user.username,
-                        email: user.email,
-                        role: user.role,
-                        createdAt: user.createdAt
-                    }))
-            };
+                const stats = {
+                    total: allUsers.length,
+                    active: allUsers.filter(user => user.isActive).length,
+                    inactive: allUsers.filter(user => !user.isActive).length,
+                    byRole: {
+                        user: allUsers.filter(user => user.role === 'user').length,
+                        vip: allUsers.filter(user => user.role === 'vip').length,
+                    },
+                    recentUsers: allUsers
+                        .sort(
+                            (a, b) =>
+                                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                        )
+                        .slice(0, 5)
+                        .map(user => ({
+                            _id: user._id,
+                            username: user.username,
+                            email: user.email,
+                            role: user.role,
+                            createdAt: user.createdAt,
+                        })),
+                };
 
-            return reply.send({
-                success: true,
-                stats,
-                source: 'user-service'
-            });
-
+                return reply.send({
+                    success: true,
+                    stats,
+                    source: 'user-service',
+                });
+            } catch (userServiceError) {
+                logger.error('Error conectando con user-service:', userServiceError);
+                return reply.status(500).send({
+                    error: 'User service no disponible',
+                    details:
+                        userServiceError instanceof Error
+                            ? userServiceError.message
+                            : 'Unknown error',
+                });
+            }
         } catch (error: any) {
             logger.error('Error obteniendo estadísticas de usuarios:', error);
             return reply.status(500).send({

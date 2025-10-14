@@ -111,7 +111,7 @@ export class AdminService {
 
   getEvents(): Observable<{ success: boolean; data: Event[]; total: number }> {
     return this.http.get<{ success: boolean; data: Event[]; total: number }>(
-      `${this.baseUrl}/events?isActive=true`,
+      `${this.baseUrl}/events`,
       { headers: this.getAuthHeaders() }
     );
   }
@@ -137,9 +137,9 @@ export class AdminService {
   }
 
   getVenues(): Observable<{ venues: Venue[]; pagination: any }> {
-    return this.http.get<{ venues: Venue[]; pagination: any }>(
-      `${this.baseUrl}/venues?isActive=true&limit=50`
-    );
+    return this.http.get<{ venues: Venue[]; pagination: any }>(`${this.baseUrl}/venues`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getVenue(id: string): Observable<{ success: boolean; data: Venue }> {
