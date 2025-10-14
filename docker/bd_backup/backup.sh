@@ -1,4 +1,5 @@
 #!/bin/bash
+# cSpell:ignore mkdir chmod chown numfmt dockerized mongoexport
 
 # Script de Backup Completo con Migraciones Prisma - Ticketing Platform
 # Autor: Sistema de Backup con Migraciones
@@ -89,7 +90,7 @@ show_progress() {
         local percent=$((current * 100 / total))
         
         echo -ne "\r${CYAN}[${current}/${total}] ${description}... ${percent}%${NC}"
-        if [ $current -eq $total ]; then
+        if [ "$current" -eq "$total" ]; then
             echo -e "\n"
         fi
     fi
@@ -195,7 +196,7 @@ if docker exec ticketing-postgres pg_dump -U admin -d ticketing --clean --if-exi
     POSTGRES_SIZE=$(stat -f%z "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql" 2>/dev/null || stat -c%s "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql" 2>/dev/null || echo "0")
     
     echo -e "   ✓ ${GREEN}Backup PostgreSQL completado${NC}"
-    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B $POSTGRES_SIZE 2>/dev/null || echo "${POSTGRES_SIZE} bytes")${NC}"
+    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B "$POSTGRES_SIZE" 2>/dev/null || echo "${POSTGRES_SIZE} bytes")${NC}"
     
     # Verificar contenido crítico
     if grep -q "CREATE TABLE" "${BACKUP_DIR}/${TIMESTAMP}_postgres_ticketing_full.sql"; then
@@ -226,7 +227,7 @@ if docker exec ticketing-mongodb mongoexport --db ticketing --collection users -
     MONGO_SIZE=$(stat -f%z "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json" 2>/dev/null || stat -c%s "${BACKUP_DIR}/${TIMESTAMP}_mongodb_users.json" 2>/dev/null || echo "0")
     
     echo -e "   ✓ ${GREEN}Backup MongoDB completado${NC}"
-    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B $MONGO_SIZE 2>/dev/null || echo "${MONGO_SIZE} bytes")${NC}"
+    echo -e "     - Tamaño: ${WHITE}$(numfmt --to=iec --suffix=B "$MONGO_SIZE" 2>/dev/null || echo "${MONGO_SIZE} bytes")${NC}"
     
     # Contar usuarios
     if command -v jq >/dev/null 2>&1; then
