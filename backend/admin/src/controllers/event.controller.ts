@@ -161,7 +161,7 @@ class EventController {
     if (categoryId && categoryId !== 'null' && categoryId !== '') where.categoryId = Number(categoryId);
     if (subcategoryId && subcategoryId !== 'null' && subcategoryId !== '') where.subcategoryId = Number(subcategoryId);
 
-    // ✅ Filtro por precios corregido
+
     const priceFilters: any[] = [];
     if (minPrice && !isNaN(Number(minPrice))) {
       priceFilters.push({ minPrice: { gte: Number(minPrice) } });
@@ -239,6 +239,62 @@ class EventController {
     return reply.status(500).send({ success: false, error: 'Error interno' });
   }
 }
+
+
+    // ===================== GET EVENTS BY VENUE SLUG =================///
+
+// ==================== GET EVENTS BY VENUE SLUG ====================
+async getEventsByVenueSlugPaginated(
+  request: FastifyRequest<{ Params: { venueSlug: string }; Querystring: { page?: number; limit?: number } }>,
+  reply: FastifyReply
+) {
+    try {
+        const { venueSlug } = request.params;      // 🔹 usar params
+        const { page = 1, limit = 10 } = request.query;
+
+        if (!venueSlug) {
+            return reply.status(400).send({ success: false, error: 'Venue slug es requerido' });
+        }
+
+        const pageNumber = Number(page) || 1;
+        const pageSize = Number(limit) || 10;
+
+        // Contar total de eventos
+        const totalEvents = await prisma.event.count({
+            where: {
+                venue: { slug: venueSlug },
+            },
+        });
+
+        // Obtener eventos paginados
+        const events = await prisma.event.findMany({
+            where: {
+                venue: { slug: venueSlug },
+            },
+            include: {
+                venue: true,
+                category: true,
+                subcategory: true,
+                priceCategories: true,
+            },
+            orderBy: { eventDate: 'asc' },
+            skip: (pageNumber - 1) * pageSize,
+            take: pageSize,
+        });
+
+        return reply.send({
+            success: true,
+            data: events,
+            total: totalEvents,
+            page: pageNumber,
+            totalPages: Math.ceil(totalEvents / pageSize),
+        });
+    } catch (error: any) {
+        logger.error('Error fetching paginated events by venue slug:', error);
+        return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
+    }
+}
+
 
     // ==================== ACTUALIZAR EVENTO ====================
     async updateEvent(

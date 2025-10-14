@@ -46,8 +46,8 @@ getEventsFiltered(params: {
   query?: string;
   minPrice?: number | string | null;  
   maxPrice?: number | string | null;  
-  page?: number;      // 👈 nueva
-  limit?: number;     // 👈 nueva
+  page?: number;   
+  limit?: number;     
 }): Observable<{ 
   success: boolean; 
   data: IEvent[]; 
@@ -79,6 +79,33 @@ getEventsFiltered(params: {
     totalPages: number;
   }>(`${this.apiUrl}/events`, { params: httpParams });
 }
+
+/** Obtener eventos por venueSlug con paginación */
+getEventsByVenueSlug(params: {
+  venueSlug: string;
+  page?: number;
+  limit?: number;
+}): Observable<{
+  success: boolean;
+  data: IEvent[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  let httpParams = new HttpParams();
+
+  if (params.page) httpParams = httpParams.set('page', String(params.page));
+  if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
+
+  return this.http.get<{
+    success: boolean;
+    data: IEvent[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }>(`${this.apiUrl}/events/venue/paginated/${params.venueSlug}`, { params: httpParams });
+}
+
 
 
 

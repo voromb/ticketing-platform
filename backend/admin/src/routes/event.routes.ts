@@ -8,6 +8,11 @@ export async function eventRoutes(fastify: FastifyInstance) {
   fastify.get('/public', EventController.listRockEvents.bind(EventController)); // lista pública de eventos
   fastify.get('/public/:id', EventController.getEventById.bind(EventController));
   fastify.get('/:id/localities', EventController.getEventLocalities.bind(EventController)); // Localidades públicas
+  fastify.get(
+    '/venue/paginated/:venueSlug',
+    EventController.getEventsByVenueSlugPaginated.bind(EventController)
+  );
+
 
   // ==================== RUTAS PRIVADAS ====================
   fastify.register(async function (fastify) {
