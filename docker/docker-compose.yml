@@ -14,6 +14,11 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    command: 
+      - mongod
+      - --auth
+      - --bind_ip_all
+      - --directoryperdb
     volumes:
       # En Windows, Docker Desktop maneja los volúmenes automáticamente
       - mongo_data:/data/db
