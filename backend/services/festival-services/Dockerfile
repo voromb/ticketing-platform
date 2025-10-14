@@ -8,8 +8,7 @@ RUN apk update && \
     apk add --no-cache \
         dumb-init \
         ca-certificates \
-        && rm -rf /var/cache/apk/* \
-        && npm install -g npm@latest
+        && rm -rf /var/cache/apk/*
 
 # Crear usuario no-root por seguridad
 RUN addgroup -g 1001 -S nodejs && \
@@ -26,9 +25,8 @@ USER nestjs
 COPY --chown=nestjs:nodejs package*.json ./
 COPY --chown=nestjs:nodejs prisma ./prisma/
 
-# Instalar dependencias con audit fix
-RUN npm ci --only=production && \
-    npm audit fix --force && \
+# Instalar dependencias
+RUN npm ci && \
     npm cache clean --force
 
 # Generar cliente Prisma

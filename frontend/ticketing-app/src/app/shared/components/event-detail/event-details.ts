@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TicketService } from '../../../core/services/ticket.service';
@@ -67,28 +67,59 @@ import { IEvent } from '../../../core/models/Event.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './event-details.html',
-  styleUrls: ['./event-details.css']
+  styleUrls: ['./event-details.css'],
 })
 export class EventDetailComponent implements OnInit {
   @Input() event!: IEvent;
 
-  constructor(private ticketService: TicketService,private route: ActivatedRoute, private authService: AuthService,  private router: Router,
+  constructor(
+    private ticketService: TicketService,
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private router: Router,
     private eventService: EventService,
+    private cdr: ChangeDetectorRef
   ) {}
+
   ngOnInit(): void {
+    console.log('🚀 EventDetailComponent ngOnInit called');
+    this.loadEventData();
+  }
+
+  private loadEventData(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
+    const id = this.route.snapshot.paramMap.get('id');
+
+    console.log('📍 URL params - slug:', slug, 'id:', id);
+
     if (slug) {
       this.eventService.getEventBySlug(slug).subscribe({
         next: (res) => {
+          console.log('✅ Event data received:', res);
           if (res.success) {
             this.event = res.data;
+            this.cdr.detectChanges();
           }
         },
-        error: (err) => console.error(err)
+        error: (err) => {
+          console.error('❌ Error loading event:', err);
+        },
+      });
+    } else if (id) {
+      this.eventService.getEventById(id).subscribe({
+        next: (res) => {
+          console.log('✅ Event data received by ID:', res);
+          if (res.success) {
+            this.event = res.data;
+            this.cdr.detectChanges();
+          }
+        },
+        error: (err) => {
+          console.error('❌ Error loading event by ID:', err);
+        },
       });
     }
   }
-
 
   get isLoggedIn(): boolean {
     return !!this.authService.isAuthenticated();
