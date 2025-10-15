@@ -1,112 +1,81 @@
+// src/app/core/services/event.service.ts (The refactored version from the previous answer)
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '~/environments/environment';
 import { Observable } from 'rxjs';
 import { IEvent } from '../models/Event.model';
-
-
+import { PaginatedResponse } from '../models/paginated-response.model'; 
+import { EventsFilterParams, VenueSlugParams } from '../models/event-params.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
-  private apiUrl = environment.apiUrl;
+  private readonly baseUrl: string = environment.apiUrl;
+  private readonly eventsUrl: string = `${this.baseUrl}/events`;
 
   constructor(private http: HttpClient) {}
 
-getEvents(): Observable<{ success: boolean; data: IEvent[] }> {
-  return this.http.get<{ success: boolean; data: IEvent[] }>(`${this.apiUrl}/events`);
-}
 
-getEventById(id: string): Observable<{ success: boolean; data: IEvent }> {
-  return this.http.get<{ success: boolean; data: IEvent }>(`${this.apiUrl}/events/${id}`);
-}
+  private buildHttpParams(params: { [key: string]: any }): HttpParams {
+    let httpParams = new HttpParams();
 
-getEventBySlug(slug: string): Observable<{ success: boolean; data: IEvent }> {
-  return this.http.get<{ success: boolean; data: IEvent }>(
-    `${this.apiUrl}/events/${slug}`
-  );
-}
 
-searchEvents(query: string): Observable<{ success: boolean; data: IEvent[] }> {
-  return this.http.get<{ success: boolean; data: IEvent[] }>(`${this.apiUrl}/events/search?q=${query}`);
-}
-/**PARA RECOGER POR VENUEID LOS EVENTOS */
-getEventsByVenue(venueId: string): Observable<{ success: boolean; data: IEvent[] }> {
-  return this.http.get<{ success: boolean; data: IEvent[] }>(
-    `${this.apiUrl}/api/events?venueId=${venueId}`
-  );
-}
+    Object.keys(params).forEach(key => {
+      const value = params[key];
+      if (value != null && value !== '') {
+        httpParams = httpParams.set(key, String(value));
+      }
+    });
 
-getEventsFiltered(params: {
-  categoryId?: number | string | null;
-  subcategoryId?: number | string | null;
-  venueId?: string;
-  query?: string;
-  minPrice?: number | string | null;  
-  maxPrice?: number | string | null;  
-  page?: number;   
-  limit?: number;     
-}): Observable<{ 
-  success: boolean; 
-  data: IEvent[]; 
-  total: number; 
-  page: number; 
-  totalPages: number; 
-}> {
-  let httpParams = new HttpParams();
-
-  if (params.categoryId != null && params.categoryId !== '') {
-    httpParams = httpParams.set('categoryId', String(params.categoryId));
+    return httpParams;
   }
-  if (params.subcategoryId != null && params.subcategoryId !== '') {
-    httpParams = httpParams.set('subcategoryId', String(params.subcategoryId));
+
+  // --- CRUD/Basic Fetch Operations ---
+
+  getEvents(): Observable<{ success: boolean; data: IEvent[] }> {
+    return this.http.get<{ success: boolean; data: IEvent[] }>(this.eventsUrl);
   }
-  if (params.venueId) httpParams = httpParams.set('venueId', params.venueId);
-  if (params.query) httpParams = httpParams.set('query', params.query);
-  if (params.minPrice != null) httpParams = httpParams.set('minPrice', String(params.minPrice));
-  if (params.maxPrice != null) httpParams = httpParams.set('maxPrice', String(params.maxPrice));
 
-  if (params.page) httpParams = httpParams.set('page', String(params.page));
-  if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
+  getEventById(id: string): Observable<{ success: boolean; data: IEvent }> {
+    return this.http.get<{ success: boolean; data: IEvent }>(`${this.eventsUrl}/${id}`);
+  }
 
-  return this.http.get<{
-    success: boolean;
-    data: IEvent[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }>(`${this.apiUrl}/events`, { params: httpParams });
-}
+  getEventBySlug(slug: string): Observable<{ success: boolean; data: IEvent }> {
 
-/** Obtener eventos por venueSlug con paginación */
-getEventsByVenueSlug(params: {
-  venueSlug: string;
-  page?: number;
-  limit?: number;
-}): Observable<{
-  success: boolean;
-  data: IEvent[];
-  total: number;
-  page: number;
-  totalPages: number;
-}> {
-  let httpParams = new HttpParams();
+    return this.http.get<{ success: boolean; data: IEvent }>(
+      `${this.eventsUrl}/${slug}`
+    );
+  }
+  
+  // --- Search and Filter Operations ---
 
-  if (params.page) httpParams = httpParams.set('page', String(params.page));
-  if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
+  searchEvents(query: string): Observable<{ success: boolean; data: IEvent[] }> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<{ success: boolean; data: IEvent[] }>(
+      `${this.eventsUrl}/search`, 
+      { params }
+    );
+  }
 
-  return this.http.get<{
-    success: boolean;
-    data: IEvent[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }>(`${this.apiUrl}/events/venue/paginated/${params.venueSlug}`, { params: httpParams });
-}
+  getEventsFiltered(params: EventsFilterParams): Observable<PaginatedResponse<IEvent>> {
+    const httpParams = this.buildHttpParams(params);
+    return this.http.get<PaginatedResponse<IEvent>>(this.eventsUrl, { params: httpParams });
+  }
 
+  getEventsByVenue(venueId: string): Observable<{ success: boolean; data: IEvent[] }> {
+    const params = new HttpParams().set('venueId', venueId);
+    return this.http.get<{ success: boolean; data: IEvent[] }>(this.eventsUrl, { params });
+  }
 
+  getEventsByVenueSlug(params: VenueSlugParams): Observable<PaginatedResponse<IEvent>> {
+    const { venueSlug, ...queryParams } = params;
+    const httpParams = this.buildHttpParams(queryParams);
 
-
+    return this.http.get<PaginatedResponse<IEvent>>(
+      `${this.eventsUrl}/venue/paginated/${venueSlug}`, 
+      { params: httpParams }
+    );
+  }
 }
