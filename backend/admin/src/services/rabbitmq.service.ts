@@ -18,9 +18,9 @@ export class RabbitMQService {
       await this.channel.assertExchange(this.exchange, 'topic', { durable: true });
       
       this.connected = true;
-      logger.info('✅ RabbitMQ conectado exitosamente');
+      logger.info('[RABBITMQ] RabbitMQ conectado exitosamente');
     } catch (error: any) {
-      logger.error('❌ Error conectando a RabbitMQ:', error.message);
+      logger.error('[RABBITMQ] Error conectando a RabbitMQ:', error.message);
       this.connected = false;
     }
   }

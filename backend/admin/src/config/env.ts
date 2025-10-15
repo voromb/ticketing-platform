@@ -16,7 +16,7 @@ export const ENV = {
 
 // Verificar configuración crítica
 if (!ENV.JWT_SECRET || ENV.JWT_SECRET === 'your-secret-key-please-change-in-production') {
-  console.warn('⚠️  WARNING: Using default JWT_SECRET. Please set a secure JWT_SECRET in production!');
+  console.warn('[WARNING] Using default JWT_SECRET. Please set a secure JWT_SECRET in production!');
 }
 
 // Log de configuración (solo en desarrollo)

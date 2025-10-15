@@ -324,7 +324,10 @@ export class RestaurantService {
       },
     };
 
-    console.log('🍽️ Publicando solicitud de aprobación para reserva:', approvalRequestEvent);
+    console.log(
+      '[RESTAURANT] Publicando solicitud de aprobación para reserva:',
+      approvalRequestEvent,
+    );
     
     this.client.emit('approval.requested', approvalRequestEvent);
   }
@@ -333,7 +336,7 @@ export class RestaurantService {
 
   @EventPattern('approval.granted')
   async handleApprovalGranted(@Payload() data: any): Promise<void> {
-    console.log('✅ Restaurant Service: Aprobación concedida recibida:', data);
+    console.log('[RESTAURANT] Restaurant Service: Aprobación concedida recibida:', data);
     
     if (data.service === 'RESTAURANT' && data.entityType === 'reservation') {
       try {
@@ -342,29 +345,42 @@ export class RestaurantService {
         if (reservation.status === ReservationStatus.REQUIRES_APPROVAL) {
           await this.confirmReservation(data.entityId);
           
-          console.log(`✅ Reserva ${data.entityId} confirmada automáticamente tras aprobación`);
+          console.log(
+            `[RESTAURANT] Reserva ${data.entityId} confirmada automáticamente tras aprobación`,
+          );
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación concedida:', error);
+        console.error('[RESTAURANT] Error al procesar aprobación concedida:', error);
       }
     }
   }
 
   @EventPattern('approval.rejected')
   async handleApprovalRejected(@Payload() data: any): Promise<void> {
-    console.log('❌ Restaurant Service: Aprobación rechazada recibida:', data);
-    
+    console.log(
+      '[RESTAURANT] Restaurant Service: Aprobación rechazada recibida:',
+      data,
+    );
+
     if (data.service === 'RESTAURANT' && data.entityType === 'reservation') {
       try {
         const reservation = await this.findReservationById(data.entityId);
-        
+
         if (reservation.status === ReservationStatus.REQUIRES_APPROVAL) {
-          await this.cancelReservation(data.entityId, data.comments || 'Rechazado por administración');
-          
-          console.log(`❌ Reserva ${data.entityId} cancelada automáticamente tras rechazo`);
+          await this.cancelReservation(
+            data.entityId,
+            data.comments || 'Rechazado por administración',
+          );
+
+          console.log(
+            `[RESTAURANT] Reserva ${data.entityId} cancelada automáticamente tras rechazo`,
+          );
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación rechazada:', error);
+        console.error(
+          '[RESTAURANT] Error al procesar aprobación rechazada:',
+          error,
+        );
       }
     }
   }

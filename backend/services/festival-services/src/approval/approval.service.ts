@@ -16,7 +16,7 @@ export class ApprovalService {
   ) {}
 
   async create(createApprovalDto: CreateApprovalDto) {
-    console.log('📝 Datos recibidos en create:', createApprovalDto);
+    console.log('[APPROVAL] Datos recibidos en create:', createApprovalDto);
     
     return this.prisma.approval.create({
       data: {
@@ -83,7 +83,7 @@ export class ApprovalService {
     };
 
     this.client.emit(ApprovalEventType.APPROVAL_GRANTED, event);
-    console.log('✅ Evento de aprobación publicado:', event);
+    console.log('[APPROVAL] Evento de aprobación publicado:', event);
 
     return approval;
   }
@@ -114,7 +114,7 @@ export class ApprovalService {
     };
 
     this.client.emit(ApprovalEventType.APPROVAL_REJECTED, event);
-    console.log('❌ Evento de rechazo publicado:', event);
+    console.log('[APPROVAL] Evento de rechazo publicado:', event);
 
     return approval;
   }
@@ -189,9 +189,15 @@ export class ApprovalService {
 
       const approval = await this.create(approvalData);
       
-      console.log('✅ APPROVAL: Solicitud de aprobación creada automáticamente:', approval.id);
+      console.log(
+        '[APPROVAL] APPROVAL: Solicitud de aprobación creada automáticamente:',
+        approval.id,
+      );
     } catch (error) {
-      console.error('❌ APPROVAL: Error al procesar solicitud de aprobación:', error);
+      console.error(
+        '[APPROVAL] APPROVAL: Error al procesar solicitud de aprobación:',
+        error,
+      );
     }
   }
 }

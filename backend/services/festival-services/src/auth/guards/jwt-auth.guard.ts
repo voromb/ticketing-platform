@@ -25,12 +25,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
     if (err || !user) {
       const request = context.switchToHttp().getRequest();
-      console.log(`❌ Acceso denegado a ${request.method} ${request.url}: ${info?.message || 'Token inválido'}`);
-      
+      console.log(
+        `[AUTH] Acceso denegado a ${request.method} ${request.url}: ${info?.message || 'Token inválido'}`,
+      );
+
       throw err || new UnauthorizedException('Token inválido o expirado');
     }
 
-    console.log(`✅ Usuario autenticado: ${user.email} (${user.role})`);
+    console.log(`[AUTH] Usuario autenticado: ${user.email} (${user.role})`);
     return user;
   }
 }

@@ -40,7 +40,10 @@ export class PerformanceInterceptor implements NestInterceptor {
 
         // Log solo si es lento (>1000ms) o usa mucha memoria (>10MB)
         if (executionTime > 1000 || Math.abs(memoryDelta) > 10 * 1024 * 1024) {
-          this.logger.warn(`⚠️ SLOW OPERATION: ${method} ${url}`, performanceData);
+          this.logger.warn(
+            `[PERFORMANCE] SLOW OPERATION: ${method} ${url}`,
+            performanceData,
+          );
         } else if (executionTime > 500) {
           this.logger.log(`🐌 MODERATE DELAY: ${method} ${url}`, performanceData);
         }

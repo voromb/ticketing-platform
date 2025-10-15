@@ -24,13 +24,16 @@ export class SecurityMiddleware implements NestMiddleware {
 
     // Log de seguridad para requests sospechosos
     if (this.isSuspiciousRequest(req)) {
-      this.logger.warn(`⚠️ SUSPICIOUS REQUEST: ${req.ip} - ${req.method} ${req.url}`, {
-        ip: req.ip,
-        userAgent: req.headers['user-agent'],
-        url: req.url,
-        method: req.method,
-        headers: this.sanitizeHeaders(req.headers)
-      });
+      this.logger.warn(
+        `[SECURITY] SUSPICIOUS REQUEST: ${req.ip} - ${req.method} ${req.url}`,
+        {
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+          url: req.url,
+          method: req.method,
+          headers: this.sanitizeHeaders(req.headers),
+        },
+      );
     }
 
     next();

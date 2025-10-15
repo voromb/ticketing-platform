@@ -58,8 +58,8 @@ async function bootstrap() {
   console.log('🐰 RabbitMQ conectado');
   await app.listen(port);
   
-  console.log(`🚀 Festival Services: http://localhost:${port}`);
-  console.log(`📚 Documentación: http://localhost:${port}/api/docs`);
+  console.log(`[SERVER] Festival Services: http://localhost:${port}`);
+  console.log(`[DOCS] Documentación: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

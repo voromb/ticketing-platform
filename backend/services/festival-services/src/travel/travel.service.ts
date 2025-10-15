@@ -105,14 +105,16 @@ export class TravelService {
       
       try {
         await this.publishApprovalRequest(savedBooking, trip);
-        console.log('✅ TRAVEL: Evento approval.requested publicado exitosamente');
+        console.log(
+          '[TRAVEL] TRAVEL: Evento approval.requested publicado exitosamente',
+        );
       } catch (error) {
-        console.error('❌ TRAVEL: Error al publicar evento approval.requested:', error);
+        console.error('[TRAVEL] TRAVEL: Error al publicar evento approval.requested:', error);
       }
     } else {
-      console.log('ℹ️ TRAVEL: Reserva NO requiere aprobación', {
+      console.log('[TRAVEL] TRAVEL: Reserva NO requiere aprobación', {
         seatsBooked: createBookingDto.seatsBooked,
-        tripRequiresApproval: trip.requiresApproval
+        tripRequiresApproval: trip.requiresApproval,
       });
     }
 
@@ -232,26 +234,34 @@ export class TravelService {
 
   @EventPattern('approval.granted')
   async handleApprovalGranted(@Payload() data: any): Promise<void> {
-    console.log('✅ Travel Service: Aprobación concedida recibida:', data);
-    
+    console.log(
+      '[TRAVEL] Travel Service: Aprobación concedida recibida:',
+      data,
+    );
+
     if (data.service === 'TRAVEL' && data.entityType === 'booking') {
       try {
         const booking = await this.findBookingById(data.entityId);
-        
+
         if (booking.status === BookingStatus.REQUIRES_APPROVAL) {
           await this.confirmBooking(data.entityId);
-          
-          console.log(`✅ Reserva ${data.entityId} confirmada automáticamente tras aprobación`);
+
+          console.log(
+            `[TRAVEL] Reserva ${data.entityId} confirmada automáticamente tras aprobación`,
+          );
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación concedida:', error);
+        console.error(
+          '[TRAVEL] Error al procesar aprobación concedida:',
+          error,
+        );
       }
     }
   }
 
   @EventPattern('approval.rejected')
   async handleApprovalRejected(@Payload() data: any): Promise<void> {
-    console.log('❌ Travel Service: Aprobación rechazada recibida:', data);
+    console.log('[TRAVEL] Travel Service: Aprobación rechazada recibida:', data);
     
     if (data.service === 'TRAVEL' && data.entityType === 'booking') {
       try {
@@ -260,10 +270,10 @@ export class TravelService {
         if (booking.status === BookingStatus.REQUIRES_APPROVAL) {
           await this.cancelBooking(data.entityId, data.comments || 'Rechazado por administración');
           
-          console.log(`❌ Reserva ${data.entityId} cancelada automáticamente tras rechazo`);
+          console.log(`[TRAVEL] Reserva ${data.entityId} cancelada automáticamente tras rechazo`);
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación rechazada:', error);
+        console.error('[TRAVEL] Error al procesar aprobación rechazada:', error);
       }
     }
   }

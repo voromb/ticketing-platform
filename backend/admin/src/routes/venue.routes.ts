@@ -1,28 +1,196 @@
 import { FastifyInstance } from 'fastify';
-import { VenueController } from '../controllers/venue.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
-
-const venueController = new VenueController({
-  publishEvent: () => Promise.resolve(),
-  isConnected: () => false,
-  connect: () => Promise.resolve(),
-  close: () => Promise.resolve()
-} as any);
+import VenueController from '../controllers/venue.controller';
 
 export async function venueRoutes(fastify: FastifyInstance) {
-  fastify.get('/', venueController.getAll.bind(venueController));
-  fastify.get('/:id', venueController.getById.bind(venueController));
-  // fastify.get('/slug/:slug', venueController.getBySlug.bind(venueController));
-  fastify.post('/', {
-    preHandler: authMiddleware
-  }, venueController.create.bind(venueController));
-  fastify.put('/:id', {
-    preHandler: authMiddleware
-  }, venueController.update.bind(venueController));
-  fastify.patch('/:id', {
-    preHandler: authMiddleware
-  }, venueController.update.bind(venueController));
-  fastify.delete('/:id', {
-    preHandler: authMiddleware
-  }, venueController.delete.bind(venueController));
+    // Rutas públicas de venues
+    fastify.get('/public', {
+        schema: {
+            tags: ['Venues'],
+            summary: 'Obtener lista pública de venues',
+            description: 'Obtiene todos los venues disponibles'
+        }
+    }, VenueController.getAll.bind(VenueController));
+    
+    fastify.get('/public/:id', {
+        schema: {
+            tags: ['Venues'],
+            summary: 'Obtener venue público por ID',
+            description: 'Obtiene los detalles de un venue específico',
+            params: {
+                type: 'object',
+                required: ['id'],
+                properties: {
+                    id: { type: 'string', description: 'ID del venue' }
+                }
+            }
+        }
+    }, VenueController.getById.bind(VenueController));
+
+    // Rutas protegidas de venues
+    fastify.register(async function (fastify) {
+        // Aplicar middleware de autenticación
+        fastify.addHook('preHandler', authMiddleware);
+
+        // Crear venue
+        fastify.post('/', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Crear nuevo venue',
+                description: 'Crea un nuevo venue (requiere autenticación de admin)',
+                security: [{ bearerAuth: [] }],
+                body: {
+                    type: 'object',
+                    required: ['name', 'address', 'city', 'country', 'capacity'],
+                    properties: {
+                        name: { type: 'string', description: 'Nombre del venue' },
+                        slug: { type: 'string', description: 'Slug único del venue' },
+                        address: { type: 'string', description: 'Dirección del venue' },
+                        city: { type: 'string', description: 'Ciudad' },
+                        state: { type: 'string', description: 'Estado/provincia' },
+                        country: { type: 'string', description: 'País' },
+                        postalCode: { type: 'string', description: 'Código postal' },
+                        capacity: { type: 'integer', description: 'Capacidad máxima' },
+                        description: { type: 'string', description: 'Descripción del venue' },
+                        phone: { type: 'string', description: 'Teléfono de contacto' },
+                        email: { type: 'string', format: 'email', description: 'Email de contacto' },
+                        website: { type: 'string', format: 'uri', description: 'Sitio web' },
+                        latitude: { type: 'number', description: 'Coordenada de latitud' },
+                        longitude: { type: 'number', description: 'Coordenada de longitud' }
+                    }
+                }
+            }
+        }, VenueController.create.bind(VenueController));
+
+        // Listar venues (admin)
+        fastify.get('/', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Listar todos los venues (admin)',
+                description: 'Obtiene todos los venues incluidos los inactivos (requiere autenticación)',
+                security: [{ bearerAuth: [] }]
+            }
+        }, VenueController.getAll.bind(VenueController));
+
+        // Obtener venue por ID (admin)
+        fastify.get('/:id', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Obtener venue por ID (admin)',
+                description: 'Obtiene los detalles completos de un venue (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                }
+            }
+        }, VenueController.getById.bind(VenueController));
+
+        // Obtener estadísticas del venue
+        fastify.get('/:id/stats', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Obtener estadísticas del venue',
+                description: 'Obtiene estadísticas de uso del venue (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                }
+            }
+        }, VenueController.getStats.bind(VenueController));
+
+        // Actualizar venue
+        fastify.put('/:id', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Actualizar venue completo',
+                description: 'Actualiza todos los campos de un venue (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                },
+                body: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                        slug: { type: 'string' },
+                        address: { type: 'string' },
+                        city: { type: 'string' },
+                        state: { type: 'string' },
+                        country: { type: 'string' },
+                        postalCode: { type: 'string' },
+                        capacity: { type: 'integer' },
+                        description: { type: 'string' },
+                        phone: { type: 'string' },
+                        email: { type: 'string', format: 'email' },
+                        website: { type: 'string', format: 'uri' },
+                        latitude: { type: 'number' },
+                        longitude: { type: 'number' }
+                    }
+                }
+            }
+        }, VenueController.update.bind(VenueController));
+
+        // Activar venue
+        fastify.patch('/:id/activate', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Activar venue',
+                description: 'Activa un venue desactivado (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                }
+            }
+        }, VenueController.activate.bind(VenueController));
+
+        // Desactivar venue
+        fastify.patch('/:id/deactivate', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Desactivar venue',
+                description: 'Desactiva un venue temporalmente (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                }
+            }
+        }, VenueController.deactivate.bind(VenueController));
+
+        // Eliminar venue
+        fastify.delete('/:id', {
+            schema: {
+                tags: ['Venues'],
+                summary: 'Eliminar venue',
+                description: 'Elimina un venue permanentemente (requiere autenticación)',
+                security: [{ bearerAuth: [] }],
+                params: {
+                    type: 'object',
+                    required: ['id'],
+                    properties: {
+                        id: { type: 'string', description: 'ID del venue' }
+                    }
+                }
+            }
+        }, VenueController.delete.bind(VenueController));
+    });
 }

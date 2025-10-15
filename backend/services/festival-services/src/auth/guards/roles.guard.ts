@@ -20,18 +20,22 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      console.log(`❌ Acceso denegado: Usuario no autenticado`);
+      console.log(`[ACCESS] Acceso denegado: Usuario no autenticado`);
       throw new ForbiddenException('Usuario no autenticado');
     }
 
     const hasRole = requiredRoles.includes(user.role);
-    
+
     if (!hasRole) {
-      console.log(`❌ Acceso denegado: ${user.email} (${user.role}) no tiene permisos. Requerido: ${requiredRoles.join(', ')}`);
-      throw new ForbiddenException(`No tienes permisos para esta acción. Rol requerido: ${requiredRoles.join(', ')}`);
+      console.log(
+        `[ACCESS] Acceso denegado: ${user.email} (${user.role}) no tiene permisos. Requerido: ${requiredRoles.join(', ')}`,
+      );
+      throw new ForbiddenException(
+        `No tienes permisos para esta acción. Rol requerido: ${requiredRoles.join(', ')}`,
+      );
     }
 
-    console.log(`✅ Acceso autorizado: ${user.email} (${user.role})`);
+    console.log(`[ACCESS] Acceso autorizado: ${user.email} (${user.role})`);
     return true;
   }
 }

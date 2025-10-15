@@ -9,16 +9,16 @@ import { logger } from '../utils/logger';
 export function startReservationCron() {
   // Ejecutar cada minuto: '* * * * *'
   cron.schedule('* * * * *', async () => {
-    try {
-      const result = await ReservationController.expireReservations();
+      try {
+          const result = await ReservationController.expireReservations();
 
-      if (result.expired > 0) {
-        logger.info(`🕒 Cron: ${result.expired} reservas expiradas y liberadas`);
+          if (result.expired > 0) {
+              logger.info(`[CRON] ${result.expired} reservas expiradas y liberadas`);
+          }
+      } catch (error: any) {
+          logger.error('Error en cron de reservas:', error);
       }
-    } catch (error: any) {
-      logger.error('Error en cron de reservas:', error);
-    }
   });
 
-  logger.info('✅ Cron job de reservas iniciado (cada 1 minuto)');
+  logger.info('[CRON] Cron job de reservas iniciado (cada 1 minuto)');
 }

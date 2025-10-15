@@ -49,9 +49,9 @@ function Test-DockerServices {
     foreach ($service in $services) {
         $status = docker ps --filter "name=$service" --format "{{.Status}}" 2>$null
         if ($status -and $status.Contains("Up")) {
-            Write-Host "   ✓ $service : Running" -ForegroundColor Green
+            Write-Host "   [OK] $service : Running" -ForegroundColor Green
         } else {
-            Write-Host "   ✗ $service : Not running" -ForegroundColor Red
+            Write-Host "   [ERROR] $service : Not running" -ForegroundColor Red
             $allRunning = $false
         }
     }
@@ -116,7 +116,7 @@ try {
             # Contar usuarios y obtener estadisticas
             $userCount = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'use ticketing; print(db.users.countDocuments())' 2>$null
             
-            Write-Host "   ✓ MongoDB usuarios respaldado exitosamente" -ForegroundColor Green
+            Write-Host "   [OK] MongoDB usuarios respaldado exitosamente" -ForegroundColor Green
             if ($userCount) { 
                 $userCountClean = $userCount.Trim()
                 if ($userCountClean -ne "") { 
@@ -152,7 +152,7 @@ try {
             if (Test-Path $mongoFestivalFile) {
                 $fileSize = (Get-Item $mongoFestivalFile).Length
                 if ($fileSize -gt 0) {
-                    Write-Host "   ✓ MongoDB festival_services respaldado exitosamente" -ForegroundColor Green
+                    Write-Host "   [OK] MongoDB festival_services respaldado exitosamente" -ForegroundColor Green
                 } else {
                     Write-Host "   WARN Backup de festival_services vacío" -ForegroundColor Yellow
                 }
@@ -173,10 +173,49 @@ try {
 }
 
 # ============================================================================
-# 3. PRISMA SCHEMAS Y MIGRACIONES - LO MAS IMPORTANTE
+# 3. BACKUP RABBITMQ - CONFIGURACIONES Y COLAS
 # ============================================================================
-Write-Host "`n[3/6] Backup Prisma - Schemas y Migraciones..." -ForegroundColor Blue
-Show-Progress "Prisma Complete" "Respaldando schemas y migraciones..." 51
+Write-Host "`n[3/7] Backup RabbitMQ - Configuraciones y Colas..." -ForegroundColor Blue
+Show-Progress "RabbitMQ Config" "Respaldando configuraciones RabbitMQ..." 43
+
+try {
+    $rabbitMQConfigFile = Join-Path $backupDir "rabbitmq_config_$timestamp.json"
+    Write-Host "   Exportando configuraciones de RabbitMQ..." -ForegroundColor Cyan
+    
+    # Verificar si RabbitMQ está corriendo
+    $rabbitStatus = docker ps --filter "name=ticketing-rabbitmq" --format "{{.Status}}" 2>$null
+    if ($rabbitStatus -and $rabbitStatus.Contains("Up")) {
+        # Exportar configuración de RabbitMQ (exchanges, queues, bindings)
+        $rabbitConfig = docker exec ticketing-rabbitmq rabbitmqctl list_exchanges name type --formatter json 2>$null
+        if ($rabbitConfig) {
+            $rabbitConfig | Out-File -FilePath $rabbitMQConfigFile -Encoding utf8
+            Write-Host "   [OK] Configuraciones RabbitMQ respaldadas" -ForegroundColor Green
+        } else {
+            Write-Host "   INFO RabbitMQ sin configuraciones especiales" -ForegroundColor Gray
+            "[]" | Out-File -FilePath $rabbitMQConfigFile -Encoding utf8
+        }
+        
+        # Backup de colas existentes
+        $rabbitQueuesFile = Join-Path $backupDir "rabbitmq_queues_$timestamp.json"
+        $rabbitQueues = docker exec ticketing-rabbitmq rabbitmqctl list_queues name messages --formatter json 2>$null
+        if ($rabbitQueues) {
+            $rabbitQueues | Out-File -FilePath $rabbitQueuesFile -Encoding utf8
+            Write-Host "   [OK] Colas RabbitMQ respaldadas" -ForegroundColor Green
+        }
+    } else {
+        Write-Host "   WARN RabbitMQ no está corriendo" -ForegroundColor Yellow
+        "[]" | Out-File -FilePath $rabbitMQConfigFile -Encoding utf8
+    }
+    
+} catch {
+    Write-Host "   ERROR respaldando RabbitMQ: $_" -ForegroundColor Red
+}
+
+# ============================================================================
+# 4. PRISMA SCHEMAS Y MIGRACIONES - LO MAS IMPORTANTE
+# ============================================================================
+Write-Host "`n[4/7] Backup Prisma - Schemas y Migraciones..." -ForegroundColor Blue
+Show-Progress "Prisma Complete" "Respaldando schemas y migraciones..." 57
 
 # Backup Schema Admin
 try {
@@ -257,10 +296,10 @@ try {
 }
 
 # ============================================================================
-# 4. CONFIGURACIONES IMPORTANTES
+# 5. CONFIGURACIONES IMPORTANTES
 # ============================================================================
-Write-Host "`n[4/6] Backup Configuraciones..." -ForegroundColor Blue
-Show-Progress "System Configs" "Respaldando configuraciones..." 68
+Write-Host "`n[5/7] Backup Configuraciones..." -ForegroundColor Blue
+Show-Progress "System Configs" "Respaldando configuraciones..." 71
 
 Write-Host "   Respaldando archivos de configuracion criticos..." -ForegroundColor Cyan
 
@@ -292,10 +331,10 @@ foreach ($config in $configFiles) {
 }
 
 # ============================================================================
-# 5. INFORMACION DEL SISTEMA
+# 6. INFORMACION DEL SISTEMA
 # ============================================================================
-Write-Host "`n[5/6] Backup Informacion del Sistema..." -ForegroundColor Blue
-Show-Progress "System Info" "Generando informacion del sistema..." 85
+Write-Host "`n[6/7] Backup Informacion del Sistema..." -ForegroundColor Blue
+Show-Progress "System Info" "Generando informacion del sistema..." 86
 
 try {
     $systemInfoFile = Join-Path $backupDir "sistema_info_$timestamp.txt"
@@ -352,9 +391,9 @@ NOTAS:
 }
 
 # ============================================================================
-# 6. VERIFICACION Y RESUMEN FINAL
+# 7. VERIFICACION Y RESUMEN FINAL
 # ============================================================================
-Write-Host "`n[6/6] Verificacion Final..." -ForegroundColor Blue
+Write-Host "`n[7/7] Verificacion Final..." -ForegroundColor Blue
 Show-Progress "Final Verification" "Verificando archivos de backup..." 100
 
 Write-Host "`nVerificando archivos de backup generados..." -ForegroundColor Cyan
@@ -375,13 +414,13 @@ Write-Host "   Tamaño total: $([math]::Round($totalSize, 2)) MB" -ForegroundCol
 Write-Host "`nARCHIVOS RESPALDADOS:" -ForegroundColor White
 foreach ($file in $backupFiles | Sort-Object Name) {
     $sizeKB = [math]::Round($file.Length / 1KB, 1)
-    Write-Host "   ✓ $($file.Name) ($sizeKB KB)" -ForegroundColor Green
+    Write-Host "   [OK] $($file.Name) ($sizeKB KB)" -ForegroundColor Green
 }
 
 Write-Host "`nPARA RESTAURAR ESTE BACKUP:" -ForegroundColor Yellow
 Write-Host "   .\restore.ps1 -BackupDate $date" -ForegroundColor White
 
-Write-Host "`nSISTEMA ACTUAL OPERATIVO Y RESPALDADO ✓" -ForegroundColor Green
+Write-Host "`nSISTEMA ACTUAL OPERATIVO Y RESPALDADO [OK]" -ForegroundColor Green
 Write-Host "======================================================================" -ForegroundColor Green
 
 if ($ShowProgress) {
