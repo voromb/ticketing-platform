@@ -1,6 +1,4 @@
-﻿# Crear el archivo completamente nuevo
-$scriptContent = @'
-# Script de Restauracion Completa con Migraciones Prisma - Ticketing Platform
+﻿# Script de Restauracion Completa con Migraciones Prisma - Ticketing Platform
 # Autor: Sistema de Restauracion con Migraciones
 # Fecha: 2025-10-14
 
@@ -300,10 +298,3 @@ Write-Host "====================================================================
 if ($ShowProgress) {
     Write-Progress -Activity "Restore Complete" -Completed
 }
-'@
-
-# Guardar con codificación UTF-8 con BOM
-[System.IO.File]::WriteAllText("$PWD\restore_clean.ps1", $scriptContent, [System.Text.UTF8Encoding]::new($true))
-
-Write-Host "Archivo restore_clean.ps1 creado exitosamente" -ForegroundColor Green
-Write-Host "Ejecuta: .\restore_clean.ps1 -BackupDate 2025-10-14" -ForegroundColor Yellow
