@@ -41,9 +41,9 @@ export class LoggingInterceptor implements NestInterceptor {
       params: request.params,
     };
 
-    this.logger.log(`📥 INCOMING REQUEST: ${method} ${url}`, {
+    this.logger.log(`[REQUEST] ${method} ${url}`, {
       ...logData,
-      type: 'REQUEST'
+      type: 'REQUEST',
     });
 
     return next.handle().pipe(
@@ -51,16 +51,19 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = Date.now() - startTime;
         const statusCode = response.statusCode;
 
-        this.logger.log(`📤 RESPONSE: ${method} ${url} - ${statusCode} (${duration}ms)`, {
-          timestamp: new Date().toISOString(),
-          method,
-          url,
-          statusCode,
-          duration,
-          user: user ? user.email : 'Anonymous',
-          responseSize: JSON.stringify(data).length,
-          type: 'RESPONSE'
-        });
+        this.logger.log(
+          `[RESPONSE] ${method} ${url} - ${statusCode} (${duration}ms)`,
+          {
+            timestamp: new Date().toISOString(),
+            method,
+            url,
+            statusCode,
+            duration,
+            user: user ? user.email : 'Anonymous',
+            responseSize: JSON.stringify(data).length,
+            type: 'RESPONSE',
+          },
+        );
       }),
       catchError((error) => {
         const duration = Date.now() - startTime;
@@ -85,7 +88,7 @@ export class LoggingInterceptor implements NestInterceptor {
         );
 
         return throwError(() => error);
-      })
+      }),
     );
   }
 
