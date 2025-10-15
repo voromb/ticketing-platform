@@ -11,7 +11,11 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$RestoreConfigs,
     [Parameter(Mandatory=$false)]
-    [switch]$ShowProgress
+    [switch]$ShowProgress,
+    [Parameter(Mandatory=$false)]
+    [switch]$PreserveExisting,
+    [Parameter(Mandatory=$false)]
+    [switch]$ForceRestore
 )
 
 Write-Host "======================================================================" -ForegroundColor Cyan
@@ -54,17 +58,25 @@ $prismaServicesSchema = $backupFiles | Where-Object { $_.Name -like "*prisma_ser
 $prismaAdminMigrations = Get-ChildItem $backupPath -Directory | Where-Object { $_.Name -like "*prisma_admin_migrations*" } | Select-Object -First 1
 
 Write-Host "`nArchivos criticos encontrados:" -ForegroundColor Yellow
-Write-Host "   ✓ PostgreSQL Principal: $(if ($postgresMain) { $postgresMain.Name } else { 'ERROR No encontrado' })" -ForegroundColor $(if ($postgresMain) { 'Green' } else { 'Red' })
-Write-Host "   ✓ MongoDB Usuarios: $(if ($mongoUsers) { $mongoUsers.Name } else { 'WARN No encontrado' })" -ForegroundColor $(if ($mongoUsers) { 'Green' } else { 'Yellow' })
-Write-Host "   ✓ Schema Admin: $(if ($prismaAdminSchema) { $prismaAdminSchema.Name } else { 'WARN No encontrado' })" -ForegroundColor $(if ($prismaAdminSchema) { 'Green' } else { 'Yellow' })
-Write-Host "   ✓ Migraciones Admin: $(if ($prismaAdminMigrations) { $prismaAdminMigrations.Name } else { 'ERROR No encontradas' })" -ForegroundColor $(if ($prismaAdminMigrations) { 'Green' } else { 'Red' })
-Write-Host "   ✓ Schema Services: $(if ($prismaServicesSchema) { $prismaServicesSchema.Name } else { 'INFO No existe' })" -ForegroundColor $(if ($prismaServicesSchema) { 'Green' } else { 'Gray' })
+Write-Host "   [OK] PostgreSQL Principal: $(if ($postgresMain) { $postgresMain.Name } else { 'ERROR No encontrado' })" -ForegroundColor $(if ($postgresMain) { 'Green' } else { 'Red' })
+Write-Host "   [OK] MongoDB Usuarios: $(if ($mongoUsers) { $mongoUsers.Name } else { 'WARN No encontrado' })" -ForegroundColor $(if ($mongoUsers) { 'Green' } else { 'Yellow' })
+Write-Host "   [OK] Schema Admin: $(if ($prismaAdminSchema) { $prismaAdminSchema.Name } else { 'WARN No encontrado' })" -ForegroundColor $(if ($prismaAdminSchema) { 'Green' } else { 'Yellow' })
+Write-Host "   [OK] Migraciones Admin: $(if ($prismaAdminMigrations) { $prismaAdminMigrations.Name } else { 'ERROR No encontradas' })" -ForegroundColor $(if ($prismaAdminMigrations) { 'Green' } else { 'Red' })
+Write-Host "   [OK] Schema Services: $(if ($prismaServicesSchema) { $prismaServicesSchema.Name } else { 'INFO No existe' })" -ForegroundColor $(if ($prismaServicesSchema) { 'Green' } else { 'Gray' })
 
 # Verificar archivos criticos
 if (!$postgresMain) {
     Write-Host "`nError: No se encontro el backup principal de PostgreSQL" -ForegroundColor Red
     exit 1
 }
+
+# Verificar tamaño del backup - detectar si es completo
+$backupSize = if ($postgresMain) { $postgresMain.Length } else { 0 }
+$isCompleteBackup = $backupSize -gt 100000  # >100KB indica backup completo
+
+Write-Host "`nAnalisis del backup:" -ForegroundColor Cyan
+Write-Host "   Tamaño PostgreSQL: $([math]::Round($backupSize/1024,1)) KB" -ForegroundColor White
+Write-Host "   Tipo: $(if ($isCompleteBackup) { 'BACKUP COMPLETO' } else { 'Backup básico/vacío' })" -ForegroundColor $(if ($isCompleteBackup) { 'Green' } else { 'Yellow' })
 
 if (!$prismaAdminMigrations) {
     Write-Host "`nError: No se encontraron las migraciones de Prisma Admin" -ForegroundColor Red
@@ -90,9 +102,9 @@ function Test-DockerServices {
     foreach ($service in $services) {
         $status = docker ps --filter "name=$service" --format "{{.Status}}" 2>$null
         if ($status -and $status.Contains("Up")) {
-            Write-Host "   ✓ $service : Running" -ForegroundColor Green
+            Write-Host "   [OK] $service : Running" -ForegroundColor Green
         } else {
-            Write-Host "   ✗ $service : Not running" -ForegroundColor Red
+            Write-Host "   [ERROR] $service : Not running" -ForegroundColor Red
             $allRunning = $false
         }
     }
@@ -109,6 +121,32 @@ if (!(Test-DockerServices)) {
 
 # Confirmacion de usuario
 if (!$SkipConfirmation) {
+    
+    # Verificar datos actuales en el sistema
+    Write-Host "`nVerificando datos actuales del sistema..." -ForegroundColor Blue
+    $currentEvents = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null
+    $currentVenues = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null
+    $currentAdmins = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "admins";' 2>$null
+    
+    if ($currentEvents -and $currentEvents.Trim() -gt 0) {
+        Write-Host "`nDATOS ACTUALES EN EL SISTEMA:" -ForegroundColor Yellow
+        Write-Host "   - Eventos actuales: $($currentEvents.Trim())" -ForegroundColor White
+        Write-Host "   - Venues actuales: $($currentVenues.Trim())" -ForegroundColor White  
+        Write-Host "   - Administradores: $($currentAdmins.Trim())" -ForegroundColor White
+        
+        # Verificar si el backup restaurará más o menos datos
+        if ($isCompleteBackup) {
+            Write-Host "`nEL BACKUP CONTIENE:" -ForegroundColor Green
+            Write-Host "   - Backup completo con datos reales" -ForegroundColor Green
+            Write-Host "   - Se mantendrán o mejorarán los datos" -ForegroundColor Green
+        } else {
+            Write-Host "`nADVERTENCIA CRÍTICA:" -ForegroundColor Red
+            Write-Host "   - El backup parece estar VACÍO o incompleto" -ForegroundColor Red
+            Write-Host "   - PERDERÁS TODOS los eventos y venues actuales" -ForegroundColor Red
+            Write-Host "   - Recomendación: Usa backup del 2025-10-15 que es completo" -ForegroundColor Yellow
+        }
+    }
+    
     Write-Host "`nADVERTENCIA: Esta operacion SOBRESCRIBIRA completamente:" -ForegroundColor Yellow
     Write-Host "   - Todas las bases de datos PostgreSQL" -ForegroundColor Red
     Write-Host "   - Todas las bases de datos MongoDB" -ForegroundColor Red  
@@ -131,8 +169,8 @@ Write-Host "`nIniciando Restauracion Completa con Migraciones..." -ForegroundCol
 # ============================================================================
 # 1. RESTAURAR SCHEMAS Y MIGRACIONES PRISMA - PRIMERO
 # ============================================================================
-Write-Host "`n[1/6] Restaurando Schemas y Migraciones Prisma..." -ForegroundColor Blue
-Show-Progress "Prisma Restore" "Restaurando configuracion de Prisma..." 17
+Write-Host "`n[1/7] Restaurando Schemas y Migraciones Prisma..." -ForegroundColor Blue
+Show-Progress "Prisma Restore" "Restaurando configuracion de Prisma..." 14
 
 # Restaurar Schema Admin
 if ($prismaAdminSchema) {
@@ -140,7 +178,7 @@ if ($prismaAdminSchema) {
         $targetSchemaPath = Join-Path $adminProjectPath "prisma\schema.prisma"
         Write-Host "   Restaurando schema Admin..." -ForegroundColor Cyan
         Copy-Item $prismaAdminSchema.FullName $targetSchemaPath -Force
-        Write-Host "   ✓ Schema Admin restaurado" -ForegroundColor Green
+        Write-Host "   [OK] Schema Admin restaurado" -ForegroundColor Green
     } catch {
         Write-Host "   ERROR restaurando schema Admin: $_" -ForegroundColor Red
     }
@@ -162,7 +200,7 @@ if ($prismaAdminMigrations) {
         
         # Listar migraciones restauradas
         $migrations = Get-ChildItem $targetMigrationsPath -Directory
-        Write-Host "   ✓ Migraciones Admin restauradas ($($migrations.Count) migraciones)" -ForegroundColor Green
+        Write-Host "   [OK] Migraciones Admin restauradas ($($migrations.Count) migraciones)" -ForegroundColor Green
         foreach ($migration in $migrations) {
             Write-Host "     - $($migration.Name)" -ForegroundColor White
         }
@@ -179,7 +217,7 @@ if ($prismaServicesSchema) {
         if (Test-Path (Split-Path $targetServicesSchemaPath)) {
             Write-Host "   Restaurando schema Festival Services..." -ForegroundColor Cyan
             Copy-Item $prismaServicesSchema.FullName $targetServicesSchemaPath -Force
-            Write-Host "   ✓ Schema Festival Services restaurado" -ForegroundColor Green
+            Write-Host "   [OK] Schema Festival Services restaurado" -ForegroundColor Green
         }
     } catch {
         Write-Host "   ERROR restaurando schema Services: $_" -ForegroundColor Red
@@ -189,13 +227,13 @@ if ($prismaServicesSchema) {
 # ============================================================================
 # 2. LIMPIAR Y PREPARAR BASE DE DATOS POSTGRESQL
 # ============================================================================
-Write-Host "`n[2/6] Preparando Base de Datos PostgreSQL..." -ForegroundColor Blue
-Show-Progress "PostgreSQL Prep" "Limpiando base de datos PostgreSQL..." 34
+Write-Host "`n[2/7] Preparando Base de Datos PostgreSQL..." -ForegroundColor Blue
+Show-Progress "PostgreSQL Prep" "Limpiando base de datos PostgreSQL..." 29
 
 try {
     Write-Host "   Eliminando datos existentes..." -ForegroundColor Cyan
     docker exec ticketing-postgres psql -U admin -d ticketing -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' 2>$null | Out-Null
-    Write-Host "   ✓ Base de datos PostgreSQL limpiada" -ForegroundColor Green
+    Write-Host "   [OK] Base de datos PostgreSQL limpiada" -ForegroundColor Green
 } catch {
     Write-Host "   ERROR limpiando PostgreSQL: $_" -ForegroundColor Red
 }
@@ -203,8 +241,8 @@ try {
 # ============================================================================
 # 3. EJECUTAR MIGRACIONES PRISMA - MUY IMPORTANTE
 # ============================================================================
-Write-Host "`n[3/6] Ejecutando Migraciones Prisma..." -ForegroundColor Blue
-Show-Progress "Prisma Migrate" "Aplicando migraciones de base de datos..." 51
+Write-Host "`n[3/7] Ejecutando Migraciones Prisma..." -ForegroundColor Blue
+Show-Progress "Prisma Migrate" "Aplicando migraciones de base de datos..." 43
 
 try {
     Write-Host "   Instalando dependencias de Prisma..." -ForegroundColor Cyan
@@ -217,7 +255,7 @@ try {
         Write-Host "   AVISO: Tablas ya existen, saltando migraciones para preservar datos" -ForegroundColor Yellow
         Write-Host "   Generando cliente Prisma..." -ForegroundColor Cyan
         npx prisma generate > $null 2>&1
-        Write-Host "   ✓ Cliente Prisma generado (datos existentes preservados)" -ForegroundColor Green
+        Write-Host "   [OK] Cliente Prisma generado (datos existentes preservados)" -ForegroundColor Green
     } else {
         Write-Host "   Ejecutando migraciones Prisma..." -ForegroundColor Cyan
         npx prisma migrate deploy > $null 2>&1
@@ -225,7 +263,7 @@ try {
         Write-Host "   Generando cliente Prisma..." -ForegroundColor Cyan
         npx prisma generate > $null 2>&1
         
-        Write-Host "   ✓ Migraciones Prisma ejecutadas exitosamente" -ForegroundColor Green
+        Write-Host "   [OK] Migraciones Prisma ejecutadas exitosamente" -ForegroundColor Green
     }
     
     } catch {
@@ -238,7 +276,7 @@ try {
             if ($migrationFile) {
                 Write-Host "   Aplicando migración desde archivo SQL..." -ForegroundColor Cyan
                 Get-Content $migrationFile.FullName | docker exec -i ticketing-postgres psql -U admin -d ticketing
-                Write-Host "   ✓ Migración aplicada manualmente" -ForegroundColor Green
+                Write-Host "   [OK] Migración aplicada manualmente" -ForegroundColor Green
             }
         } catch {
             Write-Host "   ERROR aplicando migración manual: $_" -ForegroundColor Red
@@ -247,8 +285,8 @@ try {
     }# ============================================================================
 # 4. RESTAURAR DATOS POSTGRESQL
 # ============================================================================
-Write-Host "`n[4/6] Restaurando Datos PostgreSQL..." -ForegroundColor Blue
-Show-Progress "PostgreSQL Data" "Cargando datos de PostgreSQL..." 68
+Write-Host "`n[4/7] Restaurando Datos PostgreSQL..." -ForegroundColor Blue
+Show-Progress "PostgreSQL Data" "Cargando datos de PostgreSQL..." 57
 
 try {
     Write-Host "   Cargando backup de PostgreSQL..." -ForegroundColor Cyan
@@ -259,7 +297,7 @@ try {
     $eventCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null
     $venueCount = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null
     
-    Write-Host "   ✓ Datos PostgreSQL restaurados exitosamente" -ForegroundColor Green
+    Write-Host "   [OK] Datos PostgreSQL restaurados exitosamente" -ForegroundColor Green
     if ($adminCount) { Write-Host "     - Administradores: $($adminCount.Trim())" -ForegroundColor White }
     if ($eventCount) { Write-Host "     - Eventos: $($eventCount.Trim())" -ForegroundColor White }
     if ($venueCount) { Write-Host "     - Venues: $($venueCount.Trim())" -ForegroundColor White }
@@ -271,8 +309,8 @@ try {
 # ============================================================================
 # 5. RESTAURAR DATOS MONGODB
 # ============================================================================
-Write-Host "`n[5/6] Restaurando Datos MongoDB..." -ForegroundColor Blue
-Show-Progress "MongoDB Data" "Cargando datos de MongoDB..." 85
+Write-Host "`n[5/7] Restaurando Datos MongoDB..." -ForegroundColor Blue
+Show-Progress "MongoDB Data" "Cargando datos de MongoDB..." 71
 
 if ($mongoUsers) {
     try {
@@ -285,7 +323,7 @@ if ($mongoUsers) {
         # Verificar datos restaurados
         $userCount = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'use ticketing; print(db.users.countDocuments())' 2>$null
         
-        Write-Host "   ✓ Usuarios MongoDB restaurados exitosamente" -ForegroundColor Green
+        Write-Host "   [OK] Usuarios MongoDB restaurados exitosamente" -ForegroundColor Green
         if ($userCount) { Write-Host "     - Total usuarios: $($userCount.Trim())" -ForegroundColor White }
         
     } catch {
@@ -310,7 +348,7 @@ if ($mongoFestivalServices) {
         # Verificar datos restaurados
         $approvalCount = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'use festival_services; print(db.approvals ? db.approvals.countDocuments() : 0)' 2>$null
         
-        Write-Host "   ✓ Festival Services MongoDB restaurado exitosamente" -ForegroundColor Green
+        Write-Host "   [OK] Festival Services MongoDB restaurado exitosamente" -ForegroundColor Green
         if ($approvalCount -and $approvalCount.Trim() -ne "") { Write-Host "     - Aprobaciones: $($approvalCount.Trim())" -ForegroundColor White }
         
     } catch {
@@ -321,9 +359,45 @@ if ($mongoFestivalServices) {
 }
 
 # ============================================================================
-# 6. VERIFICACION FINAL
+# 6. RESTAURAR CONFIGURACIONES RABBITMQ
 # ============================================================================
-Write-Host "`n[6/6] Verificacion Final..." -ForegroundColor Blue
+Write-Host "`n[6/7] Restaurando Configuraciones RabbitMQ..." -ForegroundColor Blue
+Show-Progress "RabbitMQ Restore" "Restaurando configuraciones RabbitMQ..." 85
+
+# Buscar archivos de RabbitMQ
+$rabbitConfig = $backupFiles | Where-Object { $_.Name -like "*rabbitmq_config*" } | Sort-Object Length -Descending | Select-Object -First 1
+$rabbitQueues = $backupFiles | Where-Object { $_.Name -like "*rabbitmq_queues*" } | Sort-Object Length -Descending | Select-Object -First 1
+
+if ($rabbitConfig) {
+    try {
+        Write-Host "   Verificando estado de RabbitMQ..." -ForegroundColor Cyan
+        $rabbitStatus = docker ps --filter "name=ticketing-rabbitmq" --format "{{.Status}}" 2>$null
+        
+        if ($rabbitStatus -and $rabbitStatus.Contains("Up")) {
+            Write-Host "   Restaurando configuraciones RabbitMQ..." -ForegroundColor Cyan
+            # RabbitMQ normalmente se autoconfiguran las colas por los servicios
+            # Solo verificamos que esté funcionando
+            $rabbitHealth = docker exec ticketing-rabbitmq rabbitmqctl status 2>$null
+            if ($rabbitHealth) {
+                Write-Host "   [OK] RabbitMQ verificado y operativo" -ForegroundColor Green
+            } else {
+                Write-Host "   WARN RabbitMQ disponible pero sin configuración especial" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "   WARN RabbitMQ no está corriendo" -ForegroundColor Yellow
+        }
+        
+    } catch {
+        Write-Host "   ERROR verificando RabbitMQ: $_" -ForegroundColor Red
+    }
+} else {
+    Write-Host "   INFO No hay configuraciones RabbitMQ en el backup" -ForegroundColor Gray
+}
+
+# ============================================================================
+# 7. VERIFICACION FINAL
+# ============================================================================
+Write-Host "`n[7/7] Verificacion Final..." -ForegroundColor Blue
 Show-Progress "Final Verification" "Verificando restauracion..." 100
 
 Write-Host "`nVerificando estado del sistema..." -ForegroundColor Cyan
@@ -332,7 +406,7 @@ Write-Host "`nVerificando estado del sistema..." -ForegroundColor Cyan
 try {
     $postgresStatus = docker exec ticketing-postgres psql -U admin -d ticketing -c '\dt' 2>$null
     if ($postgresStatus) {
-        Write-Host "   ✓ PostgreSQL: Conectado y operativo" -ForegroundColor Green
+        Write-Host "   [OK] PostgreSQL: Conectado y operativo" -ForegroundColor Green
     }
     } catch {
         Write-Host "   ERROR de conexion" -ForegroundColor Red
@@ -342,7 +416,7 @@ try {
     try {
         $mongoStatus = docker exec ticketing-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin --quiet --eval 'use ticketing; db.stats()' 2>$null
         if ($mongoStatus) {
-            Write-Host "   ✓ MongoDB: Conectado y operativo" -ForegroundColor Green
+            Write-Host "   [OK] MongoDB: Conectado y operativo" -ForegroundColor Green
         }
     } catch {
         Write-Host "   ERROR de conexion" -ForegroundColor Red
@@ -370,7 +444,7 @@ Write-Host "`nCREDENCIALES DISPONIBLES:" -ForegroundColor Yellow
 Write-Host "   Super Admin: voro.super@ticketing.com / Voro123!" -ForegroundColor White
 Write-Host "   Admin: admin@ticketing.com / admin123" -ForegroundColor White
 
-Write-Host "`nSISTEMA RESTAURADO Y LISTO PARA USAR ✓" -ForegroundColor Green
+Write-Host "`nSISTEMA RESTAURADO Y LISTO PARA USAR [OK]" -ForegroundColor Green
 Write-Host "======================================================================" -ForegroundColor Green
 
 if ($ShowProgress) {

@@ -66,20 +66,23 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = Date.now() - startTime;
         const statusCode = error.status || 500;
 
-        this.logger.error(`❌ ERROR: ${method} ${url} - ${statusCode} (${duration}ms)`, {
-          timestamp: new Date().toISOString(),
-          method,
-          url,
-          statusCode,
-          duration,
-          user: user ? user.email : 'Anonymous',
-          error: {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
+        this.logger.error(
+          `[ERROR] ERROR: ${method} ${url} - ${statusCode} (${duration}ms)`,
+          {
+            timestamp: new Date().toISOString(),
+            method,
+            url,
+            statusCode,
+            duration,
+            user: user ? user.email : 'Anonymous',
+            error: {
+              message: error.message,
+              stack: error.stack,
+              name: error.name,
+            },
+            type: 'ERROR',
           },
-          type: 'ERROR'
-        });
+        );
 
         return throwError(() => error);
       })

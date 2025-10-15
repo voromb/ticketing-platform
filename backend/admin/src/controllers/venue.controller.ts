@@ -661,3 +661,5 @@ export class VenueController {
         }
     }
 }
+
+export default new VenueController();

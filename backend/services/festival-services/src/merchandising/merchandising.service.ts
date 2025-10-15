@@ -615,29 +615,37 @@ export class MerchandisingService {
 
   @EventPattern('approval.granted')
   async handleApprovalGranted(@Payload() data: any): Promise<void> {
-    console.log('✅ Merchandising Service: Aprobación concedida recibida:', data);
-    
+    console.log(
+      '[MERCHANDISING] Merchandising Service: Aprobación concedida recibida:',
+      data,
+    );
+
     if (data.service === 'MERCHANDISING' && data.entityType === 'order') {
       try {
         const order = await this.findOrderById(data.entityId);
-        
+
         if (order.status === OrderStatus.REQUIRES_APPROVAL) {
-          await this.updateOrder(data.entityId, { 
+          await this.updateOrder(data.entityId, {
             status: OrderStatus.CONFIRMED,
-            paymentStatus: PaymentStatus.PAID 
+            paymentStatus: PaymentStatus.PAID,
           });
-          
-          console.log(`✅ Pedido ${data.entityId} confirmado automáticamente tras aprobación`);
+
+          console.log(
+            `[MERCHANDISING] Pedido ${data.entityId} confirmado automáticamente tras aprobación`,
+          );
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación concedida:', error);
+        console.error(
+          '[MERCHANDISING] Error al procesar aprobación concedida:',
+          error,
+        );
       }
     }
   }
 
   @EventPattern('approval.rejected')
   async handleApprovalRejected(@Payload() data: any): Promise<void> {
-    console.log('❌ Merchandising Service: Aprobación rechazada recibida:', data);
+    console.log('[MERCHANDISING] Merchandising Service: Aprobación rechazada recibida:', data);
     
     if (data.service === 'MERCHANDISING' && data.entityType === 'order') {
       try {
@@ -646,10 +654,10 @@ export class MerchandisingService {
         if (order.status === OrderStatus.REQUIRES_APPROVAL) {
           await this.cancelOrder(data.entityId, data.comments || 'Rechazado por administración');
           
-          console.log(`❌ Pedido ${data.entityId} cancelado automáticamente tras rechazo`);
+          console.log(`[MERCHANDISING] Pedido ${data.entityId} cancelado automáticamente tras rechazo`);
         }
       } catch (error) {
-        console.error('❌ Error al procesar aprobación rechazada:', error);
+        console.error('[MERCHANDISING] Error al procesar aprobación rechazada:', error);
       }
     }
   }

@@ -44,11 +44,11 @@ export class AuditInterceptor implements NestInterceptor {
       tap((data) => {
         // Log adicional para operaciones exitosas críticas
         if (this.shouldAuditSuccess(method, url)) {
-          this.logger.warn(`✅ AUDIT SUCCESS: ${method} ${url}`, {
+          this.logger.warn(`[AUDIT] AUDIT SUCCESS: ${method} ${url}`, {
             timestamp: new Date().toISOString(),
             user: user ? user.email : 'ANONYMOUS',
             result: 'SUCCESS',
-            affectedRecords: Array.isArray(data) ? data.length : 1
+            affectedRecords: Array.isArray(data) ? data.length : 1,
           });
         }
       })

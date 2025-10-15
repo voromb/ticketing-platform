@@ -17,7 +17,7 @@ export const connectRabbitMQ = async (): Promise<void> => {
       }
     }
     
-    console.log('✅ RabbitMQ connected and exchange created');
+    console.log('[RABBITMQ] RabbitMQ connected and exchange created');
   } catch (error) {
     throw error;
   }

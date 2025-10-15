@@ -98,7 +98,39 @@ services:
     networks:
       - ticketing-network
 
-
+  # ===================
+  # Festival Services (NestJS)
+  # ===================
+  festival-services:
+    build:
+      context: ../backend/services/festival-services
+      dockerfile: Dockerfile
+    container_name: ticketing-festival-services
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      MONGODB_URI: mongodb://admin:${MONGO_ROOT_PASSWORD}@mongodb:27017/festival_services?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      RABBITMQ_URL: amqp://admin:${RABBITMQ_PASS}@rabbitmq:5672
+      RABBITMQ_QUEUE_APPROVAL_REQUESTS: approval_requests
+      RABBITMQ_QUEUE_APPROVAL_RESPONSES: approval_responses
+      JWT_SECRET: festival-secret-key-2024
+      JWT_EXPIRATION: 1d
+      DATABASE_URL: postgresql://admin:${POSTGRES_PASSWORD}@postgres:5432/ticketing?schema=public
+    depends_on:
+      - mongodb
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - ticketing-network
+    volumes:
+      - ../backend/services/festival-services:/app
+      - /app/node_modules
 
 volumes:
   mongo_data:

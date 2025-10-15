@@ -120,7 +120,7 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload);
 
     console.log(
-      `✅ Nuevo usuario registrado: ${newUser.email} (${newUser.role})`,
+      `[AUTH] Nuevo usuario registrado: ${newUser.email} (${newUser.role})`,
     );
 
     return {
