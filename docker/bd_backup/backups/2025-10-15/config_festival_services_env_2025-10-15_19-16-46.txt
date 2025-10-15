@@ -1,0 +1,22 @@
+# Puerto de la aplicación
+PORT=3004
+
+# MongoDB
+MONGODB_URI=mongodb://admin:admin123@localhost:27017/festival_services?authSource=admin
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=redis123
+
+# RabbitMQ
+RABBITMQ_URL=amqp://admin:admin123@localhost:5672
+RABBITMQ_QUEUE_APPROVAL_REQUESTS=approval_requests
+RABBITMQ_QUEUE_APPROVAL_RESPONSES=approval_responses
+
+# JWT (para autenticación)
+JWT_SECRET=festival-secret-key-2024
+JWT_EXPIRATION=1d
+
+# Database PostgreSQL
+DATABASE_URL="postgresql://admin:admin123@localhost:5432/ticketing?schema=festival_services"
