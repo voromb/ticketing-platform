@@ -240,14 +240,23 @@ try {
         # Crear directorio para migraciones
         New-Item -ItemType Directory -Path $adminMigrationsBackup -Force | Out-Null
         
-        # Copiar todas las migraciones
-        Copy-Item "$adminMigrationsPath\*" $adminMigrationsBackup -Recurse -Force
+        # Copiar SOLO las migraciones reales (directorios que empiecen con numeros Y tengan contenido)
+        $realMigrations = Get-ChildItem $adminMigrationsPath -Directory | Where-Object { 
+            $_.Name -match '^\d+_' -and (Get-ChildItem $_.FullName).Count -gt 0
+        }
         
-        # Listar migraciones respaldadas
-        $migrations = Get-ChildItem $adminMigrationsPath -Directory
-        Write-Host "   OK Migraciones Admin respaldadas ($($migrations.Count) migraciones)" -ForegroundColor Green
-        foreach ($migration in $migrations) {
-            Write-Host "     - $($migration.Name)" -ForegroundColor White
+        if ($realMigrations) {
+            foreach ($migration in $realMigrations) {
+                $destPath = Join-Path $adminMigrationsBackup $migration.Name
+                Copy-Item $migration.FullName $destPath -Recurse -Force
+            }
+            
+            Write-Host "   OK Migraciones Admin respaldadas ($($realMigrations.Count) migraciones)" -ForegroundColor Green
+            foreach ($migration in $realMigrations) {
+                Write-Host "     - $($migration.Name)" -ForegroundColor White
+            }
+        } else {
+            Write-Host "   WARN No se encontraron migraciones validas" -ForegroundColor Yellow
         }
     } else {
         Write-Host "   WARN Migraciones Admin no encontradas" -ForegroundColor Yellow

@@ -1,7 +1,7 @@
 BACKUP COMPLETO SISTEMA TICKETING PLATFORM
 ==========================================
-Fecha: 2025-10-15 19:16:53
-Backup ID: 2025-10-15_19-16-46
+Fecha: 2025-10-15 20:16:52
+Backup ID: 2025-10-15_20-16-47
 Estado: Sistema funcionando con datos restaurados
 
 ARQUITECTURA:
@@ -21,7 +21,7 @@ DATOS RESPALDADOS:
 - Configuraciones del sistema
 
 MIGRACIONES PRISMA INCLUIDAS:
-- 0_init - migrations
+- 20250926164121_init
 
 ESTADO DE SERVICIOS DOCKER:
 
