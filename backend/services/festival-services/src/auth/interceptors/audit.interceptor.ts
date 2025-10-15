@@ -37,7 +37,10 @@ export class AuditInterceptor implements NestInterceptor {
         query: request.query,
       };
 
-      this.logger.warn(`🔍 AUDIT: ${auditLog.action} on ${auditLog.resource}`, auditLog);
+      this.logger.warn(
+        `[AUDIT] ${auditLog.action} on ${auditLog.resource}`,
+        auditLog,
+      );
     }
 
     return next.handle().pipe(

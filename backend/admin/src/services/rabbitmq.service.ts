@@ -48,7 +48,7 @@ export class RabbitMQService {
         { persistent: true }
       );
 
-      logger.info(`📤 Evento publicado: ${routingKey}`);
+      logger.info(`[PUBLISH] Evento publicado: ${routingKey}`);
     } catch (error: any) {
       logger.error('Error publicando evento:', error);
     }
@@ -81,7 +81,7 @@ export class RabbitMQService {
         }
       });
 
-      logger.info(`📥 Suscrito a eventos: ${routingKey}`);
+      logger.info(`[SUBSCRIBE] Suscrito a eventos: ${routingKey}`);
     } catch (error: any) {
       logger.error('Error suscribiéndose a eventos:', error);
     }

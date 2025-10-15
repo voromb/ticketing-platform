@@ -50,7 +50,7 @@ export class PerformanceInterceptor implements NestInterceptor {
 
         // Log detallado para endpoints críticos
         if (this.isCriticalEndpoint(url)) {
-          this.logger.log(`📊 CRITICAL ENDPOINT: ${method} ${url}`, performanceData);
+          this.logger.log(`[PERFORMANCE] ${method} ${url}`, performanceData);
         }
       })
     );

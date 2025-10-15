@@ -71,7 +71,9 @@ export class AuthService {
 
     const access_token = this.jwtService.sign(payload);
 
-    console.log(`🔐 Usuario ${user.email} (${user.role}) ha iniciado sesión`);
+    console.log(
+      `[AUTH] Usuario ${user.email} (${user.role}) ha iniciado sesión`,
+    );
 
     return {
       access_token,

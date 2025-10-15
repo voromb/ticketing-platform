@@ -36,7 +36,7 @@ export const publishEvent = async (routingKey: string, data: any): Promise<void>
   }));
   
   channel.publish('ticketing', routingKey, message);
-  console.log(`📤 Event published: ${routingKey}`);
+  console.log(`[PUBLISH] Event published: ${routingKey}`);
 };
 
 export const getChannel = () => channel;

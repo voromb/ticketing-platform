@@ -6,8 +6,16 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 
-// Configuración
-dotenv.config();
+// Suprimir completamente todos los mensajes de dotenv/dotenvx
+process.env.DOTENV_CONFIG_DEBUG = 'false';
+process.env.DOTENV_CONFIG_SILENT = 'true';
+process.env.DOTENVX_QUIET = 'true';
+
+dotenv.config({
+    override: false,
+    processEnv: process.env,
+    debug: false,
+});
 
 // Importar configuraciones
 import { connectDB } from './config/database';
