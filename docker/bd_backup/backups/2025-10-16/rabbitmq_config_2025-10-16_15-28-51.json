@@ -1,9 +1,0 @@
-[
-{"name":"amq.headers","type":"headers"}
-,{"name":"amq.topic","type":"topic"}
-,{"name":"amq.match","type":"headers"}
-,{"name":"amq.direct","type":"direct"}
-,{"name":"amq.fanout","type":"fanout"}
-,{"name":"amq.rabbitmq.trace","type":"topic"}
-,{"name":"","type":"direct"}
-]

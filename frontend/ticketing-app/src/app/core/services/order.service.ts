@@ -20,11 +20,23 @@ export class OrderService {
 
   // Crear orden
   createOrder(eventId: string, localityId: string, quantity: number, reservationId?: string): Observable<any> {
-    return this.http.post<any>(
-      this.apiUrl,
-      { eventId, localityId, quantity, reservationId },
-      { headers: this.getAuthHeaders() }
-    );
+    // Convertir al nuevo formato que espera el backend
+    const orderData = {
+      eventId,
+      tickets: [
+        {
+          localityId,
+          quantity,
+        },
+      ],
+    };
+
+    // Agregar reservationId si existe
+    if (reservationId) {
+      (orderData as any).reservationId = reservationId;
+    }
+
+    return this.http.post<any>(this.apiUrl, orderData, { headers: this.getAuthHeaders() });
   }
 
   // Obtener mis órdenes
