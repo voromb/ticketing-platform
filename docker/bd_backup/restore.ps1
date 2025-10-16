@@ -31,17 +31,8 @@ function Write-Header {
     Write-Host "========================================" -ForegroundColor Cyan
 }
 
-<<<<<<< HEAD
-# ============================================================================
-# PASO 1: RESTAURAR SCHEMAS Y MIGRACIONES ANTES QUE NADA
-# ============================================================================
-Write-Host "`n[1/6] Restaurando Schemas y Migraciones Prisma..." -ForegroundColor Blue
-
-if ($prismaAdminSchema) {
-=======
 function Test-ContainerRunning {
     param([string]$ContainerName)
->>>>>>> origin/feature_Voro_2
     try {
         $result = docker ps --filter "name=$ContainerName" --filter "status=running" --format "{{.Names}}" 2>$null
         return $result -eq $ContainerName
