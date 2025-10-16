@@ -1,0 +1,93 @@
+
+
+services:
+  # ===================
+  # MongoDB
+  # ===================
+  mongodb:
+    image: mongo:7
+    container_name: ticketing-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    command: 
+      - mongod
+      - --auth
+      - --bind_ip_all
+      - --directoryperdb
+    volumes:
+      # En Windows, Docker Desktop maneja los volúmenes automáticamente
+      - mongo_data:/data/db
+      - ./init-scripts/mongo:/docker-entrypoint-initdb.d:ro
+    networks:
+      - ticketing-network
+
+  # ===================
+  # PostgreSQL
+  # ===================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ticketing-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: md5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - ticketing-network
+
+  # ===================
+  # Mongo Express (MongoDB Web UI)
+  # ===================
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: ticketing-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - mongodb
+    networks:
+      - ticketing-network
+
+  # ===================
+  # RabbitMQ
+  # ===================
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ticketing-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ticketing-network
+
+volumes:
+  mongo_data:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  ticketing-network:
+    driver: bridge
