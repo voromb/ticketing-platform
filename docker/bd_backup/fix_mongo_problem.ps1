@@ -72,12 +72,15 @@ try {
 }
 
 Write-Host "`n[5/10] Verificando docker-compose.yml..." -ForegroundColor Yellow
-$composeFile = "docker-compose.yml"
+$composeFile = "..\docker-compose.yml"
 if (Test-Path $composeFile) {
-    Write-Host "   [OK] docker-compose.yml encontrado" -ForegroundColor Green
+    Write-Host "   [OK] docker-compose.yml encontrado en directorio padre" -ForegroundColor Green
+    Write-Host "   Cambiando al directorio docker..." -ForegroundColor Gray
+    Push-Location ".."
 } else {
-    Write-Host "   [ERROR] docker-compose.yml NO encontrado en directorio actual" -ForegroundColor Red
+    Write-Host "   [ERROR] docker-compose.yml NO encontrado" -ForegroundColor Red
     Write-Host "   Directorio actual: $(Get-Location)" -ForegroundColor Red
+    Write-Host "   Buscado en: $composeFile" -ForegroundColor Red
     exit 1
 }
 
@@ -109,9 +112,9 @@ $requiredContainers = @("ticketing-postgres", "ticketing-mongodb", "ticketing-ra
 foreach ($container in $requiredContainers) {
     $status = docker ps --filter "name=$container" --format "{{.Status}}" 2>$null
     if ($status -and $status.Contains("Up")) {
-        Write-Host "   [OK] $container: $status" -ForegroundColor Green
+        Write-Host "   [OK] ${container}: $status" -ForegroundColor Green
     } else {
-        Write-Host "   [ERROR] $container: NO EJECUTÁNDOSE" -ForegroundColor Red
+        Write-Host "   [ERROR] ${container}: NO EJECUTÁNDOSE" -ForegroundColor Red
     }
 }
 
@@ -122,7 +125,7 @@ try {
     Write-Host "   Salida completa MongoDB:" -ForegroundColor Gray
     Write-Host "$mongoPing" -ForegroundColor Cyan
     
-    if ($mongoPing -and $mongoPing.Contains('"ok" : 1')) {
+    if ($mongoPing -and ($mongoPing.Contains('"ok" : 1') -or $mongoPing.Contains('ok: 1'))) {
         Write-Host "   [OK] MongoDB: Conectado y respondiendo correctamente" -ForegroundColor Green
         
         # Test adicional con autenticación
@@ -190,3 +193,10 @@ Write-Host ".\restore.ps1 -BackupDate `"2025-10-16`" -ShowProgress" -ForegroundC
 
 Write-Host "`nSI HAY ERRORES, ENVÍA TODA LA SALIDA DE ESTE SCRIPT PARA AYUDA" -ForegroundColor Yellow
 Write-Host "=========================================================================" -ForegroundColor Cyan
+
+# Regresar al directorio original
+try {
+    Pop-Location
+} catch {
+    # Ignorar errores si no hay directorio en la pila
+}
