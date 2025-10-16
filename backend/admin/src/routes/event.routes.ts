@@ -48,87 +48,133 @@ export async function eventRoutes(fastify: FastifyInstance) {
         fastify.addHook('preHandler', authMiddleware);
 
         // Crear evento
-        fastify.post('/', {
-            schema: {
-                tags: ['Events'],
-                summary: 'Crear nuevo evento',
-                description: 'Crea un nuevo evento (requiere autenticación de admin)',
-                security: [{ bearerAuth: [] }],
-                body: {
-                    type: 'object',
-                    required: ['title', 'description', 'date', 'venueId', 'categoryId'],
-                    properties: {
-                        title: { type: 'string', description: 'Título del evento' },
-                        description: { type: 'string', description: 'Descripción del evento' },
-                        date: { type: 'string', format: 'date-time', description: 'Fecha del evento' },
-                        venueId: { type: 'string', description: 'ID del venue' },
-                        categoryId: { type: 'string', description: 'ID de la categoría' },
-                        subcategoryId: { type: 'string', description: 'ID de la subcategoría (opcional)' },
-                        price: { type: 'number', description: 'Precio del evento' },
-                        capacity: { type: 'integer', description: 'Capacidad máxima' },
-                        status: { type: 'string', enum: ['draft', 'published', 'cancelled'], description: 'Estado del evento' }
-                    }
-                }
-            }
-        }, EventController.createEvent.bind(EventController));
+        fastify.post(
+            '/',
+            {
+                schema: {
+                    tags: ['Events'],
+                    summary: 'Crear nuevo evento',
+                    description: 'Crea un nuevo evento (requiere autenticación de admin)',
+                    security: [{ bearerAuth: [] }],
+                    body: {
+                        type: 'object',
+                        required: ['title', 'description', 'date', 'venueId', 'categoryId'],
+                        properties: {
+                            title: { type: 'string', description: 'Título del evento' },
+                            description: { type: 'string', description: 'Descripción del evento' },
+                            date: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Fecha del evento',
+                            },
+                            venueId: { type: 'string', description: 'ID del venue' },
+                            categoryId: { type: 'string', description: 'ID de la categoría' },
+                            subcategoryId: {
+                                type: 'string',
+                                description: 'ID de la subcategoría (opcional)',
+                            },
+                            price: { type: 'number', description: 'Precio del evento' },
+                            capacity: { type: 'integer', description: 'Capacidad máxima' },
+                            status: {
+                                type: 'string',
+                                enum: [
+                                    'DRAFT',
+                                    'ACTIVE',
+                                    'SOLD_OUT',
+                                    'CANCELLED',
+                                    'COMPLETED',
+                                    'SUSPENDED',
+                                ],
+                                description: 'Estado del evento',
+                            },
+                        },
+                    },
+                },
+            },
+            EventController.createEvent.bind(EventController)
+        );
 
         // Listar eventos (admin)
-        fastify.get('/', {
-            schema: {
-                tags: ['Events'],
-                summary: 'Listar todos los eventos (admin)',
-                description: 'Obtiene todos los eventos incluidos los no publicados (requiere autenticación)',
-                security: [{ bearerAuth: [] }]
-            }
-        }, EventController.listRockEvents.bind(EventController));
+        fastify.get(
+            '/',
+            {
+                schema: {
+                    tags: ['Events'],
+                    summary: 'Listar todos los eventos (admin)',
+                    description:
+                        'Obtiene todos los eventos incluidos los no publicados (requiere autenticación)',
+                    security: [{ bearerAuth: [] }],
+                },
+            },
+            EventController.listRockEvents.bind(EventController)
+        );
 
         // Obtener evento por ID (admin)
-        fastify.get('/:id', {
-            schema: {
-                tags: ['Events'],
-                summary: 'Obtener evento por ID (admin)',
-                description: 'Obtiene los detalles completos de un evento (requiere autenticación)',
-                security: [{ bearerAuth: [] }],
-                params: {
-                    type: 'object',
-                    required: ['id'],
-                    properties: {
-                        id: { type: 'string', description: 'ID del evento' }
-                    }
-                }
-            }
-        }, EventController.getEventById.bind(EventController));
+        fastify.get(
+            '/:id',
+            {
+                schema: {
+                    tags: ['Events'],
+                    summary: 'Obtener evento por ID (admin)',
+                    description:
+                        'Obtiene los detalles completos de un evento (requiere autenticación)',
+                    security: [{ bearerAuth: [] }],
+                    params: {
+                        type: 'object',
+                        required: ['id'],
+                        properties: {
+                            id: { type: 'string', description: 'ID del evento' },
+                        },
+                    },
+                },
+            },
+            EventController.getEventById.bind(EventController)
+        );
 
         // Actualizar evento
-        fastify.put('/:id', {
-            schema: {
-                tags: ['Events'],
-                summary: 'Actualizar evento completo',
-                description: 'Actualiza todos los campos de un evento (requiere autenticación)',
-                security: [{ bearerAuth: [] }],
-                params: {
-                    type: 'object',
-                    required: ['id'],
-                    properties: {
-                        id: { type: 'string', description: 'ID del evento' }
-                    }
+        fastify.put(
+            '/:id',
+            {
+                schema: {
+                    tags: ['Events'],
+                    summary: 'Actualizar evento completo',
+                    description: 'Actualiza todos los campos de un evento (requiere autenticación)',
+                    security: [{ bearerAuth: [] }],
+                    params: {
+                        type: 'object',
+                        required: ['id'],
+                        properties: {
+                            id: { type: 'string', description: 'ID del evento' },
+                        },
+                    },
+                    body: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string' },
+                            description: { type: 'string' },
+                            date: { type: 'string', format: 'date-time' },
+                            venueId: { type: 'string' },
+                            categoryId: { type: 'string' },
+                            subcategoryId: { type: 'string' },
+                            price: { type: 'number' },
+                            capacity: { type: 'integer' },
+                            status: {
+                                type: 'string',
+                                enum: [
+                                    'DRAFT',
+                                    'ACTIVE',
+                                    'SOLD_OUT',
+                                    'CANCELLED',
+                                    'COMPLETED',
+                                    'SUSPENDED',
+                                ],
+                            },
+                        },
+                    },
                 },
-                body: {
-                    type: 'object',
-                    properties: {
-                        title: { type: 'string' },
-                        description: { type: 'string' },
-                        date: { type: 'string', format: 'date-time' },
-                        venueId: { type: 'string' },
-                        categoryId: { type: 'string' },
-                        subcategoryId: { type: 'string' },
-                        price: { type: 'number' },
-                        capacity: { type: 'integer' },
-                        status: { type: 'string', enum: ['draft', 'published', 'cancelled'] }
-                    }
-                }
-            }
-        }, EventController.updateEvent.bind(EventController));
+            },
+            EventController.updateEvent.bind(EventController)
+        );
 
         // Eliminar evento
         fastify.delete('/:id', {
