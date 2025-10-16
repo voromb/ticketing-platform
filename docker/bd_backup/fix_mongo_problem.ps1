@@ -191,8 +191,8 @@ Write-Host "====================================================================
 Write-Host "`nSI VES TODOS LOS [OK] ARRIBA, EJECUTA EL RESTORE:" -ForegroundColor Green
 Write-Host '.\restore.ps1 -BackupDate "2025-10-16" -ShowProgress' -ForegroundColor White
 
-Write-Host "`nSI HAY ERRORES, ENVÍA TODA LA SALIDA DE ESTE SCRIPT PARA AYUDA" -ForegroundColor Yellow
-Write-Host "=========================================================================" -ForegroundColor Cyan
+Write-Host "`nSI HAY ERRORES, ENViA TODA LA SALIDA DE ESTE SCRIPT PARA AYUDA" -ForegroundColor Yellow
+
 
 # Regresar al directorio original
 try {
