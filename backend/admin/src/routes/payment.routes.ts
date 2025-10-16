@@ -21,14 +21,8 @@ export async function paymentRoutes(fastify: FastifyInstance) {
                     security: [{ bearerAuth: [] }],
                     body: {
                         type: 'object',
-                        required: ['amount', 'currency', 'orderId'],
+                        required: ['orderId'],
                         properties: {
-                            amount: { type: 'number', description: 'Monto del pago en centavos' },
-                            currency: {
-                                type: 'string',
-                                enum: ['EUR', 'USD'],
-                                description: 'Moneda del pago',
-                            },
                             orderId: { type: 'string', description: 'ID de la orden asociada' },
                             successUrl: {
                                 type: 'string',
@@ -58,12 +52,12 @@ export async function paymentRoutes(fastify: FastifyInstance) {
                     security: [{ bearerAuth: [] }],
                     body: {
                         type: 'object',
-                        required: ['orderId', 'paymentMethodId'],
+                        required: ['orderId'],
                         properties: {
                             orderId: { type: 'string', description: 'ID de la orden' },
                             paymentMethodId: {
                                 type: 'string',
-                                description: 'ID del método de pago',
+                                description: 'ID del método de pago (opcional en modo demo)',
                             },
                             amount: { type: 'number', description: 'Monto del pago' },
                         },

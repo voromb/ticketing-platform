@@ -117,12 +117,43 @@ if [ "$SKIP_CONFIRMATION" = false ]; then
     fi
 fi
 
-echo -e "\n${BLUE}Iniciando Restauracion 100% Autonoma...${NC}"
+echo -e "${GREEN}Iniciando Restauracion 100% Autonoma...${NC}"
 
 # ============================================================================
-# PASO 1: RESTAURAR SCHEMAS Y MIGRACIONES PRISMA
+# PASO 0: DROP COMPLETO DE BASES DE DATOS - LIMPIEZA TOTAL
 # ============================================================================
-echo -e "\n${BLUE}[1/6] Restaurando Schemas y Migraciones Prisma...${NC}"
+echo -e "${RED}[0/7] LIMPIEZA TOTAL - DROP de todas las bases de datos...${NC}"
+
+echo -e "   ${YELLOW}Eliminando COMPLETAMENTE base de datos PostgreSQL...${NC}"
+# Desconectar todas las sesiones activas
+docker exec ticketing-postgres psql -U admin -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'ticketing' AND pid <> pg_backend_pid();" &>/dev/null
+
+# Borrar base de datos completa
+docker exec ticketing-postgres psql -U admin -d postgres -c "DROP DATABASE IF EXISTS ticketing;" &>/dev/null
+
+# Crear base de datos limpia
+docker exec ticketing-postgres psql -U admin -d postgres -c "CREATE DATABASE ticketing;" &>/dev/null
+
+if [ $? -eq 0 ]; then
+    echo -e "   ${GREEN}[OK] PostgreSQL: Base de datos eliminada y recreada limpia${NC}"
+else
+    echo -e "   ${RED}[ERROR] No se pudo limpiar PostgreSQL${NC}"
+    exit 1
+fi
+
+echo -e "   ${YELLOW}Eliminando COMPLETAMENTE colecciones MongoDB...${NC}"
+# Eliminar todas las colecciones de la base ticketing
+docker exec ticketing-mongodb mongosh "mongodb://admin:admin123@localhost:27017/ticketing?authSource=admin" --eval 'db.dropDatabase();' &>/dev/null
+
+# Eliminar base festival_services también
+docker exec ticketing-mongodb mongosh "mongodb://admin:admin123@localhost:27017/festival_services?authSource=admin" --eval 'db.dropDatabase();' &>/dev/null
+
+echo -e "   ${GREEN}[OK] MongoDB: Todas las bases de datos eliminadas${NC}"
+
+# ============================================================================
+# PASO 1: RESTAURAR SCHEMAS Y MIGRACIONES
+# ============================================================================
+echo -e "${BLUE}[1/7] Restaurando Schemas y Migraciones Prisma...${NC}"
 
 if [ -f "$PRISMA_ADMIN_SCHEMA" ]; then
     cp "$PRISMA_ADMIN_SCHEMA" "$ADMIN_PROJECT_PATH/prisma/schema.prisma"
@@ -160,7 +191,7 @@ fi
 # ============================================================================
 # PASO 2: APLICAR MIGRACIONES PRISMA
 # ============================================================================
-echo -e "\n${BLUE}[2/6] Aplicando Migraciones Prisma...${NC}"
+echo -e "\n${BLUE}[2/7] Aplicando Migraciones Prisma...${NC}"
 
 cd "$ADMIN_PROJECT_PATH" || exit 1
 echo -e "   Cambiando al directorio admin..."
@@ -180,7 +211,7 @@ cd "$SCRIPT_PATH" || exit 1
 # ============================================================================
 # PASO 3: RESTAURAR DATOS POSTGRESQL
 # ============================================================================
-echo -e "\n${BLUE}[3/6] Restaurando Datos PostgreSQL...${NC}"
+echo -e "\n${BLUE}[3/7] Restaurando Datos PostgreSQL...${NC}"
 
 if [ -f "$POSTGRES_MAIN" ]; then
     echo -e "   Cargando backup de PostgreSQL..."
@@ -212,7 +243,7 @@ fi
 # ============================================================================
 # PASO 4: CREAR DATOS BASICOS SI NO EXISTEN (AUTONOMIA COMPLETA)
 # ============================================================================
-echo -e "\n${BLUE}[4/6] Verificando y Creando Datos Basicos...${NC}"
+echo -e "\n${BLUE}[4/7] Verificando y Creando Datos Basicos...${NC}"
 
 ADMIN_COUNT=$(docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM admins;' 2>/dev/null | tr -d ' ')
 
@@ -238,7 +269,7 @@ fi
 # ============================================================================
 # PASO 5: RESTAURAR DATOS MONGODB
 # ============================================================================
-echo -e "\n${BLUE}[5/6] Restaurando Datos MongoDB...${NC}"
+echo -e "\n${BLUE}[5/7] Restaurando Datos MongoDB...${NC}"
 
 if [ -f "$MONGO_USERS" ]; then
     echo -e "   Limpiando coleccion de usuarios..."
@@ -257,7 +288,7 @@ fi
 # ============================================================================
 # PASO 6: VERIFICACION FINAL
 # ============================================================================
-echo -e "\n${BLUE}[6/6] Verificacion Final...${NC}"
+echo -e "\n${BLUE}[6/7] Verificacion Final...${NC}"
 
 # Verificar PostgreSQL
 if docker exec ticketing-postgres psql -U admin -d ticketing -c '\q' > /dev/null 2>&1; then
@@ -288,10 +319,11 @@ echo -e "${CYAN}================================================================
 
 echo -e "\n${GREEN}RESUMEN DE LA RESTAURACION:${NC}"
 echo -e "   Backup utilizado: $BACKUP_DATE"
-echo -e "   Schemas Prisma: Restaurados"
-echo -e "   Migraciones Prisma: Aplicadas y Funcionando"
-echo -e "   PostgreSQL: Restaurado con datos"
-echo -e "   MongoDB: Restaurado"
+echo -e "   DROP completo: Realizado"
+echo -e "   Schemas Prisma: Restaurados desde cero"
+echo -e "   Migraciones Prisma: Aplicadas desde cero"
+echo -e "   PostgreSQL: Restaurado completo con DROP previo"
+echo -e "   MongoDB: Restaurado completo con DROP previo"
 
 echo -e "\n${YELLOW}PARA INICIAR EL SISTEMA EN ESTE MAC:${NC}"
 echo -e "   1. cd ../../backend/admin && npm run dev"

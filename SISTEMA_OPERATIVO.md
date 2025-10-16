@@ -20,7 +20,6 @@
 | **MongoDB**             | 27017  | Base de datos usuarios/eventos   | Activo     |
 | **RabbitMQ**            | 5672   | Message broker                   | Activo     |
 | **RabbitMQ Management** | 15672  | UI de RabbitMQ                   | Activo     |
-| **Redis**               | 6379   | Cache (opcional)                 | Disponible |
 
 ### Comandos de Inicio
 
