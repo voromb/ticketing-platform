@@ -14,6 +14,7 @@ export interface IEvent extends Document {
   basePrice: number;
   status: "draft" | "published" | "sold_out" | "cancelled";
   imageUrl?: string;
+  likesCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +38,7 @@ const EventSchema = new Schema(
       default: "published",
     },
     imageUrl: { type: String },
+    likesCount: { type: Number, default: 0 },
   },
   {
     timestamps: true,

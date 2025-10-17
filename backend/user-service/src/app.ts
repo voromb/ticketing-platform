@@ -26,6 +26,7 @@ import { setupSwagger } from './config/swagger';
 import eventRoutes from './routes/event.routes';
 import ticketRoutes from './routes/ticket.routes';
 import userManagementRoutes from './routes/user-management.routes';
+import likeRoutes from "./routes/likes.routes";
 
 class App {
     public app: Application;
@@ -95,6 +96,7 @@ class App {
         this.app.use('/api/events', eventRoutes);
         this.app.use('/api/tickets', ticketRoutes);
         this.app.use('/api/users', userManagementRoutes);
+        this.app.use('/api', likeRoutes);
     }
 
     private initializeErrorHandling(): void {
