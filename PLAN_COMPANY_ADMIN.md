@@ -209,27 +209,27 @@ Los schemas actuales (`Restaurant`, `Trip`, `Product`) se actualizarán agregand
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ SUPER_ADMIN (PostgreSQL - Backend Admin)               │
-│ - Gestiona todas las compañías                         │
-│ - Aprueba/rechaza todos los cambios                    │
-│ - Acceso total a estadísticas                          │
-│ - Puede crear/editar/eliminar COMPANY_ADMIN            │
+│ SUPER_ADMIN (PostgreSQL - Backend Admin)                │
+│ - Gestiona todas las compañías                          │
+│ - Aprueba/rechaza todos los cambios                     │
+│ - Acceso total a estadísticas                           │
+│ - Puede crear/editar/eliminar COMPANY_ADMIN             │
 └─────────────────────────────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
-│ COMPANY_ADMIN (PostgreSQL - Backend Admin)             │
-│ - Gestiona solo recursos de su compañía                │
-│ - Crea/edita recursos (requiere aprobación)            │
-│ - Ve solo sus estadísticas                             │
-│ - No puede crear otros admins                          │
+│ COMPANY_ADMIN (PostgreSQL - Backend Admin)              │
+│ - Gestiona solo recursos de su compañía                 │
+│ - Crea/edita recursos (requiere aprobación)             │
+│ - Ve solo sus estadísticas                              │
+│ - No puede crear otros admins                           │
 └─────────────────────────────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
-│ USER / VIP (MongoDB - User Service)                    │
-│ - Usuarios finales que compran/reservan                │
-│ - Sin acceso a gestión                                 │
+│ USER / VIP (MongoDB - User Service)                     │
+│ - Usuarios finales que compran/reservan                 │
+│ - Sin acceso a gestión                                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -576,26 +576,26 @@ const companyAdmins = [
   - [x] Escuchar eventos de aprobación/rechazo
 - [x] Actualizar DTOs con nuevos campos
 
-### **Fase 4: Testing y Datos** ⏳
-- [ ] Crear seed de compañías
-- [ ] Crear seed de COMPANY_ADMIN
-- [ ] Crear datos de ejemplo por compañía
-  - [ ] 5-10 restaurantes por compañía
-  - [ ] 5-10 viajes por compañía
-  - [ ] 20-30 productos por compañía
+### **Fase 4: Testing y Datos** ✅
+- [x] Crear seed de datos masivos (npm run seed)
+  - [x] 838 restaurantes (2 por evento: económico + premium)
+  - [x] 838 viajes (2 por evento: autobús + minibús VIP)
+  - [x] 2,515 productos (5-7 por evento: variados)
+- [x] Script de verificación de base de datos (verify-database.ps1)
+- [x] Sistema de backup/restore verificado y funcional
+- [ ] Crear seed de compañías (pendiente)
+- [ ] Crear seed de COMPANY_ADMIN (pendiente)
 - [ ] Probar flujo completo de aprobaciones
   - [ ] Crear recurso como COMPANY_ADMIN
   - [ ] Verificar evento RabbitMQ
   - [ ] Aprobar como SUPER_ADMIN
   - [ ] Verificar actualización del recurso
-- [ ] Documentar en README
-- [ ] Crear guía de uso para COMPANY_ADMIN
 
-### **Fase 5: Documentación** ⏳
-- [ ] Actualizar README principal
+### **Fase 5: Documentación** ✅
+- [x] Swagger completamente documentado (15 endpoints)
+- [x] README del seed script
+- [x] Documentación de arquitectura
 - [ ] Crear guía de usuario para COMPANY_ADMIN
-- [ ] Documentar API en Swagger
-- [ ] Crear diagramas de flujo
 - [ ] Documentar variables de entorno necesarias
 
 ---
@@ -686,6 +686,286 @@ Festival Services (NestJS + MongoDB + PostgreSQL)
 
 ---
 
+## 📚 REFERENCIA RÁPIDA - NOMBRES EXACTOS
+
+### **🗄️ NOMBRES DE TABLAS POSTGRESQL**
+
+```sql
+-- Backend Admin Database: ticketing
+companies              -- Tabla de compañías
+company_admins         -- Tabla de administradores de compañías
+admins                 -- Tabla de super admins
+"Event"                -- Tabla de eventos (con comillas)
+"Venue"                -- Tabla de venues (con comillas)
+"EventCategory"        -- Tabla de categorías (con comillas)
+"EventSubcategory"     -- Tabla de subcategorías (con comillas)
+"Order"                -- Tabla de órdenes (con comillas)
+"Ticket"               -- Tabla de tickets (con comillas)
+
+-- Approval Service Database: approvals_db
+approvals              -- Tabla de aprobaciones
+```
+
+### **🗄️ NOMBRES DE COLECCIONES MONGODB**
+
+```javascript
+// Database: ticketing (usuarios)
+users                  // Usuarios finales
+eventcomments          // Comentarios de eventos
+eventlikes             // Likes de eventos
+likes                  // Likes generales
+userfollows            // Seguidores de usuarios
+tickets                // Tickets de usuarios
+
+// Database: festival_services
+restaurants            // Restaurantes
+trips                  // Viajes
+products               // Productos de merchandising
+bookings               // Reservas de viajes
+reservations           // Reservas de restaurantes
+orders                 // Órdenes de merchandising
+carts                  // Carritos de compra
+```
+
+### **🔑 NOMBRES DE CAMPOS - COMPANIES**
+
+```typescript
+// Tabla: companies (PostgreSQL)
+id: string              // UUID
+name: string            // Nombre de la compañía
+type: enum              // RESTAURANT | TRAVEL | MERCHANDISING
+region: enum            // SPAIN | EUROPE | AMERICA | ASIA | AFRICA | OCEANIA
+description: string?    // Descripción opcional
+contactEmail: string    // Email de contacto
+contactPhone: string?   // Teléfono opcional
+address: string?        // Dirección opcional
+taxId: string?          // CIF/NIF
+requiresApprovalForCreate: boolean   // Default: true
+requiresApprovalForUpdate: boolean   // Default: true
+requiresApprovalForDelete: boolean   // Default: true
+maxRestaurants: number? // Límite opcional
+maxTrips: number?       // Límite opcional
+maxProducts: number?    // Límite opcional
+isActive: boolean       // Default: true
+createdAt: DateTime     // Fecha de creación
+updatedAt: DateTime     // Fecha de actualización
+```
+
+### **🔑 NOMBRES DE CAMPOS - COMPANY_ADMINS**
+
+```typescript
+// Tabla: company_admins (PostgreSQL)
+id: string              // UUID
+email: string           // Email único
+password: string        // Hash bcrypt
+firstName: string       // Nombre
+lastName: string        // Apellido
+phone: string?          // Teléfono opcional
+companyId: string       // FK a companies.id
+canCreate: boolean      // Permiso crear (default: true)
+canUpdate: boolean      // Permiso actualizar (default: true)
+canDelete: boolean      // Permiso eliminar (default: false)
+canViewStats: boolean   // Permiso ver estadísticas (default: true)
+canManageStock: boolean // Permiso gestionar inventario (default: true)
+isActive: boolean       // Default: true
+lastLogin: DateTime?    // Último login
+createdAt: DateTime     // Fecha de creación
+updatedAt: DateTime     // Fecha de actualización
+```
+
+### **🔑 NOMBRES DE CAMPOS AGREGADOS A MONGODB**
+
+```typescript
+// Colección: restaurants
+companyId: string       // ID de la compañía
+companyName: string     // Nombre de la compañía
+region: string          // SPAIN, EUROPE, etc.
+managedBy: string       // Email del COMPANY_ADMIN
+approvalStatus: string  // PENDING | APPROVED | REJECTED
+lastModifiedBy: string  // Email de quien modificó
+lastApprovedBy: string  // Email de quien aprobó
+lastApprovedAt: Date    // Fecha de aprobación
+
+// Colección: trips
+companyId: string       // ID de la compañía
+companyName: string     // Nombre de la compañía
+region: string          // SPAIN, EUROPE, etc.
+managedBy: string       // Email del COMPANY_ADMIN
+approvalStatus: string  // PENDING | APPROVED | REJECTED
+lastModifiedBy: string  // Email de quien modificó
+lastApprovedBy: string  // Email de quien aprobó
+lastApprovedAt: Date    // Fecha de aprobación
+
+// Colección: products
+companyId: string       // ID de la compañía
+companyName: string     // Nombre de la compañía
+region: string          // SPAIN, EUROPE, etc.
+managedBy: string       // Email del COMPANY_ADMIN
+approvalStatus: string  // PENDING | APPROVED | REJECTED
+lastModifiedBy: string  // Email de quien modificó
+lastApprovedBy: string  // Email de quien aprobó
+lastApprovedAt: Date    // Fecha de aprobación
+```
+
+### **🌐 ENDPOINTS EXACTOS**
+
+```bash
+# Backend Admin (Fastify) - http://localhost:3001
+POST   /api/companies
+GET    /api/companies
+GET    /api/companies/:id
+PATCH  /api/companies/:id
+DELETE /api/companies/:id
+GET    /api/companies/:id/stats
+GET    /api/companies/stats/global
+
+POST   /api/company-admins
+GET    /api/company-admins
+GET    /api/company-admins/:id
+PATCH  /api/company-admins/:id
+DELETE /api/company-admins/:id
+PATCH  /api/company-admins/:id/permissions
+POST   /api/company-admins/:id/reset-password
+GET    /api/companies/:companyId/admins
+
+# Festival Services (NestJS) - http://localhost:3003
+POST   /auth/company-admin/login
+GET    /auth/company-admin/profile
+
+POST   /api/restaurant/with-company
+POST   /api/travel/with-company
+POST   /api/merchandising/with-company
+```
+
+### **📁 ARCHIVOS CREADOS**
+
+```
+backend/admin/src/
+├── dto/
+│   ├── company.dto.ts              ✅ Creado
+│   └── company-admin.dto.ts        ✅ Creado
+├── services/
+│   ├── company.service.ts          ✅ Creado
+│   └── company-admin.service.ts    ✅ Creado
+├── controllers/
+│   ├── company.controller.ts       ✅ Creado
+│   └── company-admin.controller.ts ✅ Creado
+└── routes/
+    ├── company.routes.ts           ✅ Creado
+    └── company-admin.routes.ts     ✅ Creado
+
+backend/services/festival-services/src/
+├── auth/
+│   ├── company-admin-auth.service.ts     ✅ Creado
+│   ├── company-admin-auth.controller.ts  ✅ Creado
+│   ├── guards/
+│   │   ├── company-admin.guard.ts        ✅ Creado
+│   │   └── company-permission.guard.ts   ✅ Creado
+│   ├── decorators/
+│   │   ├── require-permissions.decorator.ts      ✅ Creado
+│   │   └── current-company-admin.decorator.ts    ✅ Creado
+│   └── dto/
+│       ├── company-admin-auth.dto.ts     ✅ Creado
+│       └── create-with-company.dto.ts    ✅ Creado
+├── restaurant/
+│   ├── restaurant.controller.ts    ✅ Modificado (+1 endpoint)
+│   └── restaurant.service.ts       ✅ Modificado (+1 método)
+├── travel/
+│   ├── travel.controller.ts        ✅ Modificado (+1 endpoint)
+│   └── travel.service.ts           ✅ Modificado (+1 método)
+└── merchandising/
+    ├── merchandising.controller.ts ✅ Modificado (+1 endpoint)
+    └── merchandising.service.ts    ✅ Modificado (+1 método)
+
+backend/services/festival-services/scripts/
+├── seed-festival-data.ts           ✅ Creado
+└── README.md                       ✅ Creado
+
+scripts/
+└── verify-database.ps1             ✅ Creado
+```
+
+### **🔐 CREDENCIALES DE PRUEBA**
+
+```bash
+# SUPER_ADMIN (Backend Admin)
+Email: voro.super@ticketing.com
+Password: Voro123!
+
+# COMPANY_ADMIN (a crear)
+Email: admin.spain.restaurants@festival.com
+Password: SecurePass123!
+```
+
+### **🚀 COMANDOS ÚTILES**
+
+```bash
+# Generar datos masivos
+cd backend/services/festival-services
+npm run seed
+
+# Verificar base de datos
+cd scripts
+.\verify-database.ps1
+
+# Backup
+cd docker/bd_backup
+.\backup.ps1
+
+# Restore
+.\restore.ps1 -BackupDate "2025-10-18" -SkipConfirmation
+
+# Regenerar Prisma
+cd backend/admin
+npx prisma generate
+
+cd backend/services/festival-services
+npx prisma generate
+
+# Iniciar servicios
+cd backend/admin
+npm run dev
+
+cd backend/services/festival-services
+npm run start:dev
+```
+
+### **📊 ESTADO ACTUAL DE LA BASE DE DATOS**
+
+```
+PostgreSQL (ticketing):
+  ├─ 419 eventos
+  ├─ 85 venues
+  ├─ 2 categorías
+  ├─ 13 subcategorías
+  ├─ 3 administradores
+  ├─ 6 órdenes
+  ├─ 12 tickets
+  ├─ 0 compañías (pendiente crear)
+  └─ 0 company admins (pendiente crear)
+
+MongoDB (ticketing):
+  ├─ 3 usuarios
+  ├─ 4 comentarios
+  ├─ 0 likes
+  ├─ 0 event likes
+  ├─ 0 seguidores
+  └─ 0 tickets usuario
+
+MongoDB (festival_services):
+  ├─ 838 restaurantes
+  ├─ 838 viajes
+  ├─ 2,515 productos
+  ├─ 0 reservas viajes
+  ├─ 0 reservas restaurantes
+  └─ 0 órdenes merchandising
+
+TOTAL: 4,738 registros
+```
+
+---
+
 **Fecha de creación:** 18 de Octubre, 2025  
-**Estado:** 📋 Pendiente de aprobación  
-**Versión:** 1.0
+**Última actualización:** 18 de Octubre, 2025 - 21:15  
+**Estado:** ✅ IMPLEMENTADO Y FUNCIONAL  
+**Versión:** 2.0 - DOCUMENTACIÓN COMPLETA

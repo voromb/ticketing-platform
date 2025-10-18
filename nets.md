@@ -32,6 +32,10 @@ Plataforma completa de gestión de festivales de rock/metal que incluye venta de
 │   Admin    │   User    │  Travel  │Restaurant │  Merchandising  │
 │   Panel    │   Panel   │  Panel   │  Panel    │     Panel       │
 │  (Dark)    │  (White)  │  (Red)   │  (Green)  │     (Blue)      │
+│            │           │          │           │                 │
+│SUPER_ADMIN │  Users    │Users +   │Users +    │   Users +       │
+│            │  VIP      │COMPANY   │COMPANY    │   COMPANY       │
+│            │           │  ADMIN   │  ADMIN    │    ADMIN        │
 └─────┬──────┴─────┬─────┴────┬─────┴─────┬─────┴────────┬────────┘
       │            │          │           │              │
       └────────────┴──────────┴───────────┴──────────────┘
@@ -103,13 +107,21 @@ Plataforma completa de gestión de festivales de rock/metal que incluye venta de
 
 **Panel:** Rojo Pastel 🔴
 
+**Usuarios:** Users finales + COMPANY_ADMIN
+
 **Funcionalidades:**
 
-- Gestión de viajes al festival
+**Para Usuarios:**
+- Búsqueda y reserva de viajes al festival
 - Reserva de transporte (autobuses, shuttles)
 - Coordinación de grupos
-- Tracking de rutas
-- Gestión de paradas
+- Tracking de rutas en tiempo real
+
+**Para COMPANY_ADMIN:**
+- Creación y gestión de viajes (requiere aprobación)
+- Gestión de rutas y paradas
+- Estadísticas de reservas y ocupación
+- Control de capacidad y precios
 
 **Base de Datos:** Redis + MongoDB
 
@@ -137,13 +149,21 @@ Plataforma completa de gestión de festivales de rock/metal que incluye venta de
 
 **Panel:** Verde Pastel 🟢
 
+**Usuarios:** Users finales + COMPANY_ADMIN
+
 **Funcionalidades:**
 
+**Para Usuarios:**
 - Catálogo de restaurantes del festival
 - Sistema de reservas
-- Gestión de menús y dietas especiales
-- Control de aforo
+- Consulta de menús y dietas especiales
 - Pre-pedidos para eventos
+
+**Para COMPANY_ADMIN:**
+- Creación y gestión de restaurantes (requiere aprobación)
+- Gestión de menús y precios
+- Control de aforo y capacidad
+- Estadísticas de reservas y ventas
 
 **Base de Datos:** Redis + MongoDB
 
@@ -175,13 +195,22 @@ Plataforma completa de gestión de festivales de rock/metal que incluye venta de
 
 **Panel:** Azul Pastel 🔵
 
+**Usuarios:** Users finales + COMPANY_ADMIN
+
 **Funcionalidades:**
 
+**Para Usuarios:**
 - Catálogo de productos por banda
-- Gestión de inventario
+- Carrito de compras
 - Pre-orders y reservas
 - Productos exclusivos VIP
 - Sistema de puntos de recogida
+
+**Para COMPANY_ADMIN:**
+- Creación y gestión de productos (requiere aprobación)
+- Gestión de inventario y stock
+- Control de precios y descuentos
+- Estadísticas de ventas
 
 **Base de Datos:** Redis + MongoDB
 
@@ -441,11 +470,11 @@ RABBITMQ_URL=amqp://localhost:5672
 ```
 ticketing-platform/
 ├── frontend/
-│   ├── ticketing-app/          # Angular - User Panel (White)
-│   ├── admin-panel/            # Angular - Admin Panel (Dark)
-│   ├── travel-panel/           # Angular - Travel Panel (Red)
-│   ├── restaurant-panel/       # Angular - Restaurant Panel (Green)
-│   └── merchandising-panel/    # Angular - Merch Panel (Blue)
+│   ├── ticketing-app/          # Angular - User Panel (White) - Users + VIP
+│   ├── admin-panel/            # Angular - Admin Panel (Dark) - SUPER_ADMIN
+│   ├── travel-panel/           # Angular - Travel Panel (Red) - Users + COMPANY_ADMIN
+│   ├── restaurant-panel/       # Angular - Restaurant Panel (Green) - Users + COMPANY_ADMIN
+│   └── merchandising-panel/    # Angular - Merch Panel (Blue) - Users + COMPANY_ADMIN
 │
 ├── backend/
 │   ├── admin-service/          # Existing - Express + PostgreSQL
@@ -631,3 +660,322 @@ interface ApprovalDecisionEvent {
   };
 }
 ```
+
+---
+
+## 📋 TAREAS PENDIENTES - CREACIÓN DE PANELES FRONTEND
+
+### ✅ **Paneles Existentes**
+
+- [x] **Admin Panel (Dark)** - Angular - SUPER_ADMIN
+- [x] **User Panel (White)** - Angular - Users + VIP
+
+### 🔨 **Paneles a Crear**
+
+#### 1. Travel Panel (Rojo Pastel 🔴)
+
+**Prioridad:** ALTA
+
+**Funcionalidades a implementar:**
+
+**Vista Usuario:**
+- [ ] Página de búsqueda de viajes
+- [ ] Filtros por origen, fecha, precio
+- [ ] Detalle de viaje con mapa de ruta
+- [ ] Formulario de reserva
+- [ ] Mis reservas de viajes
+- [ ] Tracking en tiempo real
+
+**Vista COMPANY_ADMIN:**
+- [ ] Dashboard de estadísticas
+- [ ] Formulario crear viaje (con aprobación)
+- [ ] Lista de viajes de mi compañía
+- [ ] Editar viaje existente
+- [ ] Gestión de rutas y paradas
+- [ ] Estadísticas de ocupación
+
+**Tecnologías:**
+- Angular 18+
+- TailwindCSS (tema rojo pastel)
+- Angular Material
+- Leaflet/Mapbox para mapas
+- Chart.js para estadísticas
+
+**Endpoints a consumir:**
+```typescript
+// Usuarios
+GET    /api/travel/trips
+GET    /api/travel/trips/:id
+POST   /api/travel/trips/:id/book
+GET    /api/travel/my-bookings
+
+// COMPANY_ADMIN
+POST   /api/travel/with-company
+PATCH  /api/travel/:id
+GET    /api/travel/stats
+```
+
+---
+
+#### 2. Restaurant Panel (Verde Pastel 🟢)
+
+**Prioridad:** ALTA
+
+**Funcionalidades a implementar:**
+
+**Vista Usuario:**
+- [ ] Catálogo de restaurantes
+- [ ] Filtros por tipo de cocina, ubicación
+- [ ] Detalle de restaurante con menú
+- [ ] Sistema de reservas con calendario
+- [ ] Mis reservas de restaurantes
+- [ ] Pre-pedidos
+
+**Vista COMPANY_ADMIN:**
+- [ ] Dashboard de estadísticas
+- [ ] Formulario crear restaurante (con aprobación)
+- [ ] Lista de restaurantes de mi compañía
+- [ ] Editar restaurante existente
+- [ ] Gestión de menús y precios
+- [ ] Control de aforo
+- [ ] Estadísticas de reservas
+
+**Tecnologías:**
+- Angular 18+
+- TailwindCSS (tema verde pastel)
+- Angular Material
+- FullCalendar para reservas
+- Chart.js para estadísticas
+
+**Endpoints a consumir:**
+```typescript
+// Usuarios
+GET    /api/restaurants
+GET    /api/restaurants/:id
+GET    /api/restaurants/:id/menu
+POST   /api/restaurants/:id/reserve
+GET    /api/restaurants/my-reservations
+
+// COMPANY_ADMIN
+POST   /api/restaurant/with-company
+PATCH  /api/restaurant/:id
+GET    /api/restaurant/stats
+```
+
+---
+
+#### 3. Merchandising Panel (Azul Pastel 🔵)
+
+**Prioridad:** ALTA
+
+**Funcionalidades a implementar:**
+
+**Vista Usuario:**
+- [ ] Catálogo de productos
+- [ ] Filtros por banda, tipo, precio
+- [ ] Detalle de producto con galería
+- [ ] Carrito de compras
+- [ ] Checkout y pago
+- [ ] Mis pedidos
+- [ ] Código QR para recogida
+
+**Vista COMPANY_ADMIN:**
+- [ ] Dashboard de estadísticas
+- [ ] Formulario crear producto (con aprobación)
+- [ ] Lista de productos de mi compañía
+- [ ] Editar producto existente
+- [ ] Gestión de inventario
+- [ ] Control de stock
+- [ ] Estadísticas de ventas
+
+**Tecnologías:**
+- Angular 18+
+- TailwindCSS (tema azul pastel)
+- Angular Material
+- ngx-image-gallery para productos
+- Chart.js para estadísticas
+- QR Code generator
+
+**Endpoints a consumir:**
+```typescript
+// Usuarios
+GET    /api/merchandise/products
+GET    /api/merchandise/products/:id
+POST   /api/merchandise/cart/add
+GET    /api/merchandise/cart
+POST   /api/merchandise/checkout
+GET    /api/merchandise/orders
+
+// COMPANY_ADMIN
+POST   /api/merchandising/with-company
+PATCH  /api/merchandising/:id
+GET    /api/merchandising/stats
+```
+
+---
+
+### 🎨 **Guía de Estilos por Panel**
+
+#### Travel Panel (Rojo Pastel)
+```css
+--primary-color: #FF6B6B;
+--secondary-color: #FFE5E5;
+--accent-color: #FF4757;
+--text-color: #2C3E50;
+--background: #FFF5F5;
+```
+
+#### Restaurant Panel (Verde Pastel)
+```css
+--primary-color: #51CF66;
+--secondary-color: #E7F5E9;
+--accent-color: #40C057;
+--text-color: #2C3E50;
+--background: #F4FFF5;
+```
+
+#### Merchandising Panel (Azul Pastel)
+```css
+--primary-color: #4DABF7;
+--secondary-color: #E7F5FF;
+--accent-color: #339AF0;
+--text-color: #2C3E50;
+--background: #F0F9FF;
+```
+
+---
+
+### 📦 **Estructura de Cada Panel**
+
+```
+panel-name/
+├── src/
+│   ├── app/
+│   │   ├── core/
+│   │   │   ├── guards/
+│   │   │   │   ├── auth.guard.ts
+│   │   │   │   └── company-admin.guard.ts
+│   │   │   ├── services/
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   └── api.service.ts
+│   │   │   └── interceptors/
+│   │   │       └── jwt.interceptor.ts
+│   │   │
+│   │   ├── shared/
+│   │   │   ├── components/
+│   │   │   │   ├── navbar/
+│   │   │   │   ├── footer/
+│   │   │   │   └── loading/
+│   │   │   └── pipes/
+│   │   │
+│   │   ├── features/
+│   │   │   ├── user/              # Vista para usuarios
+│   │   │   │   ├── list/
+│   │   │   │   ├── detail/
+│   │   │   │   └── booking/
+│   │   │   │
+│   │   │   └── company-admin/     # Vista para COMPANY_ADMIN
+│   │   │       ├── dashboard/
+│   │   │       ├── create/
+│   │   │       ├── edit/
+│   │   │       └── stats/
+│   │   │
+│   │   └── app.component.ts
+│   │
+│   ├── assets/
+│   ├── environments/
+│   └── styles.css
+│
+├── tailwind.config.js
+├── angular.json
+└── package.json
+```
+
+---
+
+### 🚀 **Plan de Implementación**
+
+#### **Día 1: Travel Panel**
+- [ ] Crear proyecto Angular
+- [ ] Configurar TailwindCSS con tema rojo
+- [ ] Implementar autenticación y guards
+- [ ] Vista usuario: Lista y detalle de viajes
+- [ ] Vista COMPANY_ADMIN: Dashboard básico
+
+#### **Día 2: Travel Panel (continuación)**
+- [ ] Vista usuario: Sistema de reservas
+- [ ] Vista COMPANY_ADMIN: Crear viaje
+- [ ] Integración con API
+- [ ] Testing básico
+
+#### **Día 3: Restaurant Panel**
+- [ ] Crear proyecto Angular
+- [ ] Configurar TailwindCSS con tema verde
+- [ ] Vista usuario: Catálogo de restaurantes
+- [ ] Vista COMPANY_ADMIN: Dashboard
+
+#### **Día 4: Restaurant Panel (continuación)**
+- [ ] Vista usuario: Sistema de reservas
+- [ ] Vista COMPANY_ADMIN: Gestión de menús
+- [ ] Integración con API
+- [ ] Testing básico
+
+#### **Día 5: Merchandising Panel**
+- [ ] Crear proyecto Angular
+- [ ] Configurar TailwindCSS con tema azul
+- [ ] Vista usuario: Catálogo de productos
+- [ ] Vista COMPANY_ADMIN: Dashboard
+
+#### **Día 6: Merchandising Panel (continuación)**
+- [ ] Vista usuario: Carrito y checkout
+- [ ] Vista COMPANY_ADMIN: Gestión de inventario
+- [ ] Integración con API
+- [ ] Testing básico
+
+#### **Día 7: Integración y Testing**
+- [ ] Testing end-to-end
+- [ ] Corrección de bugs
+- [ ] Optimización de rendimiento
+- [ ] Documentación final
+
+---
+
+### 📝 **Comandos de Inicio Rápido**
+
+```bash
+# Crear Travel Panel
+cd frontend
+ng new travel-panel --routing --style=css
+cd travel-panel
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+npm install @angular/material @angular/cdk
+npm install chart.js ng2-charts
+npm install leaflet @types/leaflet
+
+# Crear Restaurant Panel
+cd ../
+ng new restaurant-panel --routing --style=css
+cd restaurant-panel
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+npm install @angular/material @angular/cdk
+npm install chart.js ng2-charts
+npm install @fullcalendar/angular @fullcalendar/core
+
+# Crear Merchandising Panel
+cd ../
+ng new merchandising-panel --routing --style=css
+cd merchandising-panel
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+npm install @angular/material @angular/cdk
+npm install chart.js ng2-charts
+npm install ngx-qrcode-styling
+```
+
+---
+
+**Fecha de actualización:** 18 de Octubre, 2025 - 21:22  
+**Estado:** 📋 Pendiente de implementación  
+**Prioridad:** ALTA - Comenzar mañana
