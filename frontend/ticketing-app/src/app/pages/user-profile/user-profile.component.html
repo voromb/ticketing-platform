@@ -505,6 +505,10 @@
             </div>
           </div>
         </div>
+          <app-user-social-stats 
+            [userId]="user.id"
+            [showFollowButton]="!isOwnProfile">
+          </app-user-social-stats>
 
       </div>
     </div>

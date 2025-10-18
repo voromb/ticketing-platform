@@ -11,4 +11,12 @@
 
 }
 <app-event-details></app-event-details>
+<app-social-interactions 
+  [eventId]="currentEventId"
+  (onLoginRequired)="redirectToLogin()">
+</app-social-interactions>
+<!-- <app-user-social-stats 
+  [userId]="events[0].userId"
+  [showFollowButton]="true">
+</app-user-social-stats> -->
 

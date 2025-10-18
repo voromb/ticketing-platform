@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient, EventStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
 import { CreateEventDTO, UpdateEventDTO, EventQueryDTO } from '../dto/event.dto';
+import socialService from '../services/social.service';
 
 const prisma = new PrismaClient();
 
@@ -218,6 +219,7 @@ class EventController {
    async getEventById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
   try {
     const { id } = request.params;
+    const user = (request as any).user;
 
     // 🔍 Si parece un UUID válido (por ejemplo, 'f47ac10b-58cc-4372-a567-0e02b2c3d479')
     const isUUID =
@@ -242,7 +244,16 @@ class EventController {
     if (!event)
       return reply.status(404).send({ success: false, error: 'Evento no encontrado' });
 
-    return reply.send({ success: true, data: event });
+    // Obtener estadísticas sociales
+    const socialStats = await socialService.getEventSocialStats(event.id, user?.id);
+
+    return reply.send({ 
+      success: true, 
+      data: {
+        ...event,
+        socialStats
+      }
+    });
   } catch (error: any) {
     logger.error('Error getting event by ID or slug:', error);
     return reply.status(500).send({ success: false, error: 'Error interno' });

@@ -8,11 +8,12 @@ import { ReservationService } from '../../core/services/reservation.service';
 import { OrderService } from '../../core/services/order.service';
 import Swal from 'sweetalert2';
 import { filter, Subscription } from 'rxjs';
+import { UserSocialStatsComponent } from '../../shared/components/user-social-stats/user-social-stats.component';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, UserSocialStatsComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.css']
 })
@@ -34,6 +35,9 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   // Tickets reales desde órdenes completadas
   myTickets: any[] = [];
+
+  // Social features
+  isOwnProfile = false;
 
   // Subscription para detectar navegación
   private routerSubscription?: Subscription;
@@ -68,6 +72,9 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.loadUserData();
     this.loadReservations();
     this.loadOrders();
+    
+    // Set isOwnProfile based on current user
+    this.isOwnProfile = this.authService.getCurrentUser()?.id === this.user?.id;
     
     // Escuchar navegaciones para recargar datos
     this.routerSubscription = this.router.events

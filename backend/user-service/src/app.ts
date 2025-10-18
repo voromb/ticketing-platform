@@ -26,7 +26,7 @@ import { setupSwagger } from './config/swagger';
 import eventRoutes from './routes/event.routes';
 import ticketRoutes from './routes/ticket.routes';
 import userManagementRoutes from './routes/user-management.routes';
-import likeRoutes from "./routes/likes.routes";
+import socialRoutes from './routes/social.routes';
 
 class App {
     public app: Application;
@@ -92,11 +92,11 @@ class App {
                 service: 'user-service',
                 timestamp: new Date().toISOString(),
             });
-        }); // API routes
+        });         // API routes
         this.app.use('/api/events', eventRoutes);
         this.app.use('/api/tickets', ticketRoutes);
         this.app.use('/api/users', userManagementRoutes);
-        this.app.use('/api', likeRoutes);
+        this.app.use('/api/social', socialRoutes);
     }
 
     private initializeErrorHandling(): void {

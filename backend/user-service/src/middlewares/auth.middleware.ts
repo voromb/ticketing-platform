@@ -53,3 +53,6 @@ export const roleMiddleware = (...roles: string[]) => {
     next();
   };
 };
+
+// Alias para compatibilidad
+export const authenticateToken = authMiddleware;
