@@ -21,6 +21,8 @@ import { reservationRoutes } from './routes/reservation.routes';
 import { orderRoutes } from './routes/order.routes';
 import { paymentRoutes } from './routes/payment.routes';
 import { imageUploadRoutes } from './routes/image-upload.routes';
+import { companyRoutes } from './routes/company.routes';
+import { companyAdminRoutes } from './routes/company-admin.routes';
 
 // Services
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -124,6 +126,8 @@ export async function buildServer(): Promise<FastifyInstance> {
                 { name: 'Admins', description: 'Gestión de administradores' },
                 { name: 'Audit', description: 'Logs de auditoría' },
                 { name: 'Users', description: 'Gestión de usuarios' },
+                { name: 'Companies', description: 'Gestión de compañías' },
+                { name: 'Company Admins', description: 'Gestión de administradores de compañías' },
             ],
         },
     });
@@ -221,6 +225,14 @@ export async function buildServer(): Promise<FastifyInstance> {
         console.log('[REGISTER] Registrando imageUploadRoutes...');
         await server.register(imageUploadRoutes, { prefix: '/api/upload' });
         console.log('[OK] imageUploadRoutes OK');
+
+        console.log('[REGISTER] Registrando companyRoutes...');
+        await server.register(companyRoutes, { prefix: '/api' });
+        console.log('[OK] companyRoutes OK');
+
+        console.log('[REGISTER] Registrando companyAdminRoutes...');
+        await server.register(companyAdminRoutes, { prefix: '/api' });
+        console.log('[OK] companyAdminRoutes OK');
 
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     } catch (error: any) {

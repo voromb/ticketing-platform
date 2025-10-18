@@ -9,14 +9,19 @@ import {
   HttpStatus,
   HttpCode,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { TravelService } from './travel.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { AdminOnly, AuthenticatedOnly, Public } from '../auth/decorators/auth.decorators';
+import { CompanyAdminGuard } from '../auth/guards/company-admin.guard';
+import { CompanyPermissionGuard } from '../auth/guards/company-permission.guard';
+import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
+import { CurrentCompanyAdmin } from '../auth/decorators/current-company-admin.decorator';
 
 @ApiTags('travel')
 @Controller('travel')
@@ -24,11 +29,18 @@ export class TravelController {
   constructor(private readonly travelService: TravelService) {}
 
   @Post()
-  @AdminOnly() // Solo admins pueden crear viajes
-  @ApiOperation({ summary: 'Crear un nuevo viaje' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canCreate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear un nuevo viaje (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 201, description: 'Viaje creado exitosamente' })
-  create(@Body() createTripDto: CreateTripDto) {
-    return this.travelService.create(createTripDto);
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
+  create(
+    @Body() createTripDto: CreateTripDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
+    return this.travelService.createWithCompany(createTripDto, admin);
   }
 
   @Get()

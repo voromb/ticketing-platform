@@ -5,6 +5,7 @@ import { RestaurantService } from './restaurant.service';
 import { RestaurantController } from './restaurant.controller';
 import { Restaurant, RestaurantSchema } from './schemas/restaurant.schema';
 import { Reservation, ReservationSchema } from './schemas/reservation.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { Reservation, ReservationSchema } from './schemas/reservation.schema';
         },
       },
     ]),
+    AuthModule, // Importar AuthModule para acceder a guards
   ],
   controllers: [RestaurantController],
   providers: [RestaurantService],

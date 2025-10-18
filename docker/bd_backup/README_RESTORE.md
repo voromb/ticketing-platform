@@ -49,17 +49,20 @@ El backup `SEGURIDAD_COMPLETA_2025-10-16` contiene:
 
 ```powershell
 # Restaurar todo el sistema con confirmación
-.\restore.ps1
+.\restore.ps1 -BackupDate "2025-10-18"
 
 # Restaurar sin confirmación (automático)
-.\restore.ps1 -SkipConfirmation
+.\restore.ps1 -BackupDate "2025-10-18" -SkipConfirmation
 
-# Restaurar forzando (saltando advertencias)
-.\restore.ps1 -Force
+# IMPORTANTE: Después del restore, regenerar Prisma Client
+cd C:\Programacion_2DAW\ticketing-platform\backend\admin
+npx prisma generate
 
-# Restaurar un backup específico
-.\restore.ps1 -BackupDate "2025-10-15"
+cd C:\Programacion_2DAW\ticketing-platform\backend\services\festival-services
+npx prisma generate
 ```
+
+**⚠️ CRÍTICO:** Siempre ejecutar `npx prisma generate` después del restore en ambos backends.
 
 ### 2. Verificación Post-Restore
 
@@ -74,9 +77,14 @@ El backup `SEGURIDAD_COMPLETA_2025-10-16` contiene:
 ### 3. Backup Manual (si necesario)
 
 ```powershell
-# Crear nuevo backup completo
+# Crear nuevo backup completo (usa fecha actual automáticamente)
 .\backup.ps1
+
+# El backup se guardará en: backups\YYYY-MM-DD
+# Ejemplo: backups\2025-10-18
 ```
+
+**📅 Nota:** El script de backup ahora crea automáticamente una carpeta con la fecha actual, no machaca backups anteriores.
 
 ---
 
@@ -89,6 +97,7 @@ El backup `SEGURIDAD_COMPLETA_2025-10-16` contiene:
 -   **15 categorías/subcategorías** completas
 -   **5 usuarios/admins** con credenciales
 -   **2 aprobaciones** del sistema de workflow
+-   **15 tablas PostgreSQL** (incluidas `companies` y `company_admins` - Sistema COMPANY_ADMIN)
 
 ### Funcionalidades Restauradas
 

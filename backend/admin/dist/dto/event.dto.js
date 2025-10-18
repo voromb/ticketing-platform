@@ -11,10 +11,14 @@ exports.createEventSchema = zod_1.z.object({
     saleEndDate: zod_1.z.string(),
     venueId: zod_1.z.string(),
     totalCapacity: zod_1.z.number(),
-    categoryId: zod_1.z.number(), // ← aquí
-    subcategoryId: zod_1.z.number().optional(), // ← si puede ser nula
+    categoryId: zod_1.z.number(),
+    subcategoryId: zod_1.z.number().optional(),
     minPrice: zod_1.z.number(),
-    maxPrice: zod_1.z.number()
+    maxPrice: zod_1.z.number(),
+    ageRestriction: zod_1.z.string().optional(),
+    bannerImage: zod_1.z.string().optional(),
+    thumbnailImage: zod_1.z.string().optional(),
+    images: zod_1.z.array(zod_1.z.string()).optional()
 });
 exports.updateEventSchema = exports.createEventSchema.partial();
 exports.eventQuerySchema = zod_1.z.object({

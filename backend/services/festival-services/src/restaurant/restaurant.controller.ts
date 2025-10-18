@@ -9,13 +9,18 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { RestaurantService } from './restaurant.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { CompanyAdminGuard } from '../auth/guards/company-admin.guard';
+import { CompanyPermissionGuard } from '../auth/guards/company-permission.guard';
+import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
+import { CurrentCompanyAdmin } from '../auth/decorators/current-company-admin.decorator';
 
 @ApiTags('restaurant')
 @Controller('restaurant')
@@ -23,10 +28,18 @@ export class RestaurantController {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo restaurante' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canCreate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear un nuevo restaurante (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 201, description: 'Restaurante creado exitosamente' })
-  create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    return this.restaurantService.create(createRestaurantDto);
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
+  create(
+    @Body() createRestaurantDto: CreateRestaurantDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
+    return this.restaurantService.createWithCompany(createRestaurantDto, admin);
   }
 
   @Get()

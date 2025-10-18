@@ -20,17 +20,49 @@ export class MerchandisingService {
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
+    const createdProduct = new this.productModel(createProductDto);
+    return createdProduct.save();
+  }
+
+  /**
+   * Crear producto con datos de compañía (para COMPANY_ADMIN)
+   */
+  async createWithCompany(createProductDto: CreateProductDto, admin: any): Promise<Product> {
     const productData = {
       ...createProductDto,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
+      region: admin.companyRegion,
+      managedBy: admin.email,
+      approvalStatus: 'PENDING',
+      lastModifiedBy: admin.email,
       stock: {
         total: createProductDto.totalStock,
         available: createProductDto.totalStock,
         reserved: 0
       }
     };
-    
+
     const createdProduct = new this.productModel(productData);
-    return createdProduct.save();
+    const saved = await createdProduct.save();
+
+    // Enviar evento de aprobación requerida
+    this.client.emit('approval.requested', {
+      service: 'MERCHANDISING',
+      entityId: (saved as any)._id.toString(),
+      entityType: 'Product',
+      requestedBy: admin.email,
+      metadata: {
+        productName: saved.name,
+        companyName: admin.companyName,
+        region: admin.companyRegion,
+        price: saved.price,
+      },
+      priority: 'MEDIUM',
+    });
+
+    console.log(`[MERCHANDISING] Nuevo producto creado por ${admin.email}, requiere aprobación`);
+    return saved;
   }
 
   async findAll(): Promise<Product[]> {

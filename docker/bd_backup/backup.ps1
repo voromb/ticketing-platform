@@ -1,11 +1,17 @@
 param(
-    [string]$BackupDir = "backups\2025-10-16"
+    [string]$BackupDir = $null
 )
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "=== BACKUP SISTEMA TICKETING ===" -ForegroundColor Green
 Write-Host "Iniciando backup completo del sistema..."
+
+# Si no se especifica BackupDir, usar la fecha actual
+if ([string]::IsNullOrEmpty($BackupDir)) {
+    $BackupDate = Get-Date -Format "yyyy-MM-dd"
+    $BackupDir = "backups\$BackupDate"
+}
 
 $BackupPath = Join-Path $PSScriptRoot $BackupDir
 if (-not (Test-Path $BackupPath)) {

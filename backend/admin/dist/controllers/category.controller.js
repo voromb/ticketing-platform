@@ -1,45 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCategoryStats = exports.deleteSubcategory = exports.updateSubcategory = exports.createSubcategory = exports.getSubcategoryById = exports.getAllSubcategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategoryById = exports.getAllCategories = void 0;
+exports.getCategoryStats = exports.deleteSubcategory = exports.updateSubcategory = exports.createSubcategory = exports.getAllSubcategories = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategoryById = exports.getAllCategories = void 0;
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
-const logger_1 = require("../utils/logger");
 const prisma = new client_1.PrismaClient();
-// Schemas de validación
+// Schemas con campos de imágenes
 const createCategorySchema = zod_1.z.object({
     name: zod_1.z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+    icon: zod_1.z.string().optional(),
+    image: zod_1.z.string().optional(),
+    images: zod_1.z.array(zod_1.z.string()).optional(),
+    description: zod_1.z.string().optional(),
+    slug: zod_1.z.string().optional(),
 });
 const updateCategorySchema = createCategorySchema.partial();
 const createSubcategorySchema = zod_1.z.object({
     categoryId: zod_1.z.number().int().positive('ID de categoría requerido'),
     name: zod_1.z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+    icon: zod_1.z.string().optional(),
+    image: zod_1.z.string().optional(),
+    description: zod_1.z.string().optional(),
+    slug: zod_1.z.string().optional(),
 });
 const updateSubcategorySchema = createSubcategorySchema.partial();
-const categoryQuerySchema = zod_1.z.object({
-    page: zod_1.z.string().optional().default('1').transform(Number),
-    limit: zod_1.z.string().optional().default('50').transform(Number),
-    search: zod_1.z.string().optional(),
-    includeSubcategories: zod_1.z
-        .string()
-        .optional()
-        .transform(val => val === 'true'),
-});
 // ============= CATEGORÍAS =============
 const getAllCategories = async (req, reply) => {
     try {
-        const query = categoryQuerySchema.parse(req.query);
-        const { page, limit, search, includeSubcategories } = query;
-        const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                name: {
-                    contains: search,
-                    mode: 'insensitive',
-                },
-            }
-            : {};
-        const include = includeSubcategories
-            ? {
+        const categories = await prisma.eventCategory.findMany({
+            include: {
                 subcategories: {
                     orderBy: { name: 'asc' },
                 },
@@ -49,41 +37,24 @@ const getAllCategories = async (req, reply) => {
                         subcategories: true,
                     },
                 },
-            }
-            : {
-                _count: {
-                    select: {
-                        events: true,
-                        subcategories: true,
-                    },
-                },
-            };
-        const [categories, total] = await Promise.all([
-            prisma.eventCategory.findMany({
-                where,
-                include,
-                orderBy: { name: 'asc' },
-                skip,
-                take: limit,
-            }),
-            prisma.eventCategory.count({ where }),
-        ]);
-        const totalPages = Math.ceil(total / limit);
+            },
+            orderBy: { name: 'asc' },
+        });
         reply.send({
             success: true,
             data: categories,
             pagination: {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1,
+                page: 1,
+                limit: 50,
+                total: categories.length,
+                totalPages: 1,
+                hasNext: false,
+                hasPrev: false,
             },
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al obtener categorías:', error);
+        console.error('Error al obtener categorías:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -127,7 +98,7 @@ const getCategoryById = async (req, reply) => {
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al obtener categoría:', error);
+        console.error('Error al obtener categoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -159,7 +130,7 @@ const createCategory = async (req, reply) => {
                 },
             },
         });
-        logger_1.logger.info(`Categoría creada: ${category.name}`);
+        console.log(`Categoría creada: ${category.name}`);
         reply.code(201).send({
             success: true,
             data: category,
@@ -174,7 +145,7 @@ const createCategory = async (req, reply) => {
                 details: error.errors,
             });
         }
-        logger_1.logger.error('Error al crear categoría:', error);
+        console.error('Error al crear categoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -193,28 +164,6 @@ const updateCategory = async (req, reply) => {
             });
         }
         const data = updateCategorySchema.parse(req.body);
-        // Verificar si la categoría existe
-        const existingCategory = await prisma.eventCategory.findUnique({
-            where: { id: categoryId },
-        });
-        if (!existingCategory) {
-            return reply.code(404).send({
-                success: false,
-                error: 'Categoría no encontrada',
-            });
-        }
-        // Si se está actualizando el nombre, verificar que no exista otra categoría con el mismo nombre
-        if (data.name && data.name !== existingCategory.name) {
-            const duplicateCategory = await prisma.eventCategory.findUnique({
-                where: { name: data.name },
-            });
-            if (duplicateCategory) {
-                return reply.code(400).send({
-                    success: false,
-                    error: 'Ya existe una categoría con ese nombre',
-                });
-            }
-        }
         const updatedCategory = await prisma.eventCategory.update({
             where: { id: categoryId },
             data,
@@ -230,7 +179,6 @@ const updateCategory = async (req, reply) => {
                 },
             },
         });
-        logger_1.logger.info(`Categoría actualizada: ${updatedCategory.name}`);
         reply.send({
             success: true,
             data: updatedCategory,
@@ -238,14 +186,7 @@ const updateCategory = async (req, reply) => {
         });
     }
     catch (error) {
-        if (error instanceof zod_1.z.ZodError) {
-            return reply.code(400).send({
-                success: false,
-                error: 'Datos de entrada inválidos',
-                details: error.errors,
-            });
-        }
-        logger_1.logger.error('Error al actualizar categoría:', error);
+        console.error('Error al actualizar categoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -263,43 +204,16 @@ const deleteCategory = async (req, reply) => {
                 error: 'ID de categoría inválido',
             });
         }
-        // Verificar si la categoría existe
-        const existingCategory = await prisma.eventCategory.findUnique({
-            where: { id: categoryId },
-            include: {
-                _count: {
-                    select: {
-                        events: true,
-                        subcategories: true,
-                    },
-                },
-            },
-        });
-        if (!existingCategory) {
-            return reply.code(404).send({
-                success: false,
-                error: 'Categoría no encontrada',
-            });
-        }
-        // Verificar si hay eventos asociados
-        if (existingCategory._count.events > 0) {
-            return reply.code(400).send({
-                success: false,
-                error: `No se puede eliminar la categoría porque tiene ${existingCategory._count.events} evento(s) asociado(s)`,
-            });
-        }
-        // Eliminar la categoría (las subcategorías se eliminan automáticamente por CASCADE)
         await prisma.eventCategory.delete({
             where: { id: categoryId },
         });
-        logger_1.logger.info(`Categoría eliminada: ${existingCategory.name}`);
         reply.send({
             success: true,
             message: 'Categoría eliminada exitosamente',
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al eliminar categoría:', error);
+        console.error('Error al eliminar categoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -310,62 +224,32 @@ exports.deleteCategory = deleteCategory;
 // ============= SUBCATEGORÍAS =============
 const getAllSubcategories = async (req, reply) => {
     try {
-        const query = categoryQuerySchema.parse(req.query);
-        const { page, limit, search } = query;
-        const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                OR: [
-                    {
-                        name: {
-                            contains: search,
-                            mode: 'insensitive',
-                        },
-                    },
-                    {
-                        category: {
-                            name: {
-                                contains: search,
-                                mode: 'insensitive',
-                            },
-                        },
-                    },
-                ],
-            }
-            : {};
-        const [subcategories, total] = await Promise.all([
-            prisma.eventSubcategory.findMany({
-                where,
-                include: {
-                    category: true,
-                    _count: {
-                        select: {
-                            events: true,
-                        },
+        const subcategories = await prisma.eventSubcategory.findMany({
+            include: {
+                category: true,
+                _count: {
+                    select: {
+                        events: true,
                     },
                 },
-                orderBy: [{ category: { name: 'asc' } }, { name: 'asc' }],
-                skip,
-                take: limit,
-            }),
-            prisma.eventSubcategory.count({ where }),
-        ]);
-        const totalPages = Math.ceil(total / limit);
+            },
+            orderBy: [{ category: { name: 'asc' } }, { name: 'asc' }],
+        });
         reply.send({
             success: true,
             data: subcategories,
             pagination: {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1,
+                page: 1,
+                limit: 50,
+                total: subcategories.length,
+                totalPages: 1,
+                hasNext: false,
+                hasPrev: false,
             },
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al obtener subcategorías:', error);
+        console.error('Error al obtener subcategorías:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -373,77 +257,22 @@ const getAllSubcategories = async (req, reply) => {
     }
 };
 exports.getAllSubcategories = getAllSubcategories;
-const getSubcategoryById = async (req, reply) => {
-    try {
-        const { id } = req.params;
-        const subcategoryId = parseInt(id, 10);
-        if (isNaN(subcategoryId)) {
-            return reply.code(400).send({
-                success: false,
-                error: 'ID de subcategoría inválido',
-            });
-        }
-        const subcategory = await prisma.eventSubcategory.findUnique({
-            where: { id: subcategoryId },
-            include: {
-                category: true,
-                _count: {
-                    select: {
-                        events: true,
-                    },
-                },
-            },
-        });
-        if (!subcategory) {
-            return reply.code(404).send({
-                success: false,
-                error: 'Subcategoría no encontrada',
-            });
-        }
-        reply.send({
-            success: true,
-            data: subcategory,
-        });
-    }
-    catch (error) {
-        logger_1.logger.error('Error al obtener subcategoría:', error);
-        reply.code(500).send({
-            success: false,
-            error: 'Error interno del servidor',
-        });
-    }
-};
-exports.getSubcategoryById = getSubcategoryById;
 const createSubcategory = async (req, reply) => {
     try {
+        console.log('Datos recibidos para crear subcategoría:', req.body);
         const data = createSubcategorySchema.parse(req.body);
-        // Verificar si la categoría padre existe
-        const parentCategory = await prisma.eventCategory.findUnique({
-            where: { id: data.categoryId },
-        });
-        if (!parentCategory) {
-            return reply.code(400).send({
-                success: false,
-                error: 'La categoría padre no existe',
-            });
-        }
-        // Verificar si ya existe una subcategoría con el mismo nombre en la misma categoría
-        const existingSubcategory = await prisma.eventSubcategory.findUnique({
-            where: {
-                categoryId_name: {
-                    categoryId: data.categoryId,
-                    name: data.name,
-                },
-            },
-        });
-        if (existingSubcategory) {
-            return reply.code(400).send({
-                success: false,
-                error: 'Ya existe una subcategoría con ese nombre en esta categoría',
-            });
-        }
+        console.log('Datos validados:', data);
+        const subcategoryData = {
+            categoryId: Number(data.categoryId),
+            name: data.name,
+            icon: data.icon,
+            image: data.image,
+            description: data.description,
+            slug: data.slug,
+        };
+        console.log('Datos para Prisma:', subcategoryData);
         const subcategory = await prisma.eventSubcategory.create({
-            data,
+            data: subcategoryData,
             include: {
                 category: true,
                 _count: {
@@ -453,7 +282,7 @@ const createSubcategory = async (req, reply) => {
                 },
             },
         });
-        logger_1.logger.info(`Subcategoría creada: ${subcategory.name} en ${parentCategory.name}`);
+        console.log('Subcategoría creada:', subcategory);
         reply.code(201).send({
             success: true,
             data: subcategory,
@@ -461,17 +290,12 @@ const createSubcategory = async (req, reply) => {
         });
     }
     catch (error) {
-        if (error instanceof zod_1.z.ZodError) {
-            return reply.code(400).send({
-                success: false,
-                error: 'Datos de entrada inválidos',
-                details: error.errors,
-            });
-        }
-        logger_1.logger.error('Error al crear subcategoría:', error);
+        console.error('Error al crear subcategoría:', error);
+        console.error('Stack trace:', error.stack);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
+            details: error.message,
         });
     }
 };
@@ -487,50 +311,6 @@ const updateSubcategory = async (req, reply) => {
             });
         }
         const data = updateSubcategorySchema.parse(req.body);
-        // Verificar si la subcategoría existe
-        const existingSubcategory = await prisma.eventSubcategory.findUnique({
-            where: { id: subcategoryId },
-            include: { category: true },
-        });
-        if (!existingSubcategory) {
-            return reply.code(404).send({
-                success: false,
-                error: 'Subcategoría no encontrada',
-            });
-        }
-        // Si se está actualizando la categoría padre, verificar que existe
-        if (data.categoryId && data.categoryId !== existingSubcategory.categoryId) {
-            const newParentCategory = await prisma.eventCategory.findUnique({
-                where: { id: data.categoryId },
-            });
-            if (!newParentCategory) {
-                return reply.code(400).send({
-                    success: false,
-                    error: 'La nueva categoría padre no existe',
-                });
-            }
-        }
-        // Verificar duplicados si se está actualizando el nombre o la categoría
-        if (data.name || data.categoryId) {
-            const newName = data.name || existingSubcategory.name;
-            const newCategoryId = data.categoryId || existingSubcategory.categoryId;
-            if (newName !== existingSubcategory.name || newCategoryId !== existingSubcategory.categoryId) {
-                const duplicateSubcategory = await prisma.eventSubcategory.findUnique({
-                    where: {
-                        categoryId_name: {
-                            categoryId: newCategoryId,
-                            name: newName,
-                        },
-                    },
-                });
-                if (duplicateSubcategory && duplicateSubcategory.id !== subcategoryId) {
-                    return reply.code(400).send({
-                        success: false,
-                        error: 'Ya existe una subcategoría con ese nombre en esta categoría',
-                    });
-                }
-            }
-        }
         const updatedSubcategory = await prisma.eventSubcategory.update({
             where: { id: subcategoryId },
             data,
@@ -543,7 +323,6 @@ const updateSubcategory = async (req, reply) => {
                 },
             },
         });
-        logger_1.logger.info(`Subcategoría actualizada: ${updatedSubcategory.name}`);
         reply.send({
             success: true,
             data: updatedSubcategory,
@@ -551,14 +330,7 @@ const updateSubcategory = async (req, reply) => {
         });
     }
     catch (error) {
-        if (error instanceof zod_1.z.ZodError) {
-            return reply.code(400).send({
-                success: false,
-                error: 'Datos de entrada inválidos',
-                details: error.errors,
-            });
-        }
-        logger_1.logger.error('Error al actualizar subcategoría:', error);
+        console.error('Error al actualizar subcategoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -576,43 +348,16 @@ const deleteSubcategory = async (req, reply) => {
                 error: 'ID de subcategoría inválido',
             });
         }
-        // Verificar si la subcategoría existe
-        const existingSubcategory = await prisma.eventSubcategory.findUnique({
-            where: { id: subcategoryId },
-            include: {
-                category: true,
-                _count: {
-                    select: {
-                        events: true,
-                    },
-                },
-            },
-        });
-        if (!existingSubcategory) {
-            return reply.code(404).send({
-                success: false,
-                error: 'Subcategoría no encontrada',
-            });
-        }
-        // Verificar si hay eventos asociados
-        if (existingSubcategory._count.events > 0) {
-            return reply.code(400).send({
-                success: false,
-                error: `No se puede eliminar la subcategoría porque tiene ${existingSubcategory._count.events} evento(s) asociado(s)`,
-            });
-        }
-        // Eliminar la subcategoría
         await prisma.eventSubcategory.delete({
             where: { id: subcategoryId },
         });
-        logger_1.logger.info(`Subcategoría eliminada: ${existingSubcategory.name}`);
         reply.send({
             success: true,
             message: 'Subcategoría eliminada exitosamente',
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al eliminar subcategoría:', error);
+        console.error('Error al eliminar subcategoría:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',
@@ -620,7 +365,6 @@ const deleteSubcategory = async (req, reply) => {
     }
 };
 exports.deleteSubcategory = deleteSubcategory;
-// ============= ESTADÍSTICAS =============
 const getCategoryStats = async (req, reply) => {
     try {
         const [totalCategories, totalSubcategories, categoriesWithEvents] = await Promise.all([
@@ -663,7 +407,7 @@ const getCategoryStats = async (req, reply) => {
         });
     }
     catch (error) {
-        logger_1.logger.error('Error al obtener estadísticas de categorías:', error);
+        console.error('Error al obtener estadísticas de categorías:', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',

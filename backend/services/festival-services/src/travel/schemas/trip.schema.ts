@@ -26,6 +26,49 @@ export class Location {
 @Schema({ timestamps: true })
 export class Trip {
   @Prop({ required: true })
+  companyId: string; // ID de la compañía de viajes
+
+  @Prop({ required: true })
+  companyName: string; // Nombre de la compañía
+
+  @Prop({ required: true })
+  region: string; // SPAIN, EUROPE
+
+  @Prop({ required: true })
+  managedBy: string; // Email del COMPANY_ADMIN
+
+  @Prop()
+  vehicleType: string; // BUS/TRAIN/PLANE/FERRY
+
+  @Prop()
+  vehicleCapacity: number; // Capacidad del vehículo
+
+  @Prop()
+  vehiclePlate: string; // Matrícula del vehículo
+
+  @Prop({ type: Object })
+  driverInfo: {
+    name: string;
+    phone: string;
+    license: string;
+  };
+
+  @Prop({ default: 'APPROVED' })
+  approvalStatus: string; // PENDING/APPROVED/REJECTED
+
+  @Prop()
+  lastModifiedBy: string;
+
+  @Prop()
+  lastApprovedBy: string;
+
+  @Prop()
+  lastApprovedAt: Date;
+
+  @Prop()
+  cancellationPolicy: string;
+
+  @Prop({ required: true })
   festivalId: string;
 
   @Prop({ required: true })

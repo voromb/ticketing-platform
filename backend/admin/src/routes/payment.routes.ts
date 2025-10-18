@@ -112,28 +112,12 @@ export async function paymentRoutes(fastify: FastifyInstance) {
                 },
             },
             async (request, reply) => {
-                // Implementar listado de pagos con datos reales
-                const user = (request as any).user;
-
-                // Obtener pagos desde la base de datos
-                const payments = await prisma.payment.findMany({
-                    include: {
-                        order: {
-                            include: {
-                                event: true,
-                                user: {
-                                    select: { email: true, firstName: true, lastName: true },
-                                },
-                            },
-                        },
-                    },
-                    orderBy: { createdAt: 'desc' },
-                });
-
+                // TODO: Implement when payment model is added to Prisma schema
                 reply.send({
                     success: true,
-                    payments: payments,
-                    total: payments.length,
+                    message: 'Payment listing - To be implemented',
+                    payments: [],
+                    total: 0,
                 });
             }
         );
@@ -150,15 +134,10 @@ export async function paymentRoutes(fastify: FastifyInstance) {
                 },
             },
             async (request, reply) => {
-                // Implementar estadísticas de pagos con datos reales
-                const totalPayments = await prisma.payment.count();
-                const successfulPayments = await prisma.payment.count({
-                    where: { status: 'COMPLETED' },
-                });
-                const totalRevenue = await prisma.payment.aggregate({
-                    where: { status: 'COMPLETED' },
-                    _sum: { amount: true },
-                });
+                // TODO: Implement when payment model is added to Prisma schema
+                const totalPayments = 0;
+                const successfulPayments = 0;
+                const totalRevenue = { _sum: { amount: 0 } };
 
                 reply.send({
                     success: true,
@@ -183,7 +162,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         '/webhook',
         {
             config: {
-                rawBody: true, // Necesario para verificar firma de Stripe
+                // rawBody: true, // TODO: Configure when Stripe webhook is implemented
             },
             schema: {
                 tags: ['Payments'],

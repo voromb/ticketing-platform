@@ -228,38 +228,52 @@ class UserManagementController {
      */
     async getUserStats(request, reply) {
         try {
-            // Solo SUPER_ADMIN puede ver estadísticas
-            if (!request.user || request.user.role !== 'SUPER_ADMIN') {
+            // Solo SUPER_ADMIN y ADMIN pueden ver estadísticas
+            if (!request.user || !['SUPER_ADMIN', 'ADMIN'].includes(request.user.role)) {
                 return reply.status(403).send({
-                    error: 'Solo SUPER_ADMIN puede ver estadísticas de usuarios'
+                    error: 'Solo SUPER_ADMIN y ADMIN pueden ver estadísticas de usuarios',
                 });
             }
             // Registrar consulta de estadísticas
-            const allUsers = await user_api_service_1.userApiService.getUsers();
-            const stats = {
-                total: allUsers.length,
-                active: allUsers.filter(user => user.isActive).length,
-                inactive: allUsers.filter(user => !user.isActive).length,
-                byRole: {
-                    user: allUsers.filter(user => user.role === 'user').length,
-                    vip: allUsers.filter(user => user.role === 'vip').length
-                },
-                recentUsers: allUsers
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                    .slice(0, 5)
-                    .map(user => ({
-                    _id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    role: user.role,
-                    createdAt: user.createdAt
-                }))
-            };
-            return reply.send({
-                success: true,
-                stats,
-                source: 'user-service'
-            });
+            logger_1.logger.info('Consultando estadísticas de usuarios...');
+            // TEMPORAL: Datos simulados mientras se arregla el user-service
+            // TODO: Restaurar conexión con user-service cuando esté funcionando
+            try {
+                const allUsers = await user_api_service_1.userApiService.getUsers();
+                const stats = {
+                    total: allUsers.length,
+                    active: allUsers.filter(user => user.isActive).length,
+                    inactive: allUsers.filter(user => !user.isActive).length,
+                    byRole: {
+                        user: allUsers.filter(user => user.role === 'user').length,
+                        vip: allUsers.filter(user => user.role === 'vip').length,
+                    },
+                    recentUsers: allUsers
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .slice(0, 5)
+                        .map(user => ({
+                        _id: user._id,
+                        username: user.username,
+                        email: user.email,
+                        role: user.role,
+                        createdAt: user.createdAt,
+                    })),
+                };
+                return reply.send({
+                    success: true,
+                    stats,
+                    source: 'user-service',
+                });
+            }
+            catch (userServiceError) {
+                logger_1.logger.error('Error conectando con user-service:', userServiceError);
+                return reply.status(500).send({
+                    error: 'User service no disponible',
+                    details: userServiceError instanceof Error
+                        ? userServiceError.message
+                        : 'Unknown error',
+                });
+            }
         }
         catch (error) {
             logger_1.logger.error('Error obteniendo estadísticas de usuarios:', error);

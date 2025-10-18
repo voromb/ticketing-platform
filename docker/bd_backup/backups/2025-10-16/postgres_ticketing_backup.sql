@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict DLqjRJGyTbtFAyaPdj6DcIq5Rvpv4AcTynGDvskYrgrj55pOolGvDEinJ1nFM63
+\restrict BWEZfnJkL1YUMUePBInb6drD60PVDpzOr3FhKwviFTa5z8JOq2f9WtuRbwowudu
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
@@ -416,6 +416,52 @@ CREATE TABLE public.admins (
 
 
 --
+-- Name: companies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.companies (
+    id text NOT NULL,
+    name text NOT NULL,
+    type text NOT NULL,
+    region text NOT NULL,
+    contact_email text NOT NULL,
+    contact_phone text,
+    address text,
+    description text,
+    requires_approval boolean DEFAULT true,
+    auto_approve_threshold numeric(10,2),
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp without time zone
+);
+
+
+--
+-- Name: company_admins; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.company_admins (
+    id text NOT NULL,
+    company_id text NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    can_create boolean DEFAULT true,
+    can_update boolean DEFAULT true,
+    can_delete boolean DEFAULT false,
+    can_view_stats boolean DEFAULT true,
+    can_manage_stock boolean DEFAULT false,
+    is_active boolean DEFAULT true,
+    last_login timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    deleted_at timestamp without time zone
+);
+
+
+--
 -- Name: EventCategory id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -514,7 +560,6 @@ INSERT INTO public."Event" VALUES ('evt-2025-072', 'Barcelona Hard Rock Night', 
 INSERT INTO public."Event" VALUES ('evt-2025-073', 'Barcelona Iron Fest', 'Festival de heavy metal con bandas internacionales', 'barcelona-iron-fest-2025-73', 'ACTIVE', '2025-03-30 19:14:00', '2025-03-30 18:14:00', '2024-12-30 19:14:00', '2025-03-30 18:14:00', 'es-barcelona-bikini', 900, 900, 0, 0, NULL, NULL, NULL, '{}', 16.00, 64.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 6);
 INSERT INTO public."Event" VALUES ('evt-2025-074', 'Vienna Thrash Explosion', 'Gran evento de thrash metal en Vienna', 'vienna-thrash-explosion-2025-74', 'ACTIVE', '2025-01-21 21:15:51', '2025-01-21 20:15:51', '2024-10-23 21:15:51', '2025-01-21 20:15:51', 'at-vienna-stadthalle', 16000, 16000, 0, 0, NULL, NULL, NULL, '{}', 52.00, 208.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 7);
 INSERT INTO public."Event" VALUES ('evt-2025-075', 'Athens Symphonic Fest', 'Concierto Ôö£┬«pico de symphonic metal en Athens', 'athens-symphonic-fest-2025-75', 'ACTIVE', '2025-01-04 01:31:31', '2025-01-04 00:31:31', '2024-10-06 01:31:31', '2025-01-04 00:31:31', 'gr-athens-oaka', 18000, 18000, 0, 0, NULL, NULL, NULL, '{}', 49.00, 196.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 11);
-INSERT INTO public."Event" VALUES ('evt-2025-076', 'Bilbao Progressive Night', 'Gran evento de progressive metal en Bilbao', 'bilbao-progressive-night-2025-76', 'ACTIVE', '2025-01-01 17:14:44', '2025-01-01 16:14:44', '2024-10-03 17:14:44', '2025-01-01 16:14:44', 'es-bilbao-bizkaia-arena', 18640, 18640, 0, 0, NULL, NULL, NULL, '{}', 49.00, 196.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 13);
 INSERT INTO public."Event" VALUES ('evt-2025-077', 'Valencia Metal Thunder', 'La mejor noche de heavy metal del aÔö£ÔûÆo', 'valencia-metal-thunder-2025-77', 'ACTIVE', '2025-01-13 01:38:50', '2025-01-13 00:38:50', '2024-10-15 01:38:50', '2025-01-13 00:38:50', '8d03b434-20a7-46a6-b5c9-76e98fe7e9a0', 2500, 2500, 0, 0, NULL, NULL, NULL, '{}', 30.00, 120.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 6);
 INSERT INTO public."Event" VALUES ('evt-2025-078', 'London Classic Rock Festival', 'Gran evento de classic rock en London', 'london-classic-rock-festival-2025-78', 'ACTIVE', '2025-01-21 03:09:56', '2025-01-21 02:09:56', '2024-10-23 03:09:56', '2025-01-21 02:09:56', 'uk-london-o2-arena', 20000, 20000, 0, 0, NULL, NULL, NULL, '{}', 81.00, 324.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 1, 1);
 INSERT INTO public."Event" VALUES ('evt-2025-079', 'Valencia Indie Rock Live', 'La mejor noche de indie rock del aÔö£ÔûÆo', 'valencia-indie-rock-live-2025-79', 'ACTIVE', '2025-02-13 07:55:58', '2025-02-13 06:55:58', '2024-11-15 07:55:58', '2025-02-13 06:55:58', '1156c683-d97e-4c3f-b5fe-70e28b5d9aaa', 1000, 1000, 0, 0, NULL, NULL, NULL, '{}', 16.00, 64.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 1, 3);
@@ -732,6 +777,7 @@ INSERT INTO public."Event" VALUES ('evt-2025-290', 'Pamplona Hard Rock Heroes', 
 INSERT INTO public."Event" VALUES ('evt-2025-291', 'Valencia Thrash Storm', 'La mejor noche de thrash metal del aÔö£ÔûÆo', 'valencia-thrash-storm-2025-291', 'ACTIVE', '2025-09-23 21:41:00', '2025-09-23 20:41:00', '2025-06-25 21:41:00', '2025-09-23 20:41:00', '56bcb5a9-59c0-4476-b69c-649acfec88d4', 2500, 2500, 0, 0, NULL, NULL, NULL, '{}', 30.00, 120.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 2, 7);
 INSERT INTO public."Event" VALUES ('evt-2025-292', 'Zurich Brutal Force', 'La mejor noche de death metal del aÔö£ÔûÆo', 'zurich-brutal-force-2025-292', 'ACTIVE', '2025-08-29 16:53:07', '2025-08-29 15:53:07', '2025-05-31 16:53:07', '2025-08-29 15:53:07', 'ch-zurich-hallenstadion', 13000, 13000, 0, 0, NULL, NULL, NULL, '{}', 63.00, 252.00, '18+', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 2, 8);
 INSERT INTO public."Event" VALUES ('evt-2025-293', 'Sevilla Power Warriors', 'Concierto Ôö£┬«pico de power metal en Sevilla', 'sevilla-power-warriors-2025-293', 'ACTIVE', '2025-07-10 20:48:04', '2025-07-10 19:48:04', '2025-04-11 20:48:04', '2025-07-10 19:48:04', 'es-sevilla-custom', 1200, 1200, 0, 0, NULL, NULL, NULL, '{}', 16.00, 64.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 2, 10);
+INSERT INTO public."Event" VALUES ('evt-2025-366', 'Pamplona Doom Storm', 'Gran evento de doom metal en Pamplona', 'pamplona-doom-storm-2025-366', 'ACTIVE', '2025-11-19 20:42:09', '2025-11-19 19:42:09', '2025-08-21 20:42:09', '2025-11-19 19:42:09', 'es-pamplona-baluarte', 2200, 2200, 0, 0, NULL, NULL, NULL, '{}', 28.00, 112.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 12);
 INSERT INTO public."Event" VALUES ('evt-2025-294', 'Valencia Legendary Rock', 'Concierto Ôö£┬«pico de classic rock en Valencia', 'valencia-legendary-rock-2025-294', 'ACTIVE', '2025-07-07 19:18:08', '2025-07-07 18:18:08', '2025-04-08 19:18:08', '2025-07-07 18:18:08', 'eedf995f-f060-4105-81b5-8b46dd58be37', 1800, 1800, 0, 0, NULL, NULL, NULL, '{}', 20.00, 80.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 1, 1);
 INSERT INTO public."Event" VALUES ('evt-2025-295', 'Madrid Hard Rock Heroes', 'Noche inolvidable de hard rock en directo', 'madrid-hard-rock-heroes-2025-295', 'ACTIVE', '2025-07-27 01:07:12', '2025-07-27 00:07:12', '2025-04-28 01:07:12', '2025-07-27 00:07:12', 'es-madrid-wizink-center', 17000, 17000, 0, 0, NULL, NULL, NULL, '{}', 45.00, 180.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 1, 5);
 INSERT INTO public."Event" VALUES ('evt-2025-296', 'Zaragoza Doom Fest', 'Concierto Ôö£┬«pico de doom metal en Zaragoza', 'zaragoza-doom-fest-2025-296', 'ACTIVE', '2025-07-15 06:38:41', '2025-07-15 05:38:41', '2025-04-16 06:38:41', '2025-07-15 05:38:41', 'es-zaragoza-pabellon-principe-felipe', 10800, 10800, 0, 0, NULL, NULL, NULL, '{}', 36.00, 144.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', '2025-10-16 16:20:59.716', NULL, NULL, NULL, 2, 12);
@@ -804,7 +850,6 @@ INSERT INTO public."Event" VALUES ('evt-2025-362', 'Madrid Alternative Wave', 'F
 INSERT INTO public."Event" VALUES ('evt-2025-363', 'Pamplona Black Metal Ritual', 'Noche inolvidable de black metal en directo', 'pamplona-black-metal-ritual-2025-363', 'ACTIVE', '2026-03-28 20:55:25', '2026-03-28 19:55:25', '2025-12-28 20:55:25', '2026-03-28 19:55:25', 'es-pamplona-baluarte', 2200, 2200, 0, 0, NULL, NULL, NULL, '{}', 28.00, 112.00, '18+', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 9);
 INSERT INTO public."Event" VALUES ('evt-2025-364', 'Valencia Death Metal Night', 'Concierto Ôö£┬«pico de death metal en Valencia', 'valencia-death-metal-night-2025-364', 'ACTIVE', '2026-01-30 10:45:23', '2026-01-30 09:45:23', '2025-11-01 10:45:23', '2026-01-30 09:45:23', '6041a699-2a83-4518-b458-5db09b90c31a', 15000, 15000, 0, 0, NULL, NULL, NULL, '{}', 38.00, 152.00, '18+', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 8);
 INSERT INTO public."Event" VALUES ('evt-2025-365', 'Zurich Death Fest', 'Noche inolvidable de death metal en directo', 'zurich-death-fest-2025-365', 'ACTIVE', '2025-11-07 14:37:03', '2025-11-07 13:37:03', '2025-08-09 14:37:03', '2025-11-07 13:37:03', 'ch-zurich-hallenstadion', 13000, 13000, 0, 0, NULL, NULL, NULL, '{}', 63.00, 252.00, '18+', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 8);
-INSERT INTO public."Event" VALUES ('evt-2025-366', 'Pamplona Doom Storm', 'Gran evento de doom metal en Pamplona', 'pamplona-doom-storm-2025-366', 'ACTIVE', '2025-11-19 20:42:09', '2025-11-19 19:42:09', '2025-08-21 20:42:09', '2025-11-19 19:42:09', 'es-pamplona-baluarte', 2200, 2200, 0, 0, NULL, NULL, NULL, '{}', 28.00, 112.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 12);
 INSERT INTO public."Event" VALUES ('evt-2025-367', 'Manchester Dark Ritual', 'Noche inolvidable de black metal en directo', 'manchester-dark-ritual-2025-367', 'ACTIVE', '2025-12-29 23:59:37', '2025-12-29 22:59:37', '2025-09-30 23:59:37', '2025-12-29 22:59:37', 'uk-manchester-academy', 2600, 2600, 0, 0, NULL, NULL, NULL, '{}', 42.00, 168.00, '18+', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 9);
 INSERT INTO public."Event" VALUES ('evt-2025-368', 'Valencia Progressive Attack', 'Festival de progressive metal con bandas internacionales', 'valencia-progressive-attack-2025-368', 'ACTIVE', '2025-11-20 06:55:29', '2025-11-20 05:55:29', '2025-08-22 06:55:29', '2025-11-20 05:55:29', '8d03b434-20a7-46a6-b5c9-76e98fe7e9a0', 2500, 2500, 0, 0, NULL, NULL, NULL, '{}', 36.00, 144.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 2, 13);
 INSERT INTO public."Event" VALUES ('evt-2025-369', 'Amsterdam Rock Heroes', 'Festival de classic rock con bandas internacionales', 'amsterdam-rock-heroes-2025-369', 'ACTIVE', '2025-12-03 09:39:51', '2025-12-03 08:39:51', '2025-09-04 09:39:51', '2025-12-03 08:39:51', 'nl-amsterdam-melkweg', 1500, 1500, 0, 0, NULL, NULL, NULL, '{}', 29.00, 116.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315', NULL, NULL, NULL, 1, 1);
@@ -858,6 +903,7 @@ INSERT INTO public."Event" VALUES ('cb12da56-8cf5-45d1-9605-ef0ebfbdbe53', 'Meta
 INSERT INTO public."Event" VALUES ('4d8eaab2-fe43-4844-99cd-4ab77c64ef42', 'Ontinyent Metal Fest', 'Festival de metal en la PlaÔö£┬║a de Baix', 'ontinyent-metal-fest', 'ACTIVE', '2025-07-30 20:00:00', NULL, '2025-05-01 10:00:00', '2025-07-29 23:59:59', 'ed18fb98-1c7f-4859-8f5c-3f3e099cebd3', 100000, 100000, 0, 0, NULL, NULL, NULL, NULL, 50.00, 150.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 7);
 INSERT INTO public."Event" VALUES ('402bed42-00d4-4c56-ba51-650ec4380d46', 'Black Metal Ritual', 'Concierto de black metal atmosfÔö£┬«rico', 'black-metal-ritual', 'ACTIVE', '2025-12-21 23:00:00', NULL, '2025-10-01 10:00:00', '2025-12-20 23:59:59', 'f794e6f0-28c4-4512-ab20-1954720ea984', 800, 800, 0, 0, NULL, NULL, NULL, NULL, 20.00, 70.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 9);
 INSERT INTO public."Event" VALUES ('fe1932b8-ef55-4957-83c6-d14b86413e3a', 'Symphonic Metal Night', 'Noche de metal sinfÔö£Ôöénico con orquesta en vivo', 'symphonic-metal-night', 'ACTIVE', '2025-12-15 20:30:00', NULL, '2025-10-15 10:00:00', '2025-12-14 23:59:59', 'eedf995f-f060-4105-81b5-8b46dd58be37', 1800, 1800, 0, 0, NULL, NULL, NULL, NULL, 40.00, 120.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 11);
+INSERT INTO public."Event" VALUES ('evt-2025-076', 'Bilbao Progressive Night', 'Gran evento de progressive metal en Bilbao', 'bilbao-progressive-night', 'ACTIVE', '2025-01-01 16:14:00', '2025-01-01 16:14:44', '2025-10-18 17:45:36.679', '2024-12-31 16:14:00', 'es-bilbao-bizkaia-arena', 18640, 18640, 0, 0, NULL, 'http://localhost:3003/uploads/events/81a1f95f-d132-46e9-b9a3-9b9c33466113.jpg', 'http://localhost:3003/uploads/events/81a1f95f-d132-46e9-b9a3-9b9c33466113.jpg', '{}', 49.00, 196.00, '+16', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-18 17:45:36.689', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 13);
 
 
 --
@@ -2260,6 +2306,18 @@ INSERT INTO public.admins VALUES ('26fa8809-a1a4-4242-9d09-42e65e5ee368', 'voro.
 
 
 --
+-- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: company_admins; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
 -- Name: EventCategory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -2383,6 +2441,30 @@ ALTER TABLE ONLY public._prisma_migrations
 
 ALTER TABLE ONLY public.admins
     ADD CONSTRAINT admins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.companies
+    ADD CONSTRAINT companies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: company_admins company_admins_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.company_admins
+    ADD CONSTRAINT company_admins_email_key UNIQUE (email);
+
+
+--
+-- Name: company_admins company_admins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.company_admins
+    ADD CONSTRAINT company_admins_pkey PRIMARY KEY (id);
 
 
 --
@@ -2796,6 +2878,14 @@ ALTER TABLE ONLY public."Venue"
 
 
 --
+-- Name: company_admins company_admins_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.company_admins
+    ADD CONSTRAINT company_admins_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
 -- Name: Event fk_event_category; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2815,5 +2905,5 @@ ALTER TABLE ONLY public."Event"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict DLqjRJGyTbtFAyaPdj6DcIq5Rvpv4AcTynGDvskYrgrj55pOolGvDEinJ1nFM63
+\unrestrict BWEZfnJkL1YUMUePBInb6drD60PVDpzOr3FhKwviFTa5z8JOq2f9WtuRbwowudu
 

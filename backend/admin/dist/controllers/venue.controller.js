@@ -33,13 +33,13 @@ const createVenueSchema = zod_1.z.object({
 const updateVenueSchema = createVenueSchema.partial();
 const venueQuerySchema = zod_1.z.object({
     page: zod_1.z.string().optional().default('1').transform(Number),
-    limit: zod_1.z.string().optional().default('50').transform(Number),
+    limit: zod_1.z.string().optional().default('1000').transform(Number),
     search: zod_1.z.string().optional(),
     city: zod_1.z.string().optional(),
     isActive: zod_1.z
         .string()
         .optional()
-        .transform(val => val === 'true'),
+        .transform(val => (val === undefined ? undefined : val === 'true')),
     minCapacity: zod_1.z.string().optional().transform(Number),
     maxCapacity: zod_1.z.string().optional().transform(Number),
 });
@@ -574,3 +574,4 @@ class VenueController {
     }
 }
 exports.VenueController = VenueController;
+exports.default = new VenueController();

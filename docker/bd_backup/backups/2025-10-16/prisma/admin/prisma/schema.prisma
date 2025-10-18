@@ -34,7 +34,7 @@ model Venue {
   address     String
   city        String
   state       String?
-  country     String         @default("Espa??a")
+  country     String         @default("Espa├ö├Â┬ú├ö├╗├åa")
   postalCode  String
   latitude    Float?
   longitude   Float?
@@ -103,10 +103,10 @@ model Event {
   venue            Venue             @relation(fields: [venueId], references: [id])
   category         EventCategory     @relation(fields: [categoryId], references: [id], map: "fk_event_category")
   subcategory      EventSubcategory? @relation(fields: [subcategoryId], references: [id], map: "fk_event_subcategory")
-  priceCategories  PriceCategory[]
   localities       EventLocality[]
-  reservations     Reservation[]
   orders           Order[]
+  priceCategories  PriceCategory[]
+  reservations     Reservation[]
   tickets          Ticket[]
 
   @@index([slug])
@@ -161,34 +161,34 @@ model AuditLog {
 model EventCategory {
   id            Int                @id @default(autoincrement())
   name          String             @unique
+  slug          String?            @unique
+  description   String?
+  icon          String?
+  image         String?
+  images        String[]           @default([])
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime
   events        Event[]
   subcategories EventSubcategory[]
+
+  @@index([slug])
 }
 
 model EventSubcategory {
-  id         Int           @id @default(autoincrement())
-  categoryId Int           @map("category_id")
-  name       String
-  events     Event[]
-  category   EventCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id          Int           @id @default(autoincrement())
+  categoryId  Int           @map("category_id")
+  name        String
+  slug        String?       @unique
+  description String?
+  icon        String?
+  image       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  events      Event[]
+  category    EventCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([categoryId, name])
-}
-
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
-  VIEWER
-}
-
-enum EventStatus {
-  DRAFT
-  ACTIVE
-  SOLD_OUT
-  CANCELLED
-  COMPLETED
-  SUSPENDED
+  @@index([slug])
 }
 
 model EventLocality {
@@ -207,8 +207,8 @@ model EventLocality {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   event            Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  reservations     Reservation[]
   orders           Order[]
+  reservations     Reservation[]
   tickets          Ticket[]
 
   @@unique([eventId, name])
@@ -227,9 +227,9 @@ model Reservation {
   expiresAt  DateTime
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
+  orders     Order[]
   event      Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality   EventLocality     @relation(fields: [localityId], references: [id], onDelete: Cascade)
-  orders     Order[]
 
   @@index([userId])
   @@index([status])
@@ -239,23 +239,23 @@ model Reservation {
 }
 
 model Order {
-  id              String      @id @default(uuid())
+  id              String        @id @default(uuid())
   userId          String
   eventId         String
   localityId      String
   quantity        Int
-  totalAmount     Decimal     @db.Decimal(10, 2)
-  discount        Decimal     @db.Decimal(10, 2) @default(0)
-  finalAmount     Decimal     @db.Decimal(10, 2)
-  status          OrderStatus @default(PENDING)
-  stripeSessionId String?     @unique
+  totalAmount     Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  finalAmount     Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+  stripeSessionId String?       @unique
   stripePaymentId String?
   reservationId   String?
   userEmail       String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   paidAt          DateTime?
-  event           Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event           Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality        EventLocality @relation(fields: [localityId], references: [id], onDelete: Cascade)
   reservation     Reservation?  @relation(fields: [reservationId], references: [id])
   tickets         Ticket[]
@@ -268,25 +268,83 @@ model Order {
 }
 
 model Ticket {
-  id         String       @id @default(uuid())
+  id         String        @id @default(uuid())
   orderId    String
   eventId    String
   localityId String
   userId     String
-  ticketCode String       @unique
+  ticketCode String        @unique
   qrCode     String?
-  status     TicketStatus @default(VALID)
+  status     TicketStatus  @default(VALID)
   usedAt     DateTime?
-  createdAt  DateTime     @default(now())
-  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  event      Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  event      Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   locality   EventLocality @relation(fields: [localityId], references: [id], onDelete: Cascade)
+  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([ticketCode])
   @@index([status])
   @@index([orderId])
   @@map("Ticket")
+}
+
+model Company {
+  id                     String         @id @default(uuid())
+  name                   String
+  type                   String
+  region                 String
+  contact_email          String
+  contact_phone          String?
+  address                String?
+  description            String?
+  requires_approval      Boolean?       @default(true)
+  auto_approve_threshold Decimal?       @db.Decimal(10, 2)
+  is_active              Boolean?       @default(true)
+  created_at             DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?      @default(now()) @db.Timestamp(6)
+  deleted_at             DateTime?      @db.Timestamp(6)
+  company_admins         CompanyAdmin[]
+
+  @@map("companies")
+}
+
+model CompanyAdmin {
+  id               String    @id @default(uuid())
+  company_id       String
+  email            String    @unique
+  password         String
+  first_name       String
+  last_name        String
+  can_create       Boolean?  @default(true)
+  can_update       Boolean?  @default(true)
+  can_delete       Boolean?  @default(false)
+  can_view_stats   Boolean?  @default(true)
+  can_manage_stock Boolean?  @default(false)
+  is_active        Boolean?  @default(true)
+  last_login       DateTime? @db.Timestamp(6)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at       DateTime? @db.Timestamp(6)
+  companies        Company   @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("company_admins")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+enum EventStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  CANCELLED
+  COMPLETED
+  SUSPENDED
 }
 
 enum ReservationStatus {

@@ -1,9 +1,9 @@
-import amqp, { Connection, Channel } from 'amqplib';
+import * as amqp from 'amqplib';
 import { logger } from '../utils/logger';
 
 export class RabbitMQService {
-  private connection: Connection | null = null;
-  private channel: Channel | null = null;
+  private connection: amqp.Connection | null = null;
+  private channel: amqp.Channel | null = null;
   private connected: boolean = false;
   private readonly exchange = 'ticketing_events';
 
@@ -11,11 +11,13 @@ export class RabbitMQService {
     try {
       const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://admin:admin123@localhost:5672';
       
-      this.connection = await amqp.connect(rabbitmqUrl);
-      this.channel = await this.connection.createChannel();
+      this.connection = await amqp.connect(rabbitmqUrl) as any;
+      this.channel = await (this.connection as any).createChannel();
       
       // Crear exchange tipo 'topic' para eventos
-      await this.channel.assertExchange(this.exchange, 'topic', { durable: true });
+      if (this.channel) {
+        await this.channel.assertExchange(this.exchange, 'topic', { durable: true });
+      }
       
       this.connected = true;
       logger.info('[RABBITMQ] RabbitMQ conectado exitosamente');
@@ -68,7 +70,7 @@ export class RabbitMQService {
       await this.channel.bindQueue(queue.queue, this.exchange, routingKey);
       
       // Consumir mensajes
-      this.channel.consume(queue.queue, (msg) => {
+      this.channel.consume(queue.queue, (msg: any) => {
         if (msg) {
           try {
             const data = JSON.parse(msg.content.toString());
@@ -90,7 +92,7 @@ export class RabbitMQService {
   async close(): Promise<void> {
     try {
       await this.channel?.close();
-      await this.connection?.close();
+      await (this.connection as any)?.close();
       this.connected = false;
       logger.info('RabbitMQ desconectado');
     } catch (error: any) {

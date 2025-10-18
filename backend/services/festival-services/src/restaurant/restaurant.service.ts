@@ -22,6 +22,41 @@ export class RestaurantService {
     return createdRestaurant.save();
   }
 
+  /**
+   * Crear restaurante con datos de compañía (para COMPANY_ADMIN)
+   */
+  async createWithCompany(createRestaurantDto: CreateRestaurantDto, admin: any): Promise<Restaurant> {
+    const restaurantData = {
+      ...createRestaurantDto,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
+      region: admin.companyRegion,
+      managedBy: admin.email,
+      approvalStatus: 'PENDING', // Requiere aprobación
+      lastModifiedBy: admin.email,
+    };
+
+    const createdRestaurant = new this.restaurantModel(restaurantData);
+    const saved = await createdRestaurant.save();
+
+    // Enviar evento de aprobación requerida
+    this.client.emit('approval.requested', {
+      service: 'RESTAURANT',
+      entityId: (saved as any)._id.toString(),
+      entityType: 'Restaurant',
+      requestedBy: admin.email,
+      metadata: {
+        restaurantName: saved.name,
+        companyName: admin.companyName,
+        region: admin.companyRegion,
+      },
+      priority: 'MEDIUM',
+    });
+
+    console.log(`[RESTAURANT] Nuevo restaurante creado por ${admin.email}, requiere aprobación`);
+    return saved;
+  }
+
   async findAll(): Promise<Restaurant[]> {
     return this.restaurantModel.find({ isActive: true }).exec();
   }

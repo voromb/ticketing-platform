@@ -5,6 +5,7 @@ import { TravelService } from './travel.service';
 import { TravelController } from './travel.controller';
 import { Trip, TripSchema } from './schemas/trip.schema';
 import { Booking, BookingSchema } from './schemas/booking.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -25,9 +26,10 @@ import { Booking, BookingSchema } from './schemas/booking.schema';
         },
       },
     ]),
+    AuthModule,
   ],
   controllers: [TravelController],
   providers: [TravelService],
-  exports: [TravelService],
+  exports: [TravelService]
 })
 export class TravelModule {}

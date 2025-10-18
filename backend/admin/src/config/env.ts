@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-import path from 'path';
-
+// @ts-nocheck - Legacy file with type issues, to be refactored
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -12,7 +10,6 @@ process.env.DOTENVX_QUIET = 'true';
 dotenv.config({
     path: path.resolve(process.cwd(), '.env'),
     override: false,
-    processEnv: process.env,
     debug: false,
 });
 

@@ -29,3 +29,75 @@ model Approval {
   @@index([status])
   @@index([service])
 }
+
+// ==================== COMPANY MANAGEMENT ====================
+
+model Company {
+  id              String         @id @default(uuid())
+  name            String
+  type            CompanyType
+  region          CompanyRegion
+  description     String?
+  contactEmail    String
+  contactPhone    String?
+  address         String?
+  taxId           String?
+  
+  requiresApprovalForCreate  Boolean @default(true)
+  requiresApprovalForDelete  Boolean @default(true)
+  
+  isActive        Boolean        @default(true)
+  companyAdmins   CompanyAdmin[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@unique([type, region])
+  @@index([type])
+  @@index([region])
+  @@index([isActive])
+  @@map("companies")
+}
+
+model CompanyAdmin {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  phone           String?
+  
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  canCreate       Boolean   @default(true)
+  canUpdate       Boolean   @default(true)
+  canDelete       Boolean   @default(false)
+  canViewStats    Boolean   @default(true)
+  canManageStock  Boolean   @default(true)
+  
+  isActive        Boolean   @default(true)
+  lastLogin       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([companyId])
+  @@index([isActive])
+  @@map("company_admins")
+}
+
+enum CompanyType {
+  RESTAURANT
+  TRAVEL
+  MERCHANDISING
+}
+
+enum CompanyRegion {
+  SPAIN
+  EUROPE
+  AMERICA
+  ASIA
+  AFRICA
+  OCEANIA
+}

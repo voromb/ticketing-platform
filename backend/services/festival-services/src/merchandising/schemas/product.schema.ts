@@ -6,6 +6,50 @@ export type ProductDocument = Product & Document;
 @Schema({ timestamps: true })
 export class Product {
   @Prop({ required: true })
+  companyId: string; // ID de la compañía de merchandising
+
+  @Prop({ required: true })
+  companyName: string; // Nombre de la compañía
+
+  @Prop({ required: true })
+  region: string; // SPAIN, EUROPE
+
+  @Prop({ required: true })
+  managedBy: string; // Email del COMPANY_ADMIN
+
+  @Prop({ type: Object })
+  supplier: {
+    name: string;
+    contact: string;
+    country: string;
+  };
+
+  @Prop()
+  costPrice: number; // Precio de coste
+
+  @Prop()
+  margin: number; // Margen de beneficio (%)
+
+  @Prop({ default: 'APPROVED' })
+  approvalStatus: string; // PENDING/APPROVED/REJECTED
+
+  @Prop()
+  lastModifiedBy: string;
+
+  @Prop()
+  lastApprovedBy: string;
+
+  @Prop()
+  lastApprovedAt: Date;
+
+  @Prop({ type: Object })
+  shippingInfo: {
+    weight: number;
+    dimensions: string;
+    shippingTime: number;
+  };
+
+  @Prop({ required: true })
   festivalId: string;
 
   @Prop({ required: true })

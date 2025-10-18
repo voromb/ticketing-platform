@@ -325,8 +325,16 @@ if ($postgresSuccess -and $mongoSuccess -and $prismaSuccess) {
     
 } else {
     Write-ColorOutput "`nLA RESTAURACIÓN TUVO PROBLEMAS" "Red"
-    Write-ColorOutput "PostgreSQL: $(if ($postgresSuccess) { 'OK' } else { 'ERROR' })" "$(if ($postgresSuccess) { 'Green' } else { 'Red' })"
-    Write-ColorOutput "MongoDB: $(if ($mongoSuccess) { 'OK' } else { 'ERROR' })" "$(if ($mongoSuccess) { 'Green' } else { 'Red' })"
-    Write-ColorOutput "Prisma: $(if ($prismaSuccess) { 'OK' } else { 'ERROR' })" "$(if ($prismaSuccess) { 'Green' } else { 'Red' })"
+    $pgStatus = if ($postgresSuccess) { 'OK' } else { 'ERROR' }
+    $pgColor = if ($postgresSuccess) { 'Green' } else { 'Red' }
+    Write-ColorOutput "PostgreSQL: $pgStatus" $pgColor
+    
+    $mongoStatus = if ($mongoSuccess) { 'OK' } else { 'ERROR' }
+    $mongoColor = if ($mongoSuccess) { 'Green' } else { 'Red' }
+    Write-ColorOutput "MongoDB: $mongoStatus" $mongoColor
+    
+    $prismaStatus = if ($prismaSuccess) { 'OK' } else { 'ERROR' }
+    $prismaColor = if ($prismaSuccess) { 'Green' } else { 'Red' }
+    Write-ColorOutput "Prisma: $prismaStatus" $prismaColor
     exit 1
 }

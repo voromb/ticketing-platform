@@ -9,13 +9,18 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { MerchandisingService } from './merchandising.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AddToCartDto, UpdateCartItemDto, ApplyCouponDto } from './dto/cart.dto';
 import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
+import { CompanyAdminGuard } from '../auth/guards/company-admin.guard';
+import { CompanyPermissionGuard } from '../auth/guards/company-permission.guard';
+import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
+import { CurrentCompanyAdmin } from '../auth/decorators/current-company-admin.decorator';
 
 @ApiTags('merchandising')
 @Controller('merchandising')
@@ -23,10 +28,18 @@ export class MerchandisingController {
   constructor(private readonly merchandisingService: MerchandisingService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo producto' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canCreate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear un nuevo producto (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 201, description: 'Producto creado exitosamente' })
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.merchandisingService.create(createProductDto);
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
+    return this.merchandisingService.createWithCompany(createProductDto, admin);
   }
 
   @Get()

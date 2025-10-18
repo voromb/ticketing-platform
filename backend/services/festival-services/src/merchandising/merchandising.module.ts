@@ -6,6 +6,7 @@ import { MerchandisingController } from './merchandising.controller';
 import { Product, ProductSchema } from './schemas/product.schema';
 import { Cart, CartSchema } from './schemas/cart.schema';
 import { Order, OrderSchema } from './schemas/order.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Order, OrderSchema } from './schemas/order.schema';
         },
       },
     ]),
+    AuthModule,
   ],
   controllers: [MerchandisingController],
   providers: [MerchandisingService],

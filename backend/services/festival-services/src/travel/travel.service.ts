@@ -22,6 +22,42 @@ export class TravelService {
     return createdTrip.save();
   }
 
+  /**
+   * Crear viaje con datos de compañía (para COMPANY_ADMIN)
+   */
+  async createWithCompany(createTripDto: CreateTripDto, admin: any): Promise<Trip> {
+    const tripData = {
+      ...createTripDto,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
+      region: admin.companyRegion,
+      managedBy: admin.email,
+      approvalStatus: 'PENDING',
+      lastModifiedBy: admin.email,
+    };
+
+    const createdTrip = new this.tripModel(tripData);
+    const saved = await createdTrip.save();
+
+    // Enviar evento de aprobación requerida
+    this.client.emit('approval.requested', {
+      service: 'TRAVEL',
+      entityId: (saved as any)._id.toString(),
+      entityType: 'Trip',
+      requestedBy: admin.email,
+      metadata: {
+        tripName: saved.name,
+        companyName: admin.companyName,
+        region: admin.companyRegion,
+        capacity: saved.capacity,
+      },
+      priority: 'MEDIUM',
+    });
+
+    console.log(`[TRAVEL] Nuevo viaje creado por ${admin.email}, requiere aprobación`);
+    return saved;
+  }
+
   async findAll(): Promise<Trip[]> {
     return this.tripModel.find({ isActive: true }).exec();
   }
