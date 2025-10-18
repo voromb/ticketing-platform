@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict G6lcKYlw3F7H0vm5gO2BZ5w1xB0voV6iQQiCeg2z00ohnwndK8s4irsDMWUkULJ
+\restrict 819MWisw56zHeRikyBOKKQIuxRSOGOClGTgLdCUubeqqJNnSibHzF6Q6JLlQ6ui
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
@@ -903,7 +903,7 @@ INSERT INTO public."Event" VALUES ('cb12da56-8cf5-45d1-9605-ef0ebfbdbe53', 'Meta
 INSERT INTO public."Event" VALUES ('4d8eaab2-fe43-4844-99cd-4ab77c64ef42', 'Ontinyent Metal Fest', 'Festival de metal en la PlaÔö£┬║a de Baix', 'ontinyent-metal-fest', 'ACTIVE', '2025-07-30 20:00:00', NULL, '2025-05-01 10:00:00', '2025-07-29 23:59:59', 'ed18fb98-1c7f-4859-8f5c-3f3e099cebd3', 100000, 100000, 0, 0, NULL, NULL, NULL, NULL, 50.00, 150.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 7);
 INSERT INTO public."Event" VALUES ('402bed42-00d4-4c56-ba51-650ec4380d46', 'Black Metal Ritual', 'Concierto de black metal atmosfÔö£┬«rico', 'black-metal-ritual', 'ACTIVE', '2025-12-21 23:00:00', NULL, '2025-10-01 10:00:00', '2025-12-20 23:59:59', 'f794e6f0-28c4-4512-ab20-1954720ea984', 800, 800, 0, 0, NULL, NULL, NULL, NULL, 20.00, 70.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 9);
 INSERT INTO public."Event" VALUES ('fe1932b8-ef55-4957-83c6-d14b86413e3a', 'Symphonic Metal Night', 'Noche de metal sinfÔö£Ôöénico con orquesta en vivo', 'symphonic-metal-night', 'ACTIVE', '2025-12-15 20:30:00', NULL, '2025-10-15 10:00:00', '2025-12-14 23:59:59', 'eedf995f-f060-4105-81b5-8b46dd58be37', 1800, 1800, 0, 0, NULL, NULL, NULL, NULL, 40.00, 120.00, NULL, '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-03 11:59:57.49', '2025-10-03 11:59:57.49', NULL, NULL, NULL, NULL, 2, 11);
-INSERT INTO public."Event" VALUES ('evt-2025-076', 'Bilbao Progressive Night', 'Gran evento de progressive metal en Bilbao', 'bilbao-progressive-night', 'ACTIVE', '2025-01-01 16:14:00', '2025-01-01 16:14:44', '2025-10-18 17:45:36.679', '2024-12-31 16:14:00', 'es-bilbao-bizkaia-arena', 18640, 18640, 0, 0, NULL, 'http://localhost:3003/uploads/events/81a1f95f-d132-46e9-b9a3-9b9c33466113.jpg', 'http://localhost:3003/uploads/events/81a1f95f-d132-46e9-b9a3-9b9c33466113.jpg', '{}', 49.00, 196.00, '+16', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-18 17:45:36.689', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 13);
+INSERT INTO public."Event" VALUES ('evt-2025-076', 'Bilbao Progressive Night', 'Gran evento de progressive metal en Bilbao', 'bilbao-progressive-night', 'ACTIVE', '2025-01-01 14:14:00', '2025-01-01 16:14:44', '2025-10-18 18:33:27.18', '2024-12-31 14:14:00', 'es-bilbao-bizkaia-arena', 18640, 18640, 0, 0, NULL, 'http://localhost:3003/uploads/events/b85b02d7-6bf2-472e-82c6-20e0c0e87b81.jpg', 'http://localhost:3003/uploads/events/81a1f95f-d132-46e9-b9a3-9b9c33466113.jpg', '{}', 49.00, 196.00, '+16', '467a0b9f-5cd9-46b0-8905-621bc92a8664', '2025-10-16 16:20:41.136', '2025-10-18 18:33:27.187', '2025-10-16 16:20:41.136', NULL, NULL, NULL, 2, 13);
 
 
 --
@@ -2116,8 +2116,8 @@ INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-399-3', 'evt-2025-399',
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-1', 'evt-2025-400', 'Pista General', 'Zona pista general', 9350, 54.00, 9350, 0, 0, '#3B82F6', true, 1, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-2', 'evt-2025-400', 'Grada', 'Zona grada', 5950, 100.00, 5950, 0, 0, '#10B981', true, 2, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-3', 'evt-2025-400', 'Palco VIP', 'Zona palco vip', 1700, 135.00, 1700, 0, 0, '#F59E0B', true, 3, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
-INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-076-1', 'evt-2025-076', 'Pista General', 'Zona pista general', 10252, 49.00, 10248, 4, 0, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-16 16:45:18.799');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-075-1', 'evt-2025-075', 'Pista General', 'Zona pista general', 9900, 49.00, 9894, 6, 0, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-16 19:21:38.227');
+INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-076-1', 'evt-2025-076', 'Pista General', 'Zona pista general', 10252, 49.00, 10245, 6, 1, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-18 18:32:30.058');
 
 
 --
@@ -2148,6 +2148,7 @@ INSERT INTO public."Order" VALUES ('548297bc-0645-4242-a0ef-b0677ffdad54', '68ce
 INSERT INTO public."Order" VALUES ('774d728b-3f4a-4110-a46a-e410dfd8c322', '467a0b9f-5cd9-46b0-8905-621bc92a8664', 'evt-2025-076', 'loc-evt-2025-076-1', 2, 98.00, 0.00, 98.00, 'PAID', 'demo_session_774d728b-3f4a-4110-a46a-e410dfd8c322', NULL, NULL, 'admin@ticketing.com', '2025-10-16 16:40:05.413', '2025-10-16 16:45:18.792', '2025-10-16 16:45:18.79');
 INSERT INTO public."Order" VALUES ('6a7090fa-3465-4208-b0b3-63dab539e6ce', '68cecdafebd62af136cdfc92', 'evt-2025-075', 'loc-evt-2025-075-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_6a7090fa-3465-4208-b0b3-63dab539e6ce', NULL, NULL, 'voromb@hotmail.com', '2025-10-16 16:45:36.82', '2025-10-16 16:45:40.468', '2025-10-16 16:45:40.467');
 INSERT INTO public."Order" VALUES ('c233efab-c0a6-464c-a314-f4d1fe180c6e', '68d17160c60cb0338f7819e3', 'evt-2025-075', 'loc-evt-2025-075-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_c233efab-c0a6-464c-a314-f4d1fe180c6e', NULL, NULL, 'xaviperezcanada1@gmail.com', '2025-10-16 19:21:34.833', '2025-10-16 19:21:38.219', '2025-10-16 19:21:38.218');
+INSERT INTO public."Order" VALUES ('98859751-9a7a-45e9-bc4c-0e4bbd0da432', '68cecdafebd62af136cdfc92', 'evt-2025-076', 'loc-evt-2025-076-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_98859751-9a7a-45e9-bc4c-0e4bbd0da432', NULL, NULL, 'voromb@hotmail.com', '2025-10-18 18:31:24.092', '2025-10-18 18:31:28.001', '2025-10-18 18:31:28');
 
 
 --
@@ -2160,6 +2161,7 @@ INSERT INTO public."Order" VALUES ('c233efab-c0a6-464c-a314-f4d1fe180c6e', '68d1
 -- Data for Name: Reservation; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+INSERT INTO public."Reservation" VALUES ('be48056e-5a4f-4a21-82ea-aa11b1049d8b', '68cecdafebd62af136cdfc92', 'evt-2025-076', 'loc-evt-2025-076-1', 1, 'ACTIVE', '2025-10-18 18:47:30.051', '2025-10-18 18:32:30.052', '2025-10-18 18:32:30.052');
 
 
 --
@@ -2176,6 +2178,8 @@ INSERT INTO public."Ticket" VALUES ('37b3079e-8130-421a-bb61-46b76590e8ff', '6a7
 INSERT INTO public."Ticket" VALUES ('19940244-5dae-4561-a598-af49b3876cae', '6a7090fa-3465-4208-b0b3-63dab539e6ce', 'evt-2025-075', 'loc-evt-2025-075-1', '68cecdafebd62af136cdfc92', 'TKT-1760633140472-1', 'TICKET-6a7090fa-3465-4208-b0b3-63dab539e6ce-1', 'VALID', NULL, '2025-10-16 16:45:40.473');
 INSERT INTO public."Ticket" VALUES ('39dbeb93-c32f-4a7b-9728-41a7e8a7d4da', 'c233efab-c0a6-464c-a314-f4d1fe180c6e', 'evt-2025-075', 'loc-evt-2025-075-1', '68d17160c60cb0338f7819e3', 'c233efab-c0a6-464c-a314-f4d1fe180c6e-loc-evt-2025-075-1-1', 'QR-c233efab-c0a6-464c-a314-f4d1fe180c6e-loc-evt-2025-075-1-1', 'VALID', NULL, '2025-10-16 19:21:34.84');
 INSERT INTO public."Ticket" VALUES ('c647836f-0532-41b1-9a54-509f7403750f', 'c233efab-c0a6-464c-a314-f4d1fe180c6e', 'evt-2025-075', 'loc-evt-2025-075-1', '68d17160c60cb0338f7819e3', 'TKT-1760642498237-1', 'TICKET-c233efab-c0a6-464c-a314-f4d1fe180c6e-1', 'VALID', NULL, '2025-10-16 19:21:38.238');
+INSERT INTO public."Ticket" VALUES ('00aa6c97-4e10-4d02-84f9-b7f80176b58b', '98859751-9a7a-45e9-bc4c-0e4bbd0da432', 'evt-2025-076', 'loc-evt-2025-076-1', '68cecdafebd62af136cdfc92', '98859751-9a7a-45e9-bc4c-0e4bbd0da432-loc-evt-2025-076-1-1', 'QR-98859751-9a7a-45e9-bc4c-0e4bbd0da432-loc-evt-2025-076-1-1', 'VALID', NULL, '2025-10-18 18:31:24.095');
+INSERT INTO public."Ticket" VALUES ('e6b8b43b-16f3-4373-90e4-06a0e178775b', '98859751-9a7a-45e9-bc4c-0e4bbd0da432', 'evt-2025-076', 'loc-evt-2025-076-1', '68cecdafebd62af136cdfc92', 'TKT-1760812288006-1', 'TICKET-98859751-9a7a-45e9-bc4c-0e4bbd0da432-1', 'VALID', NULL, '2025-10-18 18:31:28.007');
 
 
 --
@@ -2905,5 +2909,5 @@ ALTER TABLE ONLY public."Event"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict G6lcKYlw3F7H0vm5gO2BZ5w1xB0voV6iQQiCeg2z00ohnwndK8s4irsDMWUkULJ
+\unrestrict 819MWisw56zHeRikyBOKKQIuxRSOGOClGTgLdCUubeqqJNnSibHzF6Q6JLlQ6ui
 
