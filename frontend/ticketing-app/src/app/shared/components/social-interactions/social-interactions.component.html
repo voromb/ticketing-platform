@@ -1,0 +1,171 @@
+<div class="social-interactions">
+  <!-- Like Section -->
+  <div class="like-section">
+    <button 
+      class="like-btn" 
+      [class.liked]="isLiked()"
+      (click)="toggleLike()"
+      [disabled]="!isAuthenticated()">
+      <i class="fas fa-heart" [class.fas]="isLiked()" [class.far]="!isLiked()"></i>
+      <span>{{ likesCount() }}</span>
+    </button>
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section">
+    <div class="comments-header">
+      <h3>Comentarios ({{ commentsCount() }})</h3>
+    </div>
+
+    <!-- Add Comment Form / Login Prompt -->
+    @if (isAuthenticated()) {
+      <div class="add-comment">
+        <textarea 
+          [value]="newComment()"
+          (input)="newComment.set($any($event.target).value)"
+          placeholder="Escribe tu comentario..."
+          maxlength="1000"
+          rows="3">
+        </textarea>
+        <div class="comment-actions">
+          <span class="char-count">{{ newComment().length }}/1000</span>
+          <button 
+            class="btn-primary"
+            (click)="addComment()"
+            [disabled]="!newComment().trim() || isSubmitting()">
+            {{ isSubmitting() ? 'Enviando...' : 'Comentar' }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="login-prompt">
+        <p>Inicia sesión para comentar y dar likes</p>
+        <button class="btn-primary" (click)="onLoginRequired.emit()">Iniciar Sesión</button>
+      </div>
+    }
+
+    <!-- Comments List -->
+    <div class="comments-list">
+      @for (comment of comments(); track trackByCommentId($index, comment)) {
+        <div class="comment-item">
+          <!-- Main Comment -->
+          <div class="comment-main">
+            <div class="comment-header">
+              <div class="user-info">
+                <img 
+                  [src]="comment.user?.avatar || '/assets/default-avatar.png'" 
+                  [alt]="comment.user?.username"
+                  class="user-avatar">
+                <div class="user-details">
+                  <span class="username">{{ comment.user?.username }}</span>
+                  <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                </div>
+              </div>
+
+              @if (isAuthenticated()) {
+                <div class="comment-actions">
+                  <button 
+                    class="like-comment-btn"
+                    [class.liked]="isCommentLiked(comment)"
+                    (click)="toggleCommentLike(comment)">
+                    <i class="fas fa-heart" 
+                       [class.fas]="isCommentLiked(comment)" 
+                       [class.far]="!isCommentLiked(comment)"></i>
+                    {{ comment.likesCount }}
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="comment-content">
+              <p>{{ comment.content }}</p>
+            </div>
+
+            @if (isAuthenticated()) {
+              <div class="comment-footer">
+                <button 
+                  class="reply-btn"
+                  (click)="toggleReply(comment)"
+                  [class.active]="replyingTo() === comment.id">
+                  {{ replyingTo() === comment.id ? 'Cancelar' : 'Responder' }}
+                </button>
+              </div>
+            }
+
+            <!-- Reply Form -->
+            @if (replyingTo() === comment.id) {
+              <div class="reply-form">
+                <textarea 
+                  [value]="replyText()"
+                  (input)="replyText.set($any($event.target).value)"
+                  placeholder="Escribe tu respuesta..."
+                  maxlength="1000"
+                  rows="2">
+                </textarea>
+                <div class="reply-actions">
+                  <span class="char-count">{{ replyText().length }}/1000</span>
+                  <button 
+                    class="btn-primary"
+                    (click)="addReply(comment)"
+                    [disabled]="!replyText().trim() || isSubmitting()">
+                    {{ isSubmitting() ? 'Enviando...' : 'Responder' }}
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Replies -->
+            @if (comment.replies && comment.replies.length > 0) {
+              <div class="replies">
+               @for (reply of comment.replies; track trackByCommentId($index, reply)) {
+
+                  <div class="reply-item">
+                    <div class="reply-header">
+                      <img 
+                        [src]="reply.user?.avatar || 'assets/default-avatar.png'" 
+                        [alt]="reply.user?.username"
+                        class="user-avatar small">
+                      <div class="user-details">
+                        <span class="username">{{ reply.user?.username }}</span>
+                        <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+                      </div>
+
+                      @if (isAuthenticated()) {
+                        <div class="comment-actions">
+                          <button 
+                            class="like-comment-btn"
+                            [class.liked]="isCommentLiked(reply)"
+                            (click)="toggleCommentLike(reply)">
+                            <i class="fas fa-heart" 
+                               [class.fas]="isCommentLiked(reply)" 
+                               [class.far]="!isCommentLiked(reply)"></i>
+                            {{ reply.likesCount }}
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="reply-content">
+                      <p>{{ reply.content }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (hasMoreComments()) {
+        <div class="load-more-section">
+          <button 
+            class="load-more-btn"
+            (click)="loadComments()"
+            [disabled]="isLoading()">
+            {{ isLoading() ? 'Cargando...' : 'Cargar más comentarios' }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
