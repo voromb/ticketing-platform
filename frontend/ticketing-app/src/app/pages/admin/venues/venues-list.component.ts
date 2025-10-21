@@ -811,10 +811,10 @@ export class VenuesListComponent implements OnInit {
     if (!this.isFormValid()) return;
 
     if (this.isEditing && this.venueForm.id) {
-      const venueUpdateData = {
-        name: this.venueForm.name,
-        address: this.venueForm.address,
-        city: this.venueForm.city,
+      const venueUpdateData: any = {
+        name: this.venueForm.name?.trim(),
+        address: this.venueForm.address?.trim(),
+        city: this.venueForm.city?.trim(),
         capacity: Number(this.venueForm.capacity),
         slug: (this.venueForm.name || '')
           .toLowerCase()
@@ -823,12 +823,19 @@ export class VenuesListComponent implements OnInit {
           .replace(/-+/g, '-')
           .replace(/^-+|-+$/g, '')
           .trim(),
-        country: this.venueForm.country || 'España',
-        postalCode: this.venueForm.postalCode || '46001',
-        amenities: this.venueForm.amenities || ['parking', 'bar'],
-        images: this.venueForm.images || [],
-        isActive: this.venueForm.isActive,
+        country: this.venueForm.country?.trim() || 'España',
+        postalCode: this.venueForm.postalCode?.trim() || '46001',
+        isActive: Boolean(this.venueForm.isActive),
       };
+
+      // Solo incluir arrays si tienen elementos
+      if (this.venueForm.amenities && this.venueForm.amenities.length > 0) {
+        venueUpdateData.amenities = this.venueForm.amenities;
+      }
+      
+      if (this.venueForm.images && this.venueForm.images.length > 0) {
+        venueUpdateData.images = this.venueForm.images;
+      }
 
       this.adminService.updateVenue(this.venueForm.id, venueUpdateData).subscribe({
         next: () => {

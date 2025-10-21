@@ -16,7 +16,6 @@ import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('api/upload')
-@UseGuards(JwtAuthGuard)
 export class UploadController {
   private readonly uploadPath = join(process.cwd(), 'uploads');
 
@@ -186,6 +185,7 @@ export class UploadController {
   }
 
   @Delete()
+  @UseGuards(JwtAuthGuard)
   async deleteImage(@Body('imageUrl') imageUrl: string) {
     if (!imageUrl) {
       throw new BadRequestException('URL de imagen no proporcionada');
@@ -213,6 +213,7 @@ export class UploadController {
   }
 
   @Post('delete-multiple')
+  @UseGuards(JwtAuthGuard)
   async deleteMultipleImages(@Body('imageUrls') imageUrls: string[]) {
     if (!imageUrls || imageUrls.length === 0) {
       throw new BadRequestException('URLs de imágenes no proporcionadas');
