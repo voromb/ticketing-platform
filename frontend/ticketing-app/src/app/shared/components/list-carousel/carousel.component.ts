@@ -41,15 +41,21 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     // Detectar cambios en eventImages para recargar el carousel
     if (changes['eventImages'] && !changes['eventImages'].firstChange) {
       console.log('🔄 Cambios detectados en eventImages, recargando carousel...');
-      this.loadCarouselItems();
-      this.cdr.detectChanges();
+      // Usar setTimeout para evitar el error NG0100
+      setTimeout(() => {
+        this.loadCarouselItems();
+        this.cdr.detectChanges();
+      }, 0);
     }
     
     // Detectar cambios en page para recargar el carousel
     if (changes['page'] && !changes['page'].firstChange) {
       console.log('🔄 Cambios detectados en page, recargando carousel...');
-      this.loadCarouselItems();
-      this.cdr.detectChanges();
+      // Usar setTimeout para evitar el error NG0100
+      setTimeout(() => {
+        this.loadCarouselItems();
+        this.cdr.detectChanges();
+      }, 0);
     }
   }
 
@@ -92,67 +98,77 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     this.categoryService.getAllCategories().subscribe((data: ICategory[]) => {
       this.categories = data;
 
-      this.slides = this.categories.map(cat => ({
-        title: cat.name,
-        imageUrl: cat.image || 'assets/categories/rock-metal.jpg'
-      }));
+      // Usar setTimeout para evitar el error NG0100
+      setTimeout(() => {
+        this.slides = this.categories.map(cat => ({
+          title: cat.name,
+          imageUrl: cat.image || 'assets/categories/rock-metal.jpg'
+        }));
+        this.cdr.detectChanges();
+      }, 0);
     });
   }
 private loadEventImages(): void {
   if (!this.eventImages || this.eventImages.length === 0) {
     console.warn('⚠️ No hay imágenes o eventos para cargar en el carrusel.');
-    this.slides = [];
-    this.cdr.detectChanges();
+    // Usar setTimeout para evitar el error NG0100
+    setTimeout(() => {
+      this.slides = [];
+      this.cdr.detectChanges();
+    }, 0);
     return;
   }
 
   console.log('📥 Datos recibidos en eventImages:', this.eventImages);
 
-  // Si el primer elemento es un objeto con 'images' o 'bannerImage' → son eventos
-  if (typeof this.eventImages[0] === 'object') {
-    console.log('📦 Se detectó un array de eventos, procesando imágenes...');
+  // Usar setTimeout para evitar el error NG0100
+  setTimeout(() => {
+    // Si el primer elemento es un objeto con 'images' o 'bannerImage' → son eventos
+    if (typeof this.eventImages[0] === 'object') {
+      console.log('📦 Se detectó un array de eventos, procesando imágenes...');
 
-    this.slides = (this.eventImages as IEvent[]).flatMap(event => {
-      const slides: { imageUrl: string; title?: string }[] = [];
+      this.slides = (this.eventImages as IEvent[]).flatMap(event => {
+        const slides: { imageUrl: string; title?: string }[] = [];
 
-      if (event.bannerImage) {
-        slides.push({
-          imageUrl: event.bannerImage,
-          title: event.name
-        });
-        console.log(`🖼️ Banner agregado: ${event.bannerImage}`);
-      }
-
-      // 👇 Ojo: tu modelo tiene "images" (plural), no "image"
-      if (Array.isArray(event.images) && event.images.length > 0) {
-        event.images.forEach(img => {
+        if (event.bannerImage) {
           slides.push({
-            imageUrl: img,
+            imageUrl: event.bannerImage,
             title: event.name
           });
-          console.log(`🖼️ Imagen agregada: ${img}`);
-        });
-      }
+          console.log(`🖼️ Banner agregado: ${event.bannerImage}`);
+        }
 
-      return slides;
-    });
+        // 👇 Ojo: tu modelo tiene "images" (plural), no "image"
+        if (Array.isArray(event.images) && event.images.length > 0) {
+          event.images.forEach(img => {
+            slides.push({
+              imageUrl: img,
+              title: event.name
+            });
+            console.log(`🖼️ Imagen agregada: ${img}`);
+          });
+        }
 
-  } else {
-    console.log('🧩 Se detectó un array de URLs simples.');
-    this.slides = (this.eventImages as string[]).map(img => ({
-      imageUrl: img
-    }));
-  }
+        return slides;
+      });
 
-  console.log('✅ Imágenes cargadas en slides:', this.slides);
-  
-  // Forzar detección de cambios después de cargar las imágenes
-  this.cdr.detectChanges();
-  
-  // Reiniciar el índice si es necesario
-  if (this.currentIndex >= this.slides.length) {
-    this.currentIndex = 0;
-  }
+    } else {
+      console.log('🧩 Se detectó un array de URLs simples.');
+      this.slides = (this.eventImages as string[]).map(img => ({
+        imageUrl: img
+      }));
+    }
+
+    console.log('✅ Imágenes cargadas en slides:', this.slides);
+    
+    // Reiniciar el índice si es necesario
+    if (this.currentIndex >= this.slides.length) {
+      this.currentIndex = 0;
+    }
+    
+    // Forzar detección de cambios después de cargar las imágenes
+    this.cdr.detectChanges();
+  }, 0);
 }
 
 
