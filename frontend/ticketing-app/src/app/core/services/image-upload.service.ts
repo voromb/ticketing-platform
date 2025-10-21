@@ -21,7 +21,7 @@ export interface DeleteMultipleImagesRequest {
   providedIn: 'root',
 })
 export class ImageUploadService {
-  private apiUrl = environment.apiUrl || 'http://localhost:3003/api';
+  private apiUrl = environment.apiUrl || 'http://localhost:3004/api';
 
   constructor(private http: HttpClient) {}
 

@@ -4,48 +4,9 @@
 
 # ================================
 
-## 📋 CONTENIDO DEL BACKUP VERIFICADO
-
-El backup `SEGURIDAD_COMPLETA_2025-10-16` contiene:
-
-### PostgreSQL Principal (ticketing)
-
--   ✅ **419 eventos** completos con localidades y precios
--   ✅ **85 venues** con toda la información de ubicación
--   ✅ **2 categorías** (Rock, Metal)
--   ✅ **13 subcategorías** (Classic Rock, Alternative Rock, etc.)
--   ✅ **3 administradores** con credenciales
-
-### PostgreSQL Admin (ticketing_admin)
-
--   ✅ **19 eventos** adicionales del sistema admin
--   ✅ **12 venues** adicionales del sistema admin
-
-### PostgreSQL Approvals (approvals_db)
-
--   ✅ **2 aprobaciones** del sistema de workflow
-
-### MongoDB
-
--   ✅ **Base ticketing**: 3 usuarios + colecciones del sistema
--   ✅ **Base festival_services**: 7 colecciones para gestión de festivales
--   ✅ **Archivo**: 2.2KB comprimido
-
-### Prisma Migrations
-
--   ✅ **admin**: Migraciones del backend administrativo
--   ✅ **docker**: Configuración de base de datos Docker
--   ✅ **festival-services**: Migraciones del servicio de festivales
-
-### RabbitMQ
-
--   ✅ Configuración de colas y exchanges para comunicación entre servicios
-
----
-
 ## 🚀 INSTRUCCIONES DE USO
 
-### 1. Restauración Completa (Recomendado)
+### 1. Restauración Completa
 
 ```powershell
 # Restaurar todo el sistema con confirmación
@@ -68,10 +29,10 @@ npx prisma generate
 
 ```powershell
 # Verificación básica
-.\verificar_restore.ps1
+scripts\verify-database.ps1
 
-# Verificación detallada con datos específicos
-.\verificar_restore.ps1 -Detailed
+.\verify-database.ps1
+
 ```
 
 ### 3. Backup Manual (si necesario)
@@ -84,7 +45,7 @@ npx prisma generate
 # Ejemplo: backups\2025-10-18
 ```
 
-**📅 Nota:** El script de backup ahora crea automáticamente una carpeta con la fecha actual, no machaca backups anteriores.
+**📅 Nota:** El script de backup machaca backups anteriores dentro de la misma carpeta.
 
 ---
 
@@ -190,13 +151,10 @@ docker-compose restart ticketing-festival-services
 
 ---
 
-## 📞 INFORMACIÓN DE CONTACTO
-
 -   **Backup creado**: 16/10/2025 19:32:34
 -   **Versión del sistema**: 1.0
 -   **Última verificación**: Completada exitosamente
 -   **Estado**: ✅ Listo para restore completo
-
 ---
 
 ## 🎯 RESULTADO ESPERADO
