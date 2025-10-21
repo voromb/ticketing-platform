@@ -28,7 +28,13 @@ async function companyRoutes(fastify) {
         handler: company_controller_1.companyController.createCompany.bind(company_controller_1.companyController)
     });
     // Estadísticas globales (DEBE IR ANTES de /:id)
-    fastify.get('/companies/stats/global', company_controller_1.companyController.getGlobalStats.bind(company_controller_1.companyController));
+    fastify.get('/companies/stats/global', {
+        schema: {
+            description: 'Obtener estadísticas globales de todas las compañías',
+            tags: ['Companies'],
+        },
+        handler: company_controller_1.companyController.getGlobalStats.bind(company_controller_1.companyController)
+    });
     // Listar compañías
     fastify.get('/companies', {
         schema: {

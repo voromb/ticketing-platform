@@ -15,8 +15,11 @@
             <h1 class="text-2xl font-bold text-gray-900">
               {{ user?.firstName || user?.email }}
             </h1>
+            
             <!-- Corona VIP -->
-            <i *ngIf="isVipUser()" class="fas fa-crown text-yellow-500 text-lg" title="Usuario VIP"></i>
+             @if (isVipUser()) {
+              <i class="fas fa-crown text-yellow-500 text-lg" title="Usuario VIP"></i>
+            }
             <!-- Indicador de panel de usuario  -->
             <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Panel de usuario</span>
           </div>
@@ -24,7 +27,9 @@
           <div class="mt-2">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
                   [ngClass]="getRoleBadgeClass()">
-              <i *ngIf="isVipUser()" class="fas fa-crown mr-1"></i>
+                @if (isVipUser()) {
+                <i class="fas fa-crown mr-1"></i>
+              }
               {{ getRoleDisplayName() }}
             </span>
           </div>
@@ -43,13 +48,14 @@
             <i class="fas fa-user mr-3"></i>Mi Perfil
           </button>
 
-          <button
-            *ngIf="isVip"
-            (click)="setActiveTab('reservations')"
-            [class]="activeTab === 'reservations' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-yellow-500 hover:text-yellow-600 hover:border-yellow-300'"
-            class="whitespace-nowrap py-6 px-4 border-b-2 font-medium text-base">
-            <i class="fas fa-bookmark mr-3"></i>Mis Reservas VIP
-          </button>
+          @if (isVipUser()) {
+            <button
+              (click)="setActiveTab('reservations')"
+              [class]="activeTab === 'reservations' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-yellow-500 hover:text-yellow-600 hover:border-yellow-300'"
+              class="whitespace-nowrap py-6 px-4 border-b-2 font-medium text-base">
+              <i class="fas fa-bookmark mr-3"></i>Mis Reservas VIP
+            </button>
+          }
 
           <button
             (click)="setActiveTab('tickets')"
@@ -65,13 +71,14 @@
             <i class="fas fa-history mr-3"></i>Historial
           </button>
 
-          <button
-            *ngIf="!isVipUser()"
-            (click)="setActiveTab('vip')"
-            [class]="activeTab === 'vip' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-yellow-500 hover:text-yellow-600 hover:border-yellow-300'"
-            class="whitespace-nowrap py-6 px-4 border-b-2 font-medium text-base">
-            <i class="fas fa-crown mr-3"></i>Beneficios VIP
-          </button>
+          @if (!isVipUser()) {
+            <button
+              (click)="setActiveTab('vip')"
+              [class]="activeTab === 'vip' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-yellow-500 hover:text-yellow-600 hover:border-yellow-300'"
+              class="whitespace-nowrap py-6 px-4 border-b-2 font-medium text-base">
+              <i class="fas fa-crown mr-3"></i>Beneficios VIP
+            </button>
+          }
         </nav>
       </div>
 
@@ -79,45 +86,30 @@
       <div class="p-6">
 
         <!-- Tab: Mi Perfil -->
-        <div *ngIf="activeTab === 'profile'">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Información Personal</h2>
-
-          <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              <!-- Nombre -->
-              <div>
-                <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  formControlName="firstName"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Tu nombre">
-              </div>
-
-              <!-- Apellidos -->
-              <div>
-                <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Apellidos</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  formControlName="lastName"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Tus apellidos">
-              </div>
+         @if (activeTab === 'profile') {
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Información Personal</h2>
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nombre -->
+                <div>
+                  <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    [value]="user?.firstName"
+                    readonly
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                </div>
 
               <!-- Email (solo lectura) -->
-              <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  [value]="user?.email"
-                  readonly
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
-                <p class="text-xs text-gray-500 mt-1">El email no se puede modificar</p>
-              </div>
+              <input
+                type="email"
+                id="email"
+                [value]="user?.email"
+                readonly
+                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+              <p class="text-xs text-gray-500 mt-1">El email no se puede modificar</p>
 
               <!-- Teléfono -->
               <div>
@@ -199,7 +191,8 @@
           </form>
 
           <!-- Formulario de Cambio de Contraseña -->
-          <div *ngIf="showPasswordForm" class="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+           @if (showPasswordForm) {
+            <div class="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Cambiar Contraseña</h3>
 
             <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()">
@@ -269,242 +262,218 @@
               </div>
             </form>
           </div>
-        </div>
+        }
+          }
 
         <!-- Tab: Mis Reservas VIP -->
-        <div *ngIf="activeTab === 'reservations' && isVip">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">
-            <i class="fas fa-bookmark text-yellow-500 mr-2"></i>Mis Reservas VIP
-          </h2>
+        @if (activeTab === 'reservations' && isVipUser()) {
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+              <i class="fas fa-bookmark text-yellow-500 mr-2"></i>Mis Reservas VIP
+            </h2>
 
-          <!-- Loading -->
-          <div *ngIf="loadingReservations" class="text-center py-8">
-            <div class="spinner-border text-warning" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
+            @for (reservation of myReservations; track reservation.id) {
+              @if (reservation && reservation.status === 'ACTIVE') {
+                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-4">
+                  <div class="flex gap-2">
+                    <button (click)="cancelReservation(reservation.id)"
+                            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                      <i class="fas fa-times mr-2"></i>Cancelar Reserva
+                    </button>
+                    <button (click)="purchaseReservation(reservation)"
+                            class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                      <i class="fas fa-shopping-cart mr-2"></i>Comprar Ahora
+                    </button>
+                  </div>
+                </div>
+              }
+            }
           </div>
-
-          <!-- Sin reservas -->
-          <div *ngIf="!loadingReservations && myReservations.length === 0" class="text-center py-8">
-            <i class="fas fa-bookmark text-gray-400 text-4xl mb-4"></i>
-            <p class="text-gray-500">No tienes reservas activas</p>
-            <p class="text-gray-400 text-sm">Las reservas expiran en 15 minutos</p>
-          </div>
-
-          <!-- Lista de reservas -->
-          <div *ngIf="!loadingReservations && myReservations.length > 0" class="space-y-4">
-            <div *ngFor="let reservation of myReservations" class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-              <div class="flex justify-between items-start mb-3">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900">{{ reservation.event.name }}</h3>
-                  <p class="text-gray-600 text-sm">{{ reservation.locality.name }}</p>
-                  <p class="text-gray-600 text-sm">{{ reservation.event.eventDate | date:'dd/MM/yyyy HH:mm' }}</p>
-                </div>
-                <div class="text-right">
-                  <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
-                        [class]="reservation.status === 'ACTIVE' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-800'">
-                    {{ reservation.status }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4 mb-3">
-                <div>
-                  <p class="text-sm text-gray-500">Cantidad</p>
-                  <p class="font-semibold">{{ reservation.quantity }} entrada(s)</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Precio</p>
-                  <p class="font-semibold">{{ reservation.locality.price * reservation.quantity | number:'1.2-2' }}€</p>
-                </div>
-              </div>
-
-              <!-- Timer de expiración -->
-              <div *ngIf="reservation.status === 'ACTIVE'" class="bg-yellow-100 border border-yellow-300 rounded p-3 mb-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-semibold text-yellow-800">
-                    <i class="fas fa-clock mr-2"></i>Tiempo restante:
-                  </span>
-                  <span class="text-lg font-bold text-yellow-900">
-                    {{ getTimeLeft(reservation) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Botones de acción -->
-              <div class="flex gap-2" *ngIf="reservation.status === 'ACTIVE'">
-                <button (click)="cancelReservation(reservation.id)"
-                        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                  <i class="fas fa-times mr-2"></i>Cancelar Reserva
-                </button>
-                <button (click)="purchaseReservation(reservation)"
-                        class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                  <i class="fas fa-shopping-cart mr-2"></i>Comprar Ahora
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        }
 
         <!-- Tab: Mis Entradas -->
-        <div *ngIf="activeTab === 'tickets'">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Mis Entradas</h2>
-            <button (click)="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
-              <i class="fas fa-sync-alt mr-2"></i>Actualizar
-            </button>
-          </div>
-
-          <div *ngIf="loadingOrders" class="text-center py-8">
-            <i class="fas fa-spinner fa-spin text-gray-400 text-4xl mb-4"></i>
-            <p class="text-gray-500">Cargando entradas...</p>
-          </div>
-
-          <div *ngIf="!loadingOrders && myTickets.length === 0" class="text-center py-8">
-            <i class="fas fa-ticket-alt text-gray-400 text-4xl mb-4"></i>
-            <p class="text-gray-500">No tienes entradas compradas</p>
-            <p class="text-gray-400 text-sm mt-2">Total de órdenes: {{myOrders.length}}</p>
-            <p class="text-gray-400 text-sm">Órdenes completadas: {{getCompletedOrdersCount()}}</p>
-          </div>
-
-          <div *ngIf="myTickets.length > 0" class="space-y-4">
-            <div *ngFor="let ticket of myTickets" class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <div class="flex justify-between items-start mb-4">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-lg mb-2">{{ ticket.eventName }}</h3>
-                  <div class="space-y-1">
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>{{ ticket.localityName }}
-                    </p>
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-calendar mr-2 text-gray-400"></i>{{ ticket.eventDate | date:'dd/MM/yyyy HH:mm' }}
-                    </p>
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-barcode mr-2 text-gray-400"></i>{{ ticket.ticketCode }}
-                    </p>
-                  </div>
-                </div>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                      [ngClass]="ticket.status === 'VALID' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                  <i class="fas fa-check-circle mr-1"></i>{{ ticket.status }}
-                </span>
-              </div>
-
-              <!-- QR Code Section -->
-              <div class="border-t pt-4 mt-4">
-                <div class="flex items-center justify-between">
-                  <div class="text-sm text-gray-500">
-                    <i class="fas fa-qrcode mr-2"></i>Código QR: {{ ticket.qrCode }}
-                  </div>
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    <i class="fas fa-download mr-1"></i>Descargar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab: Historial -->
-        <div *ngIf="activeTab === 'history'">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Historial de Compras</h2>
-
-          <div *ngIf="myOrders.length === 0" class="text-center py-8">
-            <i class="fas fa-history text-gray-400 text-4xl mb-4"></i>
-            <p class="text-gray-500">No tienes compras anteriores</p>
-          </div>
-
-          <div *ngIf="myOrders.length > 0" class="space-y-4">
-            <div *ngFor="let order of myOrders" class="bg-white border border-gray-200 rounded-lg p-6">
-              <div class="flex justify-between items-start mb-3">
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 text-lg">{{ order.event?.name || 'Evento' }}</h3>
-                  <div class="space-y-1 mt-2">
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-calendar mr-2 text-gray-400"></i>{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}
-                    </p>
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-ticket-alt mr-2 text-gray-400"></i>{{ order.quantity }} entrada(s)
-                    </p>
-                    <p class="text-gray-600 text-sm">
-                      <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>{{ order.locality?.name || 'General' }}
-                    </p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="font-bold text-gray-900 text-xl mb-2">{{ order.finalAmount | currency:'EUR':'symbol':'1.2-2' }}</p>
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                        [ngClass]="(order.status === 'PAID' || order.status === 'COMPLETED') ? 'bg-green-100 text-green-800' : order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'">
-                    {{ order.status }}
-                  </span>
-                  <p *ngIf="order.discount > 0" class="text-green-600 text-sm mt-2">
-                    <i class="fas fa-tag mr-1"></i>Descuento: -{{ order.discount | currency:'EUR':'symbol':'1.2-2' }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Tickets generados -->
-              <div *ngIf="(order.status === 'PAID' || order.status === 'COMPLETED') && order.tickets && order.tickets.length > 0" class="border-t pt-3 mt-3">
-                <p class="text-sm text-gray-500 mb-2">
-                  <i class="fas fa-check-circle text-green-600 mr-1"></i>
-                  {{ order.tickets.length }} ticket(s) generado(s)
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab: Beneficios VIP (solo para usuarios NO VIP) -->
-        <div *ngIf="activeTab === 'vip' && !isVipUser()">
-          <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6 border border-yellow-200">
-            <div class="flex items-center mb-4">
-              <i class="fas fa-crown text-yellow-500 text-2xl mr-3"></i>
-              <h2 class="text-xl font-bold text-gray-900">Beneficios VIP</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="bg-white rounded-lg p-4 border border-yellow-200">
-                <div class="flex items-center mb-2">
-                  <i class="fas fa-percentage text-yellow-500 mr-2"></i>
-                  <h3 class="font-semibold text-gray-900">Descuento Exclusivo</h3>
-                </div>
-                <p class="text-gray-600 text-sm">10% de descuento en todas las entradas</p>
-              </div>
-
-              <div class="bg-white rounded-lg p-4 border border-yellow-200">
-                <div class="flex items-center mb-2">
-                  <i class="fas fa-fast-forward text-yellow-500 mr-2"></i>
-                  <h3 class="font-semibold text-gray-900">Acceso Prioritario</h3>
-                </div>
-                <p class="text-gray-600 text-sm">Compra antes que el público general</p>
-              </div>
-
-              <div class="bg-white rounded-lg p-4 border border-yellow-200">
-                <div class="flex items-center mb-2">
-                  <i class="fas fa-star text-yellow-500 mr-2"></i>
-                  <h3 class="font-semibold text-gray-900">Ofertas Exclusivas</h3>
-                </div>
-                <p class="text-gray-600 text-sm">Promociones especiales solo para VIP</p>
-              </div>
-
-              <div class="bg-white rounded-lg p-4 border border-yellow-200">
-                <div class="flex items-center mb-2">
-                  <i class="fas fa-headset text-yellow-500 mr-2"></i>
-                  <h3 class="font-semibold text-gray-900">Soporte Premium</h3>
-                </div>
-                <p class="text-gray-600 text-sm">Atención al cliente prioritaria</p>
-              </div>
-            </div>
-
-            <div class="mt-6 text-center">
-              <button
-                (click)="goToVipInfo()"
-                class="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                <i class="fas fa-info-circle mr-2"></i>Más Información
+        @if (activeTab === 'tickets') {
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900">Mis Entradas</h2>
+              <button (click)="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                <i class="fas fa-sync-alt mr-2"></i>Actualizar
               </button>
             </div>
+
+            @if (loadingOrders) {
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">Cargando entradas...</p>
+              </div>
+            }
+
+            @if (!loadingOrders && myTickets.length === 0) {
+              <div class="text-center py-8">
+                <i class="fas fa-ticket-alt text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">No tienes entradas compradas</p>
+                <p class="text-gray-400 text-sm mt-2">Total de órdenes: {{myOrders.length}}</p>
+                <p class="text-gray-400 text-sm">Órdenes completadas: {{getCompletedOrdersCount()}}</p>
+              </div>
+            }
+
+            @if (myTickets.length > 0) {
+              <div class="space-y-4">
+                @for (ticket of myTickets; track ticket.ticketCode) {
+                  <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-2">{{ ticket.eventName }}</h3>
+                        <div class="space-y-1">
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>{{ ticket.localityName }}
+                          </p>
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-calendar mr-2 text-gray-400"></i>{{ ticket.eventDate | date:'dd/MM/yyyy HH:mm' }}
+                          </p>
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-barcode mr-2 text-gray-400"></i>{{ ticket.ticketCode }}
+                          </p>
+                        </div>
+                      </div>
+                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                            [ngClass]="ticket.status === 'VALID' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                        <i class="fas fa-check-circle mr-1"></i>{{ ticket.status }}
+                      </span>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="border-t pt-4 mt-4">
+                      <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-500">
+                          <i class="fas fa-qrcode mr-2"></i>Código QR: {{ ticket.qrCode }}
+                        </div>
+                        <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                          <i class="fas fa-download mr-1"></i>Descargar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
-        </div>
+        }
+
+        <!-- Tab: Historial -->
+        @if (activeTab === 'history') {
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Historial de Compras</h2>
+
+            @if (myOrders.length === 0) {
+              <div class="text-center py-8">
+                <i class="fas fa-history text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">No tienes compras anteriores</p>
+              </div>
+            }
+
+            @if (myOrders.length > 0) {
+              <div class="space-y-4">
+                @for (order of myOrders; track order.id) {
+                  <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="flex justify-between items-start mb-3">
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900 text-lg">{{ order.event?.name || 'Evento' }}</h3>
+                        <div class="space-y-1 mt-2">
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-calendar mr-2 text-gray-400"></i>{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                          </p>
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-ticket-alt mr-2 text-gray-400"></i>{{ order.quantity }} entrada(s)
+                          </p>
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>{{ order.locality?.name || 'General' }}
+                          </p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="font-bold text-gray-900 text-xl mb-2">{{ order.finalAmount | currency:'EUR':'symbol':'1.2-2' }}</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                              [ngClass]="(order.status === 'PAID' || order.status === 'COMPLETED') ? 'bg-green-100 text-green-800' : order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'">
+                          {{ order.status }}
+                        </span>
+                        @if (order.discount > 0) {
+                          <p class="text-green-600 text-sm mt-2">
+                            <i class="fas fa-tag mr-1"></i>Descuento: -{{ order.discount | currency:'EUR':'symbol':'1.2-2' }}
+                          </p>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Tickets generados -->
+                    @if ((order.status === 'PAID' || order.status === 'COMPLETED') && order.tickets && order.tickets.length > 0) {
+                      <div class="border-t pt-3 mt-3">
+                        <p class="text-sm text-gray-500 mb-2">
+                          <i class="fas fa-check-circle text-green-600 mr-1"></i>
+                          {{ order.tickets.length }} ticket(s) generado(s)
+                        </p>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Tab: Beneficios VIP (solo para usuarios NO VIP) -->
+        @if (activeTab === 'vip' && !isVipUser()) {
+          <div>
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6 border border-yellow-200">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-crown text-yellow-500 text-2xl mr-3"></i>
+                <h2 class="text-xl font-bold text-gray-900">Beneficios VIP</h2>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                  <div class="flex items-center mb-2">
+                    <i class="fas fa-percentage text-yellow-500 mr-2"></i>
+                    <h3 class="font-semibold text-gray-900">Descuento Exclusivo</h3>
+                  </div>
+                  <p class="text-gray-600 text-sm">10% de descuento en todas las entradas</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                  <div class="flex items-center mb-2">
+                    <i class="fas fa-fast-forward text-yellow-500 mr-2"></i>
+                    <h3 class="font-semibold text-gray-900">Acceso Prioritario</h3>
+                  </div>
+                  <p class="text-gray-600 text-sm">Compra antes que el público general</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                  <div class="flex items-center mb-2">
+                    <i class="fas fa-star text-yellow-500 mr-2"></i>
+                    <h3 class="font-semibold text-gray-900">Ofertas Exclusivas</h3>
+                  </div>
+                  <p class="text-gray-600 text-sm">Promociones especiales solo para VIP</p>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                  <div class="flex items-center mb-2">
+                    <i class="fas fa-headset text-yellow-500 mr-2"></i>
+                    <h3 class="font-semibold text-gray-900">Soporte Premium</h3>
+                  </div>
+                  <p class="text-gray-600 text-sm">Atención al cliente prioritaria</p>
+                </div>
+              </div>
+
+              <div class="mt-6 text-center">
+                <button
+                  (click)="goToVipInfo()"
+                  class="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                  <i class="fas fa-info-circle mr-2"></i>Más Información
+                </button>
+              </div>
+            </div>
+          </div>
+        }
           <app-user-social-stats 
             [userId]="user.id"
             [showFollowButton]="!isOwnProfile">

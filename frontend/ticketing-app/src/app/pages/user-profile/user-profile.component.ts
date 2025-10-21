@@ -174,11 +174,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     
-    // Simular actualización del perfil
+ 
     setTimeout(() => {
       this.loading = false;
       
-      // Actualizar datos del usuario
+     
       const updatedUser = { ...this.user, ...this.profileForm.value };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       this.user = updatedUser;

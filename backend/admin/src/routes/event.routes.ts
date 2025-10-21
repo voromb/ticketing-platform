@@ -3,8 +3,8 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import EventController from '../controllers/event.controller';
 
 export async function eventRoutes(fastify: FastifyInstance) {
-    // Rutas públicas de eventos
-    fastify.get('/public', {
+    // Rutas públicas de eventos (acceso sin autenticación)
+    fastify.get('/', {
         schema: {
             tags: ['Events'],
             summary: 'Obtener lista pública de eventos',
@@ -12,7 +12,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
         }
     }, EventController.listRockEvents.bind(EventController));
     
-    fastify.get('/public/:id', {
+    fastify.get('/:id', {
         schema: {
             tags: ['Events'],
             summary: 'Obtener evento público por ID',
@@ -42,7 +42,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
         }
     }, EventController.getEventLocalities.bind(EventController));
 
-    // Rutas protegidas de eventos
+    // Rutas protegidas de eventos (requieren autenticación)
     fastify.register(async function (fastify) {
         // Aplicar middleware de autenticación
         fastify.addHook('preHandler', authMiddleware);
@@ -94,9 +94,9 @@ export async function eventRoutes(fastify: FastifyInstance) {
             EventController.createEvent.bind(EventController)
         );
 
-        // Listar eventos (admin)
+        // Listar eventos (admin) - incluye todos los estados
         fastify.get(
-            '/',
+            '/admin/all',
             {
                 schema: {
                     tags: ['Events'],
@@ -109,9 +109,9 @@ export async function eventRoutes(fastify: FastifyInstance) {
             EventController.listRockEvents.bind(EventController)
         );
 
-        // Obtener evento por ID (admin)
+        // Obtener evento por ID (admin) - incluye datos completos
         fastify.get(
-            '/:id',
+            '/admin/:id',
             {
                 schema: {
                     tags: ['Events'],

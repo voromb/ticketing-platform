@@ -4,7 +4,7 @@ import { EventService } from '~/app/core/services/event.service';
 import { CarouselComponent } from '~/app/shared/components/list-carousel/carousel.component';
 import { EventDetailComponent } from '~/app/shared/components/event-detail/event-details';
 import { SocialInteractionsComponent } from '~/app/shared/components/social-interactions/social-interactions.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-detail-event',
@@ -17,18 +17,74 @@ export class DetailEvent implements OnInit, OnChanges {
   loading = true;
   error = '';
   currentEventId = '';
+  eventSlug = '';
+  eventId = '';
 
   constructor(
     private eventService: EventService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.loadEvents();
+    // Obtener parámetros de la ruta
+    this.eventSlug = this.route.snapshot.paramMap.get('slug') || '';
+    this.eventId = this.route.snapshot.paramMap.get('id') || '';
+    
+    console.log('📍 Parámetros de ruta - slug:', this.eventSlug, 'id:', this.eventId);
+    
+    this.loadEvent();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     // Handle any input changes if needed
+  }
+
+  loadEvent(): void {
+    this.loading = true;
+    
+    if (this.eventSlug) {
+      // Cargar evento por slug
+      this.eventService.getEventBySlug(this.eventSlug).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            this.events = [res.data]; // Convertir a array para el carousel
+            this.currentEventId = res.data.id || '';
+            console.log('✅ Evento cargado por slug:', res.data);
+          } else {
+            this.error = 'No se pudo cargar el evento';
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('❌ Error cargando evento por slug:', err);
+          this.error = 'Error al cargar el evento';
+          this.loading = false;
+        }
+      });
+    } else if (this.eventId) {
+      // Cargar evento por ID
+      this.eventService.getEventById(this.eventId).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            this.events = [res.data]; // Convertir a array para el carousel
+            this.currentEventId = res.data.id || '';
+            console.log('✅ Evento cargado por ID:', res.data);
+          } else {
+            this.error = 'No se pudo cargar el evento';
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('❌ Error cargando evento por ID:', err);
+          this.error = 'Error al cargar el evento';
+          this.loading = false;
+        }
+      });
+    } else {
+      // Fallback: cargar todos los eventos (comportamiento anterior)
+      this.loadEvents();
+    }
   }
 
   loadEvents(): void {

@@ -79,7 +79,11 @@ export class SocialInteractionsComponent {
     const id = this.eventId();
     if (!id) return;
 
-    this.loadComments();
+    console.log('🔄 Cargando comentarios automáticamente para evento:', id);
+    // Usar setTimeout para asegurar que se ejecute en el siguiente ciclo
+    setTimeout(() => {
+      this.loadComments();
+    }, 0);
   });
 
   // ===============================

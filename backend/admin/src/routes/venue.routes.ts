@@ -3,16 +3,16 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import VenueController from '../controllers/venue.controller';
 
 export async function venueRoutes(fastify: FastifyInstance) {
-    // Rutas públicas de venues
-    fastify.get('/public', {
+    // Rutas públicas de venues (acceso sin autenticación)
+    fastify.get('/', {
         schema: {
             tags: ['Venues'],
             summary: 'Obtener lista pública de venues',
-            description: 'Obtiene todos los venues disponibles'
+            description: 'Obtiene todos los venues activos disponibles'
         }
     }, VenueController.getAll.bind(VenueController));
     
-    fastify.get('/public/:id', {
+    fastify.get('/:id', {
         schema: {
             tags: ['Venues'],
             summary: 'Obtener venue público por ID',
@@ -27,7 +27,7 @@ export async function venueRoutes(fastify: FastifyInstance) {
         }
     }, VenueController.getById.bind(VenueController));
 
-    // Rutas protegidas de venues
+    // Rutas protegidas de venues (requieren autenticación)
     fastify.register(async function (fastify) {
         // Aplicar middleware de autenticación
         fastify.addHook('preHandler', authMiddleware);
@@ -62,8 +62,8 @@ export async function venueRoutes(fastify: FastifyInstance) {
             }
         }, VenueController.create.bind(VenueController));
 
-        // Listar venues (admin)
-        fastify.get('/', {
+        // Listar todos los venues (admin) - incluye inactivos
+        fastify.get('/admin/all', {
             schema: {
                 tags: ['Venues'],
                 summary: 'Listar todos los venues (admin)',
@@ -72,8 +72,8 @@ export async function venueRoutes(fastify: FastifyInstance) {
             }
         }, VenueController.getAll.bind(VenueController));
 
-        // Obtener venue por ID (admin)
-        fastify.get('/:id', {
+        // Obtener venue por ID (admin) - incluye datos completos
+        fastify.get('/admin/:id', {
             schema: {
                 tags: ['Venues'],
                 summary: 'Obtener venue por ID (admin)',

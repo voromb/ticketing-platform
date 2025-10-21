@@ -7,15 +7,15 @@ exports.venueRoutes = venueRoutes;
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const venue_controller_1 = __importDefault(require("../controllers/venue.controller"));
 async function venueRoutes(fastify) {
-    // Rutas públicas de venues
-    fastify.get('/public', {
+    // Rutas públicas de venues (acceso sin autenticación)
+    fastify.get('/', {
         schema: {
             tags: ['Venues'],
             summary: 'Obtener lista pública de venues',
-            description: 'Obtiene todos los venues disponibles'
+            description: 'Obtiene todos los venues activos disponibles'
         }
     }, venue_controller_1.default.getAll.bind(venue_controller_1.default));
-    fastify.get('/public/:id', {
+    fastify.get('/:id', {
         schema: {
             tags: ['Venues'],
             summary: 'Obtener venue público por ID',
@@ -29,7 +29,7 @@ async function venueRoutes(fastify) {
             }
         }
     }, venue_controller_1.default.getById.bind(venue_controller_1.default));
-    // Rutas protegidas de venues
+    // Rutas protegidas de venues (requieren autenticación)
     fastify.register(async function (fastify) {
         // Aplicar middleware de autenticación
         fastify.addHook('preHandler', auth_middleware_1.authMiddleware);
@@ -62,8 +62,8 @@ async function venueRoutes(fastify) {
                 }
             }
         }, venue_controller_1.default.create.bind(venue_controller_1.default));
-        // Listar venues (admin)
-        fastify.get('/', {
+        // Listar todos los venues (admin) - incluye inactivos
+        fastify.get('/admin/all', {
             schema: {
                 tags: ['Venues'],
                 summary: 'Listar todos los venues (admin)',
@@ -71,8 +71,8 @@ async function venueRoutes(fastify) {
                 security: [{ bearerAuth: [] }]
             }
         }, venue_controller_1.default.getAll.bind(venue_controller_1.default));
-        // Obtener venue por ID (admin)
-        fastify.get('/:id', {
+        // Obtener venue por ID (admin) - incluye datos completos
+        fastify.get('/admin/:id', {
             schema: {
                 tags: ['Venues'],
                 summary: 'Obtener venue por ID (admin)',

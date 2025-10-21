@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryService } from '~/app/core/services/categories.service';
 import { ICategory } from '~/app/core/models/Categories.model';
@@ -11,7 +11,7 @@ import { IEvent } from '~/app/core/models/Event.model';
   templateUrl: './carousel.component.html',
   styleUrls: ['./carousel.component.css']
 })
-export class CarouselComponent implements OnInit, OnDestroy {
+export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
   @Input() autoPlay: boolean = false;
   @Input() autoPlayInterval: number = 5000;
   @Input() page!: 'home' | 'shop' | 'details';
@@ -23,7 +23,10 @@ export class CarouselComponent implements OnInit, OnDestroy {
   currentIndex: number = 0;
   intervalId?: any;
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(
+    private categoryService: CategoryService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadCarouselItems();
@@ -32,6 +35,22 @@ export class CarouselComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopAutoPlay();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Detectar cambios en eventImages para recargar el carousel
+    if (changes['eventImages'] && !changes['eventImages'].firstChange) {
+      console.log('🔄 Cambios detectados en eventImages, recargando carousel...');
+      this.loadCarouselItems();
+      this.cdr.detectChanges();
+    }
+    
+    // Detectar cambios en page para recargar el carousel
+    if (changes['page'] && !changes['page'].firstChange) {
+      console.log('🔄 Cambios detectados en page, recargando carousel...');
+      this.loadCarouselItems();
+      this.cdr.detectChanges();
+    }
   }
 
   next(): void {
@@ -82,6 +101,8 @@ export class CarouselComponent implements OnInit, OnDestroy {
 private loadEventImages(): void {
   if (!this.eventImages || this.eventImages.length === 0) {
     console.warn('⚠️ No hay imágenes o eventos para cargar en el carrusel.');
+    this.slides = [];
+    this.cdr.detectChanges();
     return;
   }
 
@@ -124,6 +145,14 @@ private loadEventImages(): void {
   }
 
   console.log('✅ Imágenes cargadas en slides:', this.slides);
+  
+  // Forzar detección de cambios después de cargar las imágenes
+  this.cdr.detectChanges();
+  
+  // Reiniciar el índice si es necesario
+  if (this.currentIndex >= this.slides.length) {
+    this.currentIndex = 0;
+  }
 }
 
 

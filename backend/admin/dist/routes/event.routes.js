@@ -7,15 +7,15 @@ exports.eventRoutes = eventRoutes;
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const event_controller_1 = __importDefault(require("../controllers/event.controller"));
 async function eventRoutes(fastify) {
-    // Rutas públicas de eventos
-    fastify.get('/public', {
+    // Rutas públicas de eventos (acceso sin autenticación)
+    fastify.get('/', {
         schema: {
             tags: ['Events'],
             summary: 'Obtener lista pública de eventos',
             description: 'Obtiene todos los eventos públicos disponibles'
         }
     }, event_controller_1.default.listRockEvents.bind(event_controller_1.default));
-    fastify.get('/public/:id', {
+    fastify.get('/:id', {
         schema: {
             tags: ['Events'],
             summary: 'Obtener evento público por ID',
@@ -43,7 +43,7 @@ async function eventRoutes(fastify) {
             }
         }
     }, event_controller_1.default.getEventLocalities.bind(event_controller_1.default));
-    // Rutas protegidas de eventos
+    // Rutas protegidas de eventos (requieren autenticación)
     fastify.register(async function (fastify) {
         // Aplicar middleware de autenticación
         fastify.addHook('preHandler', auth_middleware_1.authMiddleware);
@@ -89,8 +89,8 @@ async function eventRoutes(fastify) {
                 },
             },
         }, event_controller_1.default.createEvent.bind(event_controller_1.default));
-        // Listar eventos (admin)
-        fastify.get('/', {
+        // Listar eventos (admin) - incluye todos los estados
+        fastify.get('/admin/all', {
             schema: {
                 tags: ['Events'],
                 summary: 'Listar todos los eventos (admin)',
@@ -98,8 +98,8 @@ async function eventRoutes(fastify) {
                 security: [{ bearerAuth: [] }],
             },
         }, event_controller_1.default.listRockEvents.bind(event_controller_1.default));
-        // Obtener evento por ID (admin)
-        fastify.get('/:id', {
+        // Obtener evento por ID (admin) - incluye datos completos
+        fastify.get('/admin/:id', {
             schema: {
                 tags: ['Events'],
                 summary: 'Obtener evento por ID (admin)',
