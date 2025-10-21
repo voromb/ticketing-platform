@@ -6,9 +6,11 @@ import { AppModule } from './app.module';
 import { LoggingInterceptor } from './auth/interceptors/logging.interceptor';
 import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
 import { PerformanceInterceptor } from './auth/interceptors/performance.interceptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Configuración global
   app.enableCors();
@@ -21,6 +23,11 @@ async function bootstrap() {
     new AuditInterceptor(),
     new PerformanceInterceptor(),
   );
+
+  // Servir archivos estáticos (imágenes subidas)
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Configurar puerto
   const port = 3004; // Forzado a 3004

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-settings',
@@ -509,6 +510,21 @@ export class SettingsComponent implements OnInit {
     if (!this.isAdminFormValid()) return;
 
     console.log('Guardar admin:', this.adminForm);
+    
+    // Mostrar SweetAlert de confirmación
+    const action = this.isEditingAdmin ? 'actualizado' : 'creado';
+    const adminName = `${this.adminForm.firstName} ${this.adminForm.lastName}`;
+    
+    Swal.fire({
+      position: 'top-end',
+      icon: 'success',
+      title: `¡Administrador ${action} exitosamente!`,
+      text: `${adminName} ha sido ${action} correctamente`,
+      showConfirmButton: false,
+      timer: 2500,
+      toast: true,
+    });
+    
     this.closeAdminModal();
     this.loadAdmins();
   }

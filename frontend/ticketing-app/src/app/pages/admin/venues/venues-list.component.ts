@@ -837,9 +837,10 @@ export class VenuesListComponent implements OnInit {
           Swal.fire({
             position: 'top-end',
             icon: 'success',
-            title: '¡Venue actualizado!',
+            title: '¡Venue actualizado exitosamente!',
+            text: `${venueUpdateData.name} ha sido actualizado correctamente`,
             showConfirmButton: false,
-            timer: 2000,
+            timer: 2500,
             toast: true,
           });
         },
@@ -847,7 +848,7 @@ export class VenuesListComponent implements OnInit {
           console.error('❌ Error updating venue:', error);
           console.error('📋 Error details:', error.error);
 
-          let errorMessage = 'Error desconocido';
+          let errorMessage = 'Error desconocido al actualizar el venue';
           if (error.error?.error) {
             errorMessage = error.error.error;
           } else if (error.error?.message) {
@@ -885,15 +886,16 @@ export class VenuesListComponent implements OnInit {
       };
 
       this.adminService.createVenue(venueData).subscribe({
-        next: () => {
+        next: (response) => {
           this.closeModal();
           this.loadVenues();
           Swal.fire({
             position: 'top-end',
             icon: 'success',
-            title: '¡Venue creado!',
+            title: '¡Venue creado exitosamente!',
+            text: `${venueData.name} ha sido creado correctamente`,
             showConfirmButton: false,
-            timer: 2000,
+            timer: 2500,
             toast: true,
           });
         },
@@ -903,7 +905,9 @@ export class VenuesListComponent implements OnInit {
           console.error('📋 Status:', error.status);
           console.error('📋 Message:', error.message);
 
-          let errorMessage = 'Error desconocido';
+          let errorMessage = 'Error desconocido al crear el venue';
+          let errorTitle = 'Error al crear venue';
+          
           if (error.error?.error) {
             errorMessage = error.error.error;
           } else if (error.error?.message) {
@@ -911,10 +915,19 @@ export class VenuesListComponent implements OnInit {
           } else if (error.message) {
             errorMessage = error.message;
           }
+          
+          // Si el error es de red o servidor
+          if (error.status === 0) {
+            errorTitle = 'Error de conexión';
+            errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+          } else if (error.status >= 500) {
+            errorTitle = 'Error del servidor';
+            errorMessage = 'Hubo un problema en el servidor. Intenta de nuevo más tarde.';
+          }
 
           Swal.fire({
             icon: 'error',
-            title: 'Error al crear venue',
+            title: errorTitle,
             text: errorMessage,
             confirmButtonText: 'Entendido',
           });

@@ -293,12 +293,12 @@ export class ImageUploadComponent implements OnInit, OnChanges {
 
           Swal.fire({
             icon: 'success',
-            title: 'Imágenes subidas',
+            title: '¡Imágenes subidas exitosamente!',
             text: `${response.count} imagen(es) subida(s) correctamente`,
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 3000,
+            timer: 2500,
           });
 
           console.log('✅ Imágenes subidas al servidor:', response.images);
@@ -317,12 +317,37 @@ export class ImageUploadComponent implements OnInit, OnChanges {
         },
         error: (error) => {
           this.uploading = false;
-          console.error('Error uploading images:', error);
+          console.error('❌ Error uploading images:', error);
+          console.error('📋 Error details:', error.error);
+          console.error('📋 Status:', error.status);
+
+          let errorMessage = 'Error desconocido al subir las imágenes';
+          let errorTitle = 'Error al subir imágenes';
+          
+          if (error.error?.error) {
+            errorMessage = error.error.error;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          // Si el error es de red o servidor
+          if (error.status === 0) {
+            errorTitle = 'Error de conexión';
+            errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+          } else if (error.status === 413) {
+            errorTitle = 'Archivos muy grandes';
+            errorMessage = 'Las imágenes exceden el tamaño máximo permitido.';
+          } else if (error.status >= 500) {
+            errorTitle = 'Error del servidor';
+            errorMessage = 'Hubo un problema en el servidor. Intenta de nuevo más tarde.';
+          }
 
           Swal.fire({
             icon: 'error',
-            title: 'Error al subir imágenes',
-            text: error.error?.error || error.message || 'Error desconocido',
+            title: errorTitle,
+            text: errorMessage,
             confirmButtonText: 'Entendido',
           });
         },

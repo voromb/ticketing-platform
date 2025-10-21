@@ -10,6 +10,7 @@ import { ApprovalModule } from './approval/approval.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
+import { UploadModule } from './upload/upload.module';
 import { SecurityMiddleware } from './auth/middleware/security.middleware';
 import appConfig from './config/app.config';
 
@@ -27,6 +28,7 @@ import appConfig from './config/app.config';
     RestaurantModule,
     MerchandisingModule,
     ApprovalModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
