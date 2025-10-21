@@ -1,0 +1,101 @@
+
+.user-social-stats {
+      padding: 1.5rem;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 0.375rem;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .follow-section {
+      text-align: center;
+    }
+
+    .follow-btn {
+      padding: 0.75rem 2rem;
+      border: 2px solid #3b82f6;
+      border-radius: 0.5rem;
+      background: white;
+      color: #3b82f6;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      min-width: 120px;
+    }
+
+    .follow-btn:hover:not(:disabled) {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .follow-btn.following {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .follow-btn.following:hover:not(:disabled) {
+      background: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .follow-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .login-prompt {
+      text-align: center;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 0.375rem;
+    }
+
+    .login-prompt p {
+      margin: 0 0 0.75rem 0;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .btn-primary {
+      padding: 0.5rem 1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }

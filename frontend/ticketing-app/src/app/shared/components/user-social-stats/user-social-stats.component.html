@@ -1,0 +1,42 @@
+<div class="user-social-stats">
+  <div class="stats-grid">
+    <!-- Followers -->
+    <div class="stat-item">
+      <div class="stat-number">{{ followersCount }}</div>
+      <div class="stat-label">Seguidores</div>
+    </div>
+
+    <!-- Following -->
+    <div class="stat-item">
+      <div class="stat-number">{{ followingCount }}</div>
+      <div class="stat-label">Siguiendo</div>
+    </div>
+  </div>
+
+  <!-- Follow Button -->
+  @if (showFollowButton && !isOwnProfile) {
+    <div class="follow-section">
+      <button 
+        class="follow-btn"
+        [class.following]="isFollowing"
+        (click)="toggleFollow()"
+        [disabled]="!isAuthenticated || isLoading">
+
+        @if (isLoading) {
+          <span>...</span>
+        } @else {
+          <span>{{ isFollowing ? 'Siguiendo' : 'Seguir' }}</span>
+        }
+
+      </button>
+    </div>
+  }
+
+  <!-- Login Prompt -->
+  @if (!isAuthenticated && showFollowButton && !isOwnProfile) {
+    <div class="login-prompt">
+      <p>Inicia sesión para seguir usuarios</p>
+      <button class="btn-primary" (click)="onLoginRequired.emit()">Iniciar Sesión</button>
+    </div>
+  }
+</div>

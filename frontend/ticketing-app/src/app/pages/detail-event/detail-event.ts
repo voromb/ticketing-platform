@@ -5,11 +5,12 @@ import { CarouselComponent } from '~/app/shared/components/list-carousel/carouse
 import { EventDetailComponent } from '~/app/shared/components/event-detail/event-details';
 import { SocialInteractionsComponent } from '~/app/shared/components/social-interactions/social-interactions.component';
 import { Router, ActivatedRoute } from '@angular/router';
+import { UserSocialStatsComponent } from '~/app/shared/components/user-social-stats/user-social-stats.component';
 
 @Component({
   selector: 'app-detail-event',
   standalone: true,
-  imports: [CarouselComponent, EventDetailComponent, SocialInteractionsComponent],
+  imports: [CarouselComponent, EventDetailComponent, SocialInteractionsComponent, UserSocialStatsComponent],
   templateUrl: './detail-event.html',
 })
 export class DetailEvent implements OnInit, OnChanges {

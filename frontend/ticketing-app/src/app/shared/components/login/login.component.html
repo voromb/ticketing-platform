@@ -17,9 +17,14 @@
           <input type="text" class="form-control" placeholder="Usuario o correo electrónico" formControlName="email"
             [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
         </div>
-        <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error-text">
-          <small *ngIf="loginForm.get('email')?.errors?.['required']">Usuario o email es requerido</small>
-        </div>
+        
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+          <div class="error-text">
+            @if (loginForm.get('email')?.errors?.['required']) {
+              <small>Usuario o email es requerido</small>
+            }
+          </div>
+        }
       </div>
 
       <div class="form-group">
@@ -34,9 +39,12 @@
             <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
           </button>
         </div>
-        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-text">
-          <small>Mínimo 6 caracteres</small>
-        </div>
+        
+        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+          <div class="error-text">
+            <small>Mínimo 6 caracteres</small>
+          </div>
+        }
       </div>
 
       <div class="form-options">
@@ -47,16 +55,18 @@
       </div>
 
       <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
-        <span *ngIf="!loading">
-          <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-        </span>
-        <span *ngIf="loading">
-          <i class="fas fa-spinner fa-spin me-2"></i>Iniciando...
-        </span>
+        @if (!loading) {
+          <span>
+            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+          </span>
+        } @else {
+          <span>
+            <i class="fas fa-spinner fa-spin me-2"></i>Iniciando...
+          </span>
+        }
       </button>
     </form>
 
-    <!-- Social Login Component -->
     <app-social-login></app-social-login>
 
     <div class="text-center mt-3">

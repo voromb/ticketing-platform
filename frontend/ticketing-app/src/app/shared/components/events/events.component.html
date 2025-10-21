@@ -1,83 +1,89 @@
-
 <div class="container py-5">
   <h1 class="rock-title text-center mt-4">
-  Los mejores festivales de rock y metal del mundo
-</h1>
+    Los mejores festivales de rock y metal del mundo
+  </h1>
 
-
-
-  <!-- Loading -->
-  <div class="text-center" *ngIf="loading">
-    <div class="spinner-border text-danger" role="status">
-      <span class="visually-hidden">Cargando...</span>
+  @if (loading) {
+    <div class="text-center">
+      <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando eventos...</p>
     </div>
-    <p class="mt-2">Cargando eventos...</p>
-  </div>
+  }
 
-  <!-- Error -->
-  <div class="alert alert-danger text-center" *ngIf="error && !loading">
-    {{ error }}
-  </div>
+  @if (error && !loading) {
+    <div class="alert alert-danger text-center">
+      {{ error }}
+    </div>
+  }
 
-  <!-- Eventos -->
-  <div class="row" *ngIf="!loading && !error && events.length > 0">
-    <div class="col-lg-6 mb-4" *ngFor="let event of events">
-      <div class="card h-100 shadow-sm border-0">
-         <a [routerLink]="['/event', event.slug]" class="text-decoration-none">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <h4 class="card-title fw-bold text-dark mb-0">{{ event.name }}</h4>
-            <span class="badge bg-danger fs-6">{{ event.minPrice }}€ - {{ event.maxPrice }}€</span>
-          </div>
-          
-          <div class="mb-3"><p *ngIf="event.eventDate" class="text-muted mb-2">
-  <i class="fas fa-calendar me-2"></i>{{ event.eventDate | date:'dd/MM/yyyy' }}
-</p>
-            <p class="text-muted mb-2">
-              <i class="fas fa-clock me-2"></i>{{ event.eventDate | date:'HH:mm' }}h
-            </p>
-            <p class="text-muted mb-0">
-              <i class="fas fa-users me-2"></i>{{ event.totalCapacity | number }} personas
-            </p>
-          </div>
-          
-          <p class="card-text text-secondary mb-4" *ngIf="event.description">{{ event.description }}</p>
-          
-          <!-- Botones según rol del usuario -->
-          <div class="d-flex gap-2">
-            
-            <!-- Usuario NO LOGUEADO: Sin botones -->
-            <div *ngIf="!isLoggedIn" class="text-muted small">
-              <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
-            </div>
+  @if (!loading && !error) {
+    <div class="row">
+      @for (event of events; track event.slug) {
+        <div class="col-lg-6 mb-4">
+          <div class="card h-100 shadow-sm border-0">
+            <a [routerLink]="['/event', event.slug]" class="text-decoration-none">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <h4 class="card-title fw-bold text-dark mb-0">{{ event.name }}</h4>
+                  <span class="badge bg-danger fs-6">{{ event.minPrice }}€ - {{ event.maxPrice }}€</span>
+                </div>
+                
+                <div class="mb-3">
+                  @if (event.eventDate) {
+                    <p class="text-muted mb-2">
+                      <i class="fas fa-calendar me-2"></i>{{ event.eventDate | date:'dd/MM/yyyy' }}
+                    </p>
+                  }
+                  <p class="text-muted mb-2">
+                    <i class="fas fa-clock me-2"></i>{{ event.eventDate | date:'HH:mm' }}h
+                  </p>
+                  <p class="text-muted mb-0">
+                    <i class="fas fa-users me-2"></i>{{ event.totalCapacity | number }} personas
+                  </p>
+                </div>
+                
+                @if (event.description) {
+                  <p class="card-text text-secondary mb-4">{{ event.description }}</p>
+                }
+                
+                <div class="d-flex gap-2">
+                  
+                  @if (!isLoggedIn) {
+                    <div class="text-muted small">
+                      <i class="fas fa-info-circle me-1"></i>Inicia sesión para comprar entradas
+                    </div>
+                  }
 
-            <!-- Usuario VIP: Botón Reservar + Comprar -->
-            <ng-container *ngIf="canReserve">
-              <button (click)="onReserve(event)" class="btn btn-warning btn-lg px-4">
-                <i class="fas fa-bookmark me-2"></i>Reservar (VIP)
-              </button>
-              <button (click)="onBuy(event)" class="btn btn-danger btn-lg px-4">
-                <i class="fas fa-shopping-cart me-2"></i>Comprar
-              </button>
-            </ng-container>
+                  @if (canReserve) {
+                    <button (click)="onReserve(event)" class="btn btn-warning btn-lg px-4">
+                      <i class="fas fa-bookmark me-2"></i>Reservar (VIP)
+                    </button>
+                    <button (click)="onBuy(event)" class="btn btn-danger btn-lg px-4">
+                      <i class="fas fa-shopping-cart me-2"></i>Comprar
+                    </button>
+                  }
 
-            <!-- Usuario NORMAL: Solo Comprar -->
-            <button *ngIf="canBuy && !canReserve" (click)="onBuy(event)" class="btn btn-danger btn-lg px-4">
-              <i class="fas fa-shopping-cart me-2"></i>Comprar
-            </button>
-
+                  @if (canBuy && !canReserve) {
+                    <button (click)="onBuy(event)" class="btn btn-danger btn-lg px-4">
+                      <i class="fas fa-shopping-cart me-2"></i>Comprar
+                    </button>
+                  }
+                </div>
+              </div>
+            </a>
           </div>
         </div>
-        </a>
-      </div>
+      } @empty {
+        <div class="col-12 text-center mt-3">
+          <p class="text-muted">No hay eventos disponibles</p>
+        </div>
+      }
     </div>
-  </div>
-
-  <!-- Sin eventos -->
-  <div class="text-center" *ngIf="!loading && !error && events.length === 0">
-    <p class="text-muted">No hay eventos disponibles</p>
-  </div>
+  }
 </div>
+
 <app-pagination 
   [totalPages]="totalPages" 
   [currentPage]="currentPage"
