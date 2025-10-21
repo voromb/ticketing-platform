@@ -37,6 +37,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(SecurityMiddleware)
-      .forRoutes('*'); // Aplicar a todas las rutas
+      .exclude('api/upload/(.*)')  // Excluir rutas de upload
+      .forRoutes('*'); // Aplicar a todas las demás rutas
   }
 }
