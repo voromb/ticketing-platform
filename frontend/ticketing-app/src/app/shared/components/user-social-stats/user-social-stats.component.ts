@@ -9,7 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   templateUrl: "/user-social-stats.component.html",
-  styles: [`/user-social-stats.component.css`]
+  styleUrls: ['./user-social-stats.component.css']
 })
 export class UserSocialStatsComponent implements OnInit, OnDestroy {
   @Input() userId!: string;

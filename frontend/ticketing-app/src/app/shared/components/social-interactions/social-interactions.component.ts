@@ -59,18 +59,19 @@ export class SocialInteractionsComponent {
   // ===============================
   readonly loadLikesEffect = effect(() => {
     const id = this.eventId();
-    if (!id) return;
+    const user = this.currentUser();
+    if (!id || !user) return;
 
-    this.social.getEventLikes(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: res => {
-          this.likesCount.set(res.totalLikes);
-          this.isLiked.set(res.isLikedByUser);
-        },
-        error: err => console.error('❌ Error cargando likes:', err)
-      });
-  });
+  this.social.getEventLikes(id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: res => {
+        this.likesCount.set(res.totalLikes);
+        this.isLiked.set(res.isLikedByUser);
+      },
+      error: err => console.error('❌ Error cargando likes:', err)
+    });
+});
 
   // ===============================
   // 🔹 Efecto para cargar comentarios automáticamente
@@ -151,32 +152,53 @@ export class SocialInteractionsComponent {
   }
 
   toggleCommentLike(comment: Comment) {
-    if (!this.isAuthenticated()) {
-      this.onLoginRequired.emit();
-      return;
-    }
-
-    this.social.likeComment(comment.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: res => {
-          this.comments.update(list =>
-            list.map(c =>
-              c.id === comment.id
-                ? { 
-                    ...c, 
-                    likesCount: res.likesCount, 
-                    likes: res.isLiked 
-                      ? [...(c.likes || []), this.currentUser()?.id].filter((id): id is string => !!id)
-                      : (c.likes || []).filter(x => x !== this.currentUser()?.id)
-                  }
-                : c
-            )
-          );
-        },
-        error: err => console.error('❌ Error en like de comentario:', err)
-      });
+  if (!this.isAuthenticated()) {
+    this.onLoginRequired.emit();
+    return;
   }
+
+  this.social.likeComment(comment.id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: res => {
+        const currentUserId = this.currentUser()?.id;
+
+        this.comments.update(list => 
+          list.map(c => {
+            // 🔹 Si es el comentario raíz
+            if (c.id === comment.id) {
+              return {
+                ...c,
+                likesCount: res.likesCount,
+                likes: res.isLiked
+                  ? [...(c.likes || []), currentUserId].filter((id): id is string => !!id)
+                  : (c.likes || []).filter(id => id !== currentUserId)
+              };
+            }
+
+            // 🔹 Si el like pertenece a una respuesta
+            if (c.replies && c.replies.length > 0) {
+              const updatedReplies = c.replies.map(r =>
+                r.id === comment.id
+                  ? {
+                      ...r,
+                      likesCount: res.likesCount,
+                      likes: res.isLiked
+                        ? [...(r.likes || []), currentUserId].filter((id): id is string => !!id)
+                        : (r.likes || []).filter(id => id !== currentUserId)
+                    }
+                  : r
+              );
+              return { ...c, replies: updatedReplies };
+            }
+
+            return c;
+          })
+        );
+      },
+      error: err => console.error('❌ Error en like de comentario:', err)
+    });
+}
 
   addReply(parent: Comment) {
     const content = this.replyText().trim();
@@ -224,11 +246,14 @@ export class SocialInteractionsComponent {
     return new Date(date).toLocaleString();
   }
 
-  isCommentLiked(comment: Comment): boolean {
-    const user = this.currentUser();
-    if (!user) return false;
-    return Array.isArray(comment.likes) && comment.likes.includes(user.id);
-  }
+isCommentLiked(comment: Comment): boolean {
+  const user = this.currentUser();
+  if (!user) return false;
+
+  // Evita errores si el backend no envía likes
+  return Array.isArray(comment.likes) && comment.likes.includes(user.id);
+}
+
 
   trackByCommentId(index: number, item: Comment) {
     return item.id;
