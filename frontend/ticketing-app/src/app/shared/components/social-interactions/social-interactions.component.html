@@ -5,8 +5,9 @@
       class="like-btn" 
       [class.liked]="isLiked()"
       (click)="toggleLike()"
-      [disabled]="!isAuthenticated()">
-      <i class="fas fa-heart" [class.fas]="isLiked()" [class.far]="!isLiked()"></i>
+      [disabled]="!isAuthenticated()"
+      aria-label="Dar me gusta a la publicación">
+      <i class="fa-heart" [class.fas]="isLiked()" [class.far]="!isLiked()"></i>
       <span>{{ likesCount() }}</span>
     </button>
   </div>
@@ -40,7 +41,11 @@
     } @else {
       <div class="login-prompt">
         <p>Inicia sesión para comentar y dar likes</p>
-        <button class="btn-primary" (click)="onLoginRequired.emit()">Iniciar Sesión</button>
+        <button 
+          class="btn-primary" 
+          (click)="onLoginRequired.emit()">
+          Iniciar Sesión
+        </button>
       </div>
     }
 
@@ -67,10 +72,13 @@
                   <button 
                     class="like-comment-btn"
                     [class.liked]="isCommentLiked(comment)"
-                    (click)="toggleCommentLike(comment)">
-                    <i class="fas fa-heart" 
-                       [class.fas]="isCommentLiked(comment)" 
-                       [class.far]="!isCommentLiked(comment)"></i>
+                    (click)="toggleCommentLike(comment)"
+                    aria-label="Dar me gusta al comentario">
+                    <i 
+                      class="fa-heart"
+                      [class.fas]="isCommentLiked(comment)"
+                      [class.far]="!isCommentLiked(comment)">
+                    </i>
                     {{ comment.likesCount }}
                   </button>
                 </div>
@@ -117,38 +125,37 @@
             <!-- Replies -->
             @if (comment.replies && comment.replies.length > 0) {
               <div class="replies">
-               @for (reply of comment.replies; track trackByCommentId($index, reply)) {
+                @for (reply of comment.replies; track trackByCommentId($index, reply)) {
+                  <div class="reply-item">
+                    <div class="reply-header">
+                      <div class="left-side">
+                        <img
+                          [src]="reply.user?.avatar || 'assets/default-avatar.png'"
+                          [alt]="reply.user?.username"
+                          class="user-avatar small">
+                        <div class="user-details">
+                          <span class="username">{{ reply.user?.username }}</span>
+                          <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+                        </div>
+                      </div>
 
-               <div class="reply-header">
-  <div class="left-side">
-    <img
-      [src]="reply.user?.avatar || 'assets/default-avatar.png'"
-      [alt]="reply.user?.username"
-      class="user-avatar small"
-    >
-    <div class="user-details">
-      <span class="username">{{ reply.user?.username }}</span>
-      <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
-    </div>
-  </div>
-
-  @if (isAuthenticated()) {
-    <div class="comment-actions">
-      <button
-        class="like-comment-btn"
-        [class.liked]="isCommentLiked(reply)"
-        (click)="toggleCommentLike(reply)">
-        <i
-          class="fas fa-heart"
-          [class.fas]="isCommentLiked(reply)"
-          [class.far]="!isCommentLiked(reply)">
-        </i>
-        {{ reply.likesCount }}
-      </button>
-    </div>
-  }
-</div>
-
+                      @if (isAuthenticated()) {
+                        <div class="comment-actions">
+                          <button
+                            class="like-comment-btn"
+                            [class.liked]="isCommentLiked(reply)"
+                            (click)="toggleCommentLike(reply)"
+                            aria-label="Dar me gusta a la respuesta">
+                            <i
+                              class="fa-heart"
+                              [class.fas]="isCommentLiked(reply)"
+                              [class.far]="!isCommentLiked(reply)">
+                            </i>
+                            {{ reply.likesCount }}
+                          </button>
+                        </div>
+                      }
+                    </div>
 
                     <div class="reply-content">
                       <p>{{ reply.content }}</p>
