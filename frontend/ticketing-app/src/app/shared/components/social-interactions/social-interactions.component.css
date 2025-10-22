@@ -1,7 +1,8 @@
 .social-interactions {
-      margin-top: 2rem;
+    
       padding: 1.5rem;
       border-top: 1px solid #e5e7eb;
+      background-color: rgb(3, 5, 18);;
     }
 
     .like-section {
@@ -135,6 +136,7 @@
       align-items: flex-start;
       margin-bottom: 0.75rem;
     }
+ 
 
     .user-info {
       display: flex;
@@ -242,12 +244,28 @@
       border-radius: 0.375rem;
     }
 
-    .reply-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.5rem;
-    }
+   .reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.left-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* espacio entre avatar y nombre */
+}
+
+.user-avatar.small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.comment-actions {
+  margin-left: auto; /* empuja el like a la derecha */
+}
 
     .like-comment-btn {
       display: flex;
