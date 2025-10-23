@@ -66,6 +66,36 @@ export interface EventSocialStats {
   isLikedByUser: boolean;
 }
 
+export interface LikedEvent {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  eventDate: string;
+  bannerImage?: string;
+  thumbnailImage?: string;
+  venue: {
+    id: string;
+    name: string;
+    city: string;
+    country: string;
+  };
+  category: {
+    id: number;
+    name: string;
+  };
+  likedAt: string;
+  isDeleted?: boolean; // Flag para eventos eliminados
+}
+
+export interface LikedEventsResponse {
+  success: boolean;
+  events: LikedEvent[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -88,6 +118,15 @@ export class SocialService {
    */
   getEventLikes(eventId: string): Observable<{ success: boolean; totalLikes: number; isLikedByUser: boolean }> {
     return this.http.get<{ success: boolean; totalLikes: number; isLikedByUser: boolean }>(`${this.apiUrl}/events/${eventId}/likes`);
+  }
+
+  /**
+   * Obtener eventos que el usuario ha dado like
+   */
+  getUserLikedEvents(page: number = 1, limit: number = 20): Observable<LikedEventsResponse> {
+    return this.http.get<LikedEventsResponse>(`${this.apiUrl}/user/liked-events`, {
+      params: { page: page.toString(), limit: limit.toString() }
+    });
   }
 
   // ==================== FOLLOW METHODS ====================

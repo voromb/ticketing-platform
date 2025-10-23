@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import SocialController from '../controllers/social.controller';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import { authMiddleware as authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // ==================== LIKE ROUTES ====================
 router.post('/events/:eventId/like', authenticateToken, SocialController.likeEvent);
 router.get('/events/:eventId/likes', SocialController.getEventLikes);
+router.get('/user/liked-events', authenticateToken, SocialController.getUserLikedEvents);
 
 // ==================== FOLLOW ROUTES ====================
 router.post('/users/follow', authenticateToken, SocialController.followUser);

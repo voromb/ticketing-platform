@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { OrderService } from '../../core/services/order.service';
+import { SocialService, LikedEvent } from '../../core/services/social.service';
 import Swal from 'sweetalert2';
 import { filter, Subscription } from 'rxjs';
 import { UserSocialStatsComponent } from '../../shared/components/user-social-stats/user-social-stats.component';
@@ -33,6 +34,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   loadingReservations = false;
   loadingOrders = false;
 
+  // Eventos con like
+  likedEvents: LikedEvent[] = [];
+  loadingLikedEvents = false;
+  hasMoreLikedEvents = false;
+  currentLikedEventsPage = 1;
+
   // Tickets reales desde órdenes completadas
   myTickets: any[] = [];
 
@@ -49,6 +56,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private reservationService: ReservationService,
     private orderService: OrderService,
+    private socialService: SocialService,
     private cdr: ChangeDetectorRef
   ) {
     this.profileForm = this.fb.group({
@@ -143,6 +151,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: string) {
     this.activeTab = tab;
+    
+    // Cargar eventos con like cuando se seleccione esa pestaña
+    if (tab === 'liked-events' && this.likedEvents.length === 0) {
+      this.loadLikedEvents();
+    }
   }
 
   isVipUser(): boolean {
@@ -422,5 +435,108 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   get isVip(): boolean {
     return this.user && ['vip', 'VIP'].includes(this.user.role);
+  }
+
+  // ==================== MÉTODOS PARA EVENTOS CON LIKE ====================
+
+  /**
+   * Cargar eventos con like del usuario
+   */
+  loadLikedEvents(page: number = 1) {
+    if (this.loadingLikedEvents) return;
+    
+    this.loadingLikedEvents = true;
+    
+    this.socialService.getUserLikedEvents(page, 10).subscribe({
+      next: (response) => {
+        if (response.success) {
+          if (page === 1) {
+            this.likedEvents = response.events;
+          } else {
+            this.likedEvents = [...this.likedEvents, ...response.events];
+          }
+          
+          this.hasMoreLikedEvents = response.page < response.totalPages;
+          this.currentLikedEventsPage = response.page;
+        } else {
+          console.error('Error cargando eventos con like:', response);
+        }
+        this.loadingLikedEvents = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error cargando eventos con like:', error);
+        this.loadingLikedEvents = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /**
+   * Cargar más eventos con like (paginación)
+   */
+  loadMoreLikedEvents() {
+    if (!this.hasMoreLikedEvents || this.loadingLikedEvents) return;
+    this.loadLikedEvents(this.currentLikedEventsPage + 1);
+  }
+
+  /**
+   * Actualizar eventos con like
+   */
+  refreshLikedEvents() {
+    this.currentLikedEventsPage = 1;
+    this.hasMoreLikedEvents = false;
+    this.loadLikedEvents(1);
+  }
+
+  /**
+   * Quitar like de un evento
+   */
+  removeLike(eventId: string) {
+    Swal.fire({
+      title: '¿Quitar like?',
+      text: '¿Estás seguro de que quieres quitar el like de este evento?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, quitar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Llamar al backend para quitar el like
+        this.socialService.likeEvent(eventId).subscribe({
+          next: (response) => {
+            if (response.success) {
+              // Remover el evento de la lista local
+              this.likedEvents = this.likedEvents.filter(event => event.id !== eventId);
+              
+              Swal.fire({
+                title: 'Like quitado',
+                text: 'Se ha quitado el like del evento',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+              });
+              
+              this.cdr.detectChanges();
+            } else {
+              Swal.fire('Error', 'No se pudo quitar el like', 'error');
+            }
+          },
+          error: (error) => {
+            console.error('Error quitando like:', error);
+            Swal.fire('Error', 'Error al quitar el like', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Navegar a un evento específico
+   */
+  goToEvent(slug: string) {
+    this.router.navigate(['/event', slug]);
   }
 }

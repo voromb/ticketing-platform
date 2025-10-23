@@ -68,6 +68,12 @@
             <i class="fas fa-history mr-3"></i>Historial
           </button>
 
+          <button (click)="setActiveTab('liked-events')"
+            [class]="activeTab === 'liked-events' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-6 px-4 border-b-2 font-medium text-base">
+            <i class="fas fa-heart mr-3"></i>Mis Likes
+          </button>
+
           @if (!isVipUser()) {
           <button (click)="setActiveTab('vip')"
             [class]="activeTab === 'vip' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-yellow-500 hover:text-yellow-600 hover:border-yellow-300'"
@@ -390,9 +396,131 @@
             </div>
             }
           </div>
-          }
+        }
 
-          <!-- Tab: Beneficios VIP (solo para usuarios NO VIP) -->
+        <!-- Tab: Mis Likes -->
+        @if (activeTab === 'liked-events') {
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-heart text-red-500 mr-2"></i>Mis Eventos Favoritos
+              </h2>
+              <button (click)="refreshLikedEvents()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                <i class="fas fa-sync-alt mr-2"></i>Actualizar
+              </button>
+            </div>
+
+            @if (loadingLikedEvents) {
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">Cargando eventos favoritos...</p>
+              </div>
+            }
+
+            @if (!loadingLikedEvents && likedEvents.length === 0) {
+              <div class="text-center py-8">
+                <i class="fas fa-heart text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">No tienes eventos favoritos</p>
+                <p class="text-gray-400 text-sm mt-2">Da like a los eventos que te gusten para verlos aquí</p>
+              </div>
+            }
+
+            @if (!loadingLikedEvents && likedEvents.length > 0) {
+              <div class="space-y-4">
+                @for (event of likedEvents; track event.id) {
+                  <div class="bg-white border rounded-lg p-6 transition-shadow" 
+                       [class]="event.isDeleted ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:shadow-md'">
+                    <div class="flex gap-4">
+                      <!-- Imagen del evento -->
+                      <div class="flex-shrink-0">
+                        @if (event.isDeleted) {
+                          <div class="w-24 h-24 bg-red-200 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                          </div>
+                        } @else if (event.bannerImage || event.thumbnailImage) {
+                          <img 
+                            [src]="event.bannerImage || event.thumbnailImage" 
+                            [alt]="event.name"
+                            class="w-24 h-24 object-cover rounded-lg">
+                        } @else {
+                          <div class="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-gray-400 text-2xl"></i>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Información del evento -->
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-lg mb-2" 
+                            [class]="event.isDeleted ? 'text-red-700' : 'text-gray-900'">
+                          {{ event.name }}
+                        </h3>
+                        <p class="text-sm mb-2 line-clamp-2" 
+                           [class]="event.isDeleted ? 'text-red-600' : 'text-gray-600'">
+                          {{ event.description }}
+                        </p>
+                        
+                        <div class="space-y-1">
+                          <p class="text-sm" [class]="event.isDeleted ? 'text-red-500' : 'text-gray-600'">
+                            <i class="fas fa-map-marker-alt mr-2" 
+                               [class]="event.isDeleted ? 'text-red-400' : 'text-gray-400'"></i>
+                            {{ event.venue.name }}, {{ event.venue.city }}, {{ event.venue.country }}
+                          </p>
+                          @if (!event.isDeleted && event.eventDate) {
+                            <p class="text-gray-600 text-sm">
+                              <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                              {{ event.eventDate | date:'dd/MM/yyyy HH:mm' }}
+                            </p>
+                          }
+                          <p class="text-sm" [class]="event.isDeleted ? 'text-red-500' : 'text-gray-600'">
+                            <i class="fas fa-tag mr-2" 
+                               [class]="event.isDeleted ? 'text-red-400' : 'text-gray-400'"></i>
+                            {{ event.category.name }}
+                          </p>
+                          <p class="text-gray-600 text-sm">
+                            <i class="fas fa-heart mr-2 text-red-400"></i>
+                            Like dado el {{ event.likedAt | date:'dd/MM/yyyy' }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <!-- Acciones -->
+                      <div class="flex-shrink-0 flex flex-col gap-2">
+                        @if (!event.isDeleted) {
+                          <button 
+                            (click)="goToEvent(event.slug)"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                            <i class="fas fa-eye mr-1"></i>Ver Evento
+                          </button>
+                        }
+                        <button 
+                          (click)="removeLike(event.id)"
+                          class="px-4 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 text-sm">
+                          <i class="fas fa-heart-broken mr-1"></i>
+                          {{ event.isDeleted ? 'Limpiar' : 'Quitar Like' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (hasMoreLikedEvents) {
+                <div class="mt-6 text-center">
+                  <button 
+                    (click)="loadMoreLikedEvents()"
+                    [disabled]="loadingLikedEvents"
+                    class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50">
+                    <i class="fas fa-plus mr-2"></i>
+                    {{ loadingLikedEvents ? 'Cargando...' : 'Cargar más eventos' }}
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        }
+
+        <!-- Tab: Beneficios VIP (solo para usuarios NO VIP) -->
           @if (activeTab === 'vip' && !isVipUser()) {
           <div>
             <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6 border border-yellow-200">

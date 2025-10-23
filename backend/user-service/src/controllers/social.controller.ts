@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import axios from 'axios';
 import { EventLike, UserFollow, EventComment } from '../models/social.models';
 import User from '../models/user.model';
 import { 
@@ -67,6 +68,110 @@ class SocialController {
       }
     } catch (error: any) {
       console.error('Error liking event:', error);
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  };
+
+  /**
+   * Obtener eventos con like del usuario autenticado (con paginación)
+   */
+  getUserLikedEvents = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.id;
+      const { page = 1, limit = 20 } = req.query as any;
+
+      if (!userId) {
+        res.status(401).json({ success: false, error: 'Usuario no autenticado' });
+        return;
+      }
+
+      const pageNumber = Number(page) || 1;
+      const pageSize = Number(limit) || 20;
+
+      const likes = await EventLike.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize);
+
+      const total = await EventLike.countDocuments({ userId });
+
+      // Enriquecer con datos del servicio de eventos
+      const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || 'http://localhost:3003/api/events';
+
+      const events = await Promise.all(likes.map(async (like) => {
+        try {
+          // Intentar primero con el ID, luego con el slug si falla
+          let evRes;
+          try {
+            evRes = await axios.get(`${EVENT_SERVICE_URL}/${like.eventId}`);
+          } catch (firstError) {
+            // Si falla con el ID, intentar obtener el evento desde la lista y usar su slug
+            console.log(`⚠️ Evento ${like.eventId} no encontrado por ID, buscando en lista...`);
+            const eventsListRes = await axios.get(`${EVENT_SERVICE_URL}`);
+            const eventsList = eventsListRes.data.data || eventsListRes.data;
+            const event = eventsList.find((e: any) => e.id === like.eventId);
+            
+            if (event && event.slug) {
+              console.log(`🔍 Intentando con slug: ${event.slug}`);
+              evRes = await axios.get(`${EVENT_SERVICE_URL}/${event.slug}`);
+            } else {
+              throw firstError; // Re-lanzar el error original si no encontramos el evento
+            }
+          }
+          
+          const payload = evRes.data || {};
+          const ev = payload.data || payload; // soporta { success, data } o el objeto directo
+          
+          console.log(`✅ Evento ${like.eventId} encontrado:`, ev.name);
+          
+          return {
+            id: ev.id || like.eventId,
+            name: ev.name || 'Evento',
+            description: ev.description || '',
+            slug: ev.slug || ev.id || like.eventId,
+            eventDate: ev.eventDate,
+            bannerImage: ev.bannerImage,
+            thumbnailImage: ev.thumbnailImage,
+            venue: {
+              id: ev.venue?.id || '',
+              name: ev.venue?.name || '',
+              city: ev.venue?.city || '',
+              country: ev.venue?.country || ''
+            },
+            category: {
+              id: ev.category?.id || 0,
+              name: ev.category?.name || 'General'
+            },
+            likedAt: like.createdAt
+          };
+        } catch (e) {
+          console.error(`❌ Evento ${like.eventId} no encontrado (${e.response?.status || 'error'})`);
+          // Si el evento no existe, devolver datos indicando que fue eliminado
+          return {
+            id: like.eventId,
+            name: 'Evento Eliminado',
+            description: 'Este evento ya no está disponible',
+            slug: like.eventId,
+            eventDate: null,
+            bannerImage: null,
+            thumbnailImage: null,
+            venue: { id: '', name: 'No disponible', city: '', country: '' },
+            category: { id: 0, name: 'Eliminado' },
+            likedAt: like.createdAt,
+            isDeleted: true // Flag para identificar eventos eliminados
+          };
+        }
+      }));
+
+      res.json({
+        success: true,
+        events,
+        total,
+        page: pageNumber,
+        totalPages: Math.ceil(total / pageSize)
+      });
+    } catch (error: any) {
+      console.error('Error getting user liked events:', error);
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
   };
