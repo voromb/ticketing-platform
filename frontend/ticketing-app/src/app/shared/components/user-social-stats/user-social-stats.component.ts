@@ -27,7 +27,7 @@ export class UserSocialStatsComponent implements OnInit, OnDestroy {
 
   constructor(
     private socialService: SocialService,
-    private authService: AuthService
+    public authService: AuthService
   ) {}
 
   ngOnInit() {

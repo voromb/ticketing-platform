@@ -33,7 +33,7 @@ export class SocialInteractionsComponent {
   // ===============================
   private social = inject(SocialService);
   private destroyRef = inject(DestroyRef);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
 
   // ===============================
   // 🔹 Signals reactivas
