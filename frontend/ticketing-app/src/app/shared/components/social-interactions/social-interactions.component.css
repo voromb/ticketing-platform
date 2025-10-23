@@ -279,6 +279,34 @@
       font-size: 0.75rem;
       transition: all 0.2s;
     }
+    .follow-comment-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.25rem;
+      background: white;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .follow-comment-btn:hover:not(:disabled) {
+      border-color: #3b82f6;
+      background: #e5e7eb;
+    }
+
+    .follow-comment-btn.following {
+      border-color: #3b82f6;
+      background: #e5e7eb;
+      color: #3b82f6;
+    }
+
+    .follow-comment-btn.following:hover:not(:disabled) {
+      border-color: #ef4444;
+      background: #fef2f2;
+      color: #ef4444;
+    }
 
     .like-comment-btn:hover:not(:disabled) {
       border-color: #ef4444;

@@ -81,6 +81,18 @@
                     </i>
                     {{ comment.likesCount }}
                   </button>
+                  <button 
+                  class="follow-comment-btn"
+                  [class.following]="isUserFollowing(comment.user)"
+                  (click)="toggleFollow(comment.user)"
+                  aria-label="Seguir al usuario del comentario">
+                  <i 
+                    class="fa-user-plus"
+                    [class.fas]="isUserFollowing(comment.user)"
+                    [class.far]="!isUserFollowing(comment.user)">
+                  </i>
+                  {{ isUserFollowing(comment.user) ? 'Siguiendo' : 'Seguir' }}
+                </button>
                 </div>
               }
             </div>

@@ -255,6 +255,33 @@ isCommentLiked(comment: Comment): boolean {
 }
 
 
+
+isUserFollowing(targetUser: any): boolean {
+  const currentUser = this.currentUser();
+  if (!currentUser) return false;
+
+  const following = (currentUser as any)?.following as Array<{ id: string }> | undefined;
+  return Array.isArray(following) && following.some(f => f.id === targetUser.id);
+}
+
+
+  toggleFollow(targetUser: any) {
+    if (!this.isAuthenticated()) {
+      this.onLoginRequired.emit();
+      return;
+    }
+
+    this.social.followUser(targetUser.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          console.log('✅ Follow toggled:', res);
+        },
+        error: err => console.error('❌ Error al seguir/dejar de seguir:', err)
+      });
+  }
+
+
   trackByCommentId(index: number, item: Comment) {
     return item.id;
   }
