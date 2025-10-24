@@ -1,11 +1,16 @@
-import { Component, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef
+} from '@angular/core';
 import { IEvent } from '~/app/core/models/Event.model';
 import { EventService } from '~/app/core/services/event.service';
 import { CarouselComponent } from '~/app/shared/components/list-carousel/carousel.component';
 import { EventDetailComponent } from '~/app/shared/components/event-detail/event-details';
 import { SocialInteractionsComponent } from '~/app/shared/components/social-interactions/social-interactions.component';
 import { Router, ActivatedRoute } from '@angular/router';
-
 
 @Component({
   selector: 'app-detail-event',
@@ -24,66 +29,56 @@ export class DetailEvent implements OnInit, OnChanges {
   constructor(
     private eventService: EventService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // Obtener parámetros de la ruta
     this.eventSlug = this.route.snapshot.paramMap.get('slug') || '';
     this.eventId = this.route.snapshot.paramMap.get('id') || '';
-    
+
     console.log('📍 Parámetros de ruta - slug:', this.eventSlug, 'id:', this.eventId);
-    
+
     this.loadEvent();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Handle any input changes if needed
+    // por si necesitas manejar cambios de inputs más adelante
   }
 
   loadEvent(): void {
     this.loading = true;
-    
+
+    const handleResponse = (res: any) => {
+      if (res.success && res.data) {
+        this.events = [res.data];
+        this.currentEventId = res.data.id || '';
+        console.log('✅ Evento cargado:', res.data);
+      } else {
+        this.error = 'No se pudo cargar el evento';
+      }
+      this.loading = false;
+      this.cdRef.detectChanges(); // 👈 fuerza render inmediato
+    };
+
+    const handleError = (err: any) => {
+      console.error('❌ Error cargando evento:', err);
+      this.error = 'Error al cargar el evento';
+      this.loading = false;
+      this.cdRef.detectChanges();
+    };
+
     if (this.eventSlug) {
-      // Cargar evento por slug
       this.eventService.getEventBySlug(this.eventSlug).subscribe({
-        next: (res) => {
-          if (res.success && res.data) {
-            this.events = [res.data]; // Convertir a array para el carousel
-            this.currentEventId = res.data.id || '';
-            console.log('✅ Evento cargado por slug:', res.data);
-          } else {
-            this.error = 'No se pudo cargar el evento';
-          }
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error('❌ Error cargando evento por slug:', err);
-          this.error = 'Error al cargar el evento';
-          this.loading = false;
-        }
+        next: handleResponse,
+        error: handleError
       });
     } else if (this.eventId) {
-      // Cargar evento por ID
       this.eventService.getEventById(this.eventId).subscribe({
-        next: (res) => {
-          if (res.success && res.data) {
-            this.events = [res.data]; // Convertir a array para el carousel
-            this.currentEventId = res.data.id || '';
-            console.log('✅ Evento cargado por ID:', res.data);
-          } else {
-            this.error = 'No se pudo cargar el evento';
-          }
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error('❌ Error cargando evento por ID:', err);
-          this.error = 'Error al cargar el evento';
-          this.loading = false;
-        }
+        next: handleResponse,
+        error: handleError
       });
     } else {
-      // Fallback: cargar todos los eventos (comportamiento anterior)
       this.loadEvents();
     }
   }
@@ -100,11 +95,13 @@ export class DetailEvent implements OnInit, OnChanges {
           this.error = 'No se pudieron cargar los eventos';
         }
         this.loading = false;
+        this.cdRef.detectChanges();
       },
       error: (err) => {
         console.error('Error en la API:', err);
         this.error = 'Error al cargar eventos';
         this.loading = false;
+        this.cdRef.detectChanges();
       }
     });
   }
