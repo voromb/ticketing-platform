@@ -287,6 +287,27 @@ toggleFollow(targetUser: any) {
     });
 }
 
+deleteComment(comment: Comment) {
+  if (!confirm('¿Seguro que deseas eliminar este comentario?')) return;
+
+  this.social.deleteComment(comment.id).subscribe({
+    next: () => {
+      // Si es una respuesta
+      if (comment.parentCommentId) {
+        const parent = this.comments().find(c => c.id === comment.parentCommentId);
+        if (parent && parent.replies) {
+          parent.replies = parent.replies.filter(r => r.id !== comment.id);
+        }
+      } else {
+        // Si es un comentario principal
+        const updated = this.comments().filter(c => c.id !== comment.id);
+        this.comments.set(updated);
+      }
+    },
+    error: (err) => console.error('Error eliminando comentario:', err)
+  });
+}
+
 
   trackByCommentId(index: number, item: Comment) {
     return item.id;

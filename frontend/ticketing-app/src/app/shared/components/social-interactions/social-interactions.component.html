@@ -82,6 +82,14 @@
                     </i>
                     {{ comment.likesCount }}
                   </button>
+                  @if (comment.user?.id === currentUser?.id)  {
+                  <button 
+                  class="delete-comment-btn"
+                  (click)="deleteComment(comment)"
+                  aria-label="Eliminar comentario">
+                  🗑️ 
+                </button>
+              }
                   @if (comment.user?.id !== currentUser?.id)  {
                   <button 
                   class="follow-comment-btn"
