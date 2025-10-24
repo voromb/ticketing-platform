@@ -47,6 +47,7 @@ export class SocialInteractionsComponent {
   readonly isSubmitting = signal(false);
   readonly replyingTo = signal<string | null>(null);
   readonly replyText = signal('');
+  readonly followingUsers = signal<Set<string>>(new Set());
 
   // Usuario actual desde AuthService
   readonly currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
@@ -257,29 +258,34 @@ isCommentLiked(comment: Comment): boolean {
 
 
 isUserFollowing(targetUser: any): boolean {
-  const currentUser = this.currentUser();
-  if (!currentUser) return false;
-
-  const following = (currentUser as any)?.following as Array<{ id: string }> | undefined;
-  return Array.isArray(following) && following.some(f => f.id === targetUser.id);
+  return this.followingUsers().has(targetUser.id);
 }
 
 
-  toggleFollow(targetUser: any) {
-    if (!this.isAuthenticated()) {
-      this.onLoginRequired.emit();
-      return;
-    }
-
-    this.social.followUser(targetUser.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: res => {
-          console.log('✅ Follow toggled:', res);
-        },
-        error: err => console.error('❌ Error al seguir/dejar de seguir:', err)
-      });
+toggleFollow(targetUser: any) {
+  if (!this.isAuthenticated()) {
+    this.onLoginRequired.emit();
+    return;
   }
+
+  this.social.followUser(targetUser.id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: res => {
+        // res.isFollowing puede venir del backend, o puedes inferirlo tú
+        this.followingUsers.update(following => {
+          const newSet = new Set(following);
+          if (newSet.has(targetUser.id)) {
+            newSet.delete(targetUser.id);
+          } else {
+            newSet.add(targetUser.id);
+          }
+          return newSet;
+        });
+      },
+      error: err => console.error('❌ Error al seguir/dejar de seguir:', err)
+    });
+}
 
 
   trackByCommentId(index: number, item: Comment) {

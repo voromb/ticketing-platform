@@ -66,6 +66,7 @@
                   <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
                 </div>
               </div>
+              @let currentUser = authService.currentUser$ | async;
 
               @if (isAuthenticated()) {
                 <div class="comment-actions">
@@ -81,20 +82,14 @@
                     </i>
                     {{ comment.likesCount }}
                   </button>
-                  @if (comment.user?.id !== authService.currentUser()?.id)  {
-                 <button 
-                    class="follow-comment-btn"
-                    [class.following]="isUserFollowing(comment.user)"
-                    (click)="toggleFollow(comment.user)"
-                    aria-label="Seguir al usuario del comentario">
-                    
-                    <i 
-                      class="fa-user-plus"
-                      [class.fas]="isUserFollowing(comment.user)"
-                      [class.far]="!isUserFollowing(comment.user)">
-                    </i>
-                    {{ isUserFollowing(comment.user) ? 'Siguiendo' : 'Seguir' }}
-                  </button>
+                  @if (comment.user?.id !== currentUser?.id)  {
+                  <button 
+                  class="follow-comment-btn"
+                  [class.following]="isUserFollowing(comment.user)"
+                  (click)="toggleFollow(comment.user)"
+                  aria-label="Seguir al usuario del comentario">
+                  {{ isUserFollowing(comment.user) ? 'Siguiendo' : 'Seguir' }}
+                </button>
                 }
                 </div>
               }
