@@ -30,22 +30,29 @@ docker-compose up -d  # PostgreSQL, MongoDB, RabbitMQ
 
 ### Credenciales de Testing
 
+**✅ VERIFICADAS Y FUNCIONANDO:**
+
 ```
 SUPER_ADMIN:
 Email: voro.super@ticketing.com
 Password: Voro123!
 
-COMPANY_ADMIN - Restaurantes España:
+🟢 COMPANY_ADMIN - Restaurantes España:
 Email: admin.spain.restaurants@festival.com
 Password: Admin123!
 
-COMPANY_ADMIN - Viajes España:
+🔵 COMPANY_ADMIN - Viajes España:
 Email: admin.spain.travel@festival.com
 Password: Admin123!
 
-COMPANY_ADMIN - Merchandising España:
+🟣 COMPANY_ADMIN - Merchandising España:
 Email: admin.spain.merch@festival.com
 Password: Admin123!
+```
+
+**NOTA:** Si el login falla con 401, ejecuta el seed:
+```bash
+cd backend/admin && npx ts-node scripts/seed-companies.ts
 ```
 
 ---

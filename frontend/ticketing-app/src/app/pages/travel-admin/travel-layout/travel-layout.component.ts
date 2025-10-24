@@ -10,7 +10,6 @@ import { RouterModule, Router } from '@angular/router';
   styles: []
 })
 export class TravelLayoutComponent implements OnInit {
-  sidebarOpen = true;
   currentUser: any = null;
 
   menuItems = [
@@ -52,10 +51,6 @@ export class TravelLayoutComponent implements OnInit {
     if (userData) {
       this.currentUser = JSON.parse(userData);
     }
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
   }
 
   logout(): void {

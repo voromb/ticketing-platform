@@ -102,6 +102,11 @@ async function main() {
           first_name: companyData.type,
           last_name: companyData.region,
           is_active: true,
+          can_create: true,
+          can_update: true,
+          can_delete: true,
+          can_view_stats: true,
+          can_manage_stock: true,
         },
       });
 

@@ -9,10 +9,8 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div class="fixed left-0 z-40 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl transform transition-all duration-300 ease-in-out"
-           style="top: 56px; bottom: 0;"
-           [class.translate-x-0]="sidebarOpen"
-           [class.-translate-x-full]="!sidebarOpen">
+      <div class="fixed left-0 z-40 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-2xl"
+           style="top: 56px; bottom: 0;">
 
         <div class="flex items-center justify-center h-20 px-6 border-b border-slate-700/50">
           <div class="flex items-center space-x-3">
@@ -97,11 +95,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
       </div>
 
-      <div *ngIf="sidebarOpen"
-           class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-           (click)="toggleSidebar()"></div>
-
-      <div class="lg:pl-72" style="margin-top: 56px;">
+      <div class="pl-72" style="margin-top: 56px;">
         <main class="" style="min-height: calc(100vh - 56px);">
           <router-outlet></router-outlet>
         </main>
@@ -116,7 +110,6 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class AdminLayoutComponent implements OnInit {
-  sidebarOpen = true;
   pageTitle = 'Dashboard';
   currentUser: any = null;
   isSuperAdmin = false;
@@ -135,14 +128,6 @@ export class AdminLayoutComponent implements OnInit {
     this.router.events.subscribe(() => {
       this.updatePageTitle();
     });
-  }
-
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-  closeSidebar() {
-    this.sidebarOpen = false;
   }
 
   logout() {

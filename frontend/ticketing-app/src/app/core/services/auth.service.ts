@@ -94,17 +94,25 @@ export class AuthService {
     if (response.token) {
       localStorage.setItem('token', response.token);
       
-      // Decodificar el token para obtener la información del usuario
-      const payload = JSON.parse(atob(response.token.split('.')[1]));
-      const user: User = {
-        id: payload.id,
-        email: payload.email,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        role: payload.role
-      };
+      // Usar la información del admin/user que viene en la respuesta
+      const adminData = response.admin || response.user;
       
-      this.currentUserSubject.next(user);
+      if (adminData) {
+        const user: any = {
+          id: adminData.id,
+          email: adminData.email,
+          firstName: adminData.firstName,
+          lastName: adminData.lastName,
+          role: adminData.role,
+          companyId: adminData.companyId,
+          companyType: adminData.companyType,
+          companyName: adminData.companyName,
+          permissions: adminData.permissions
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }
     }
   }
 

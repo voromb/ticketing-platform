@@ -83,22 +83,36 @@ export class LoginComponent implements OnInit {
   }
 
   private redirectByRole(role: string) {
+    const user = this.authService.getCurrentUser();
+    
     switch(role) {
       case 'ADMIN':
       case 'SUPER_ADMIN':
-        this.router.navigate(['/admin-dashboard']);
-        break;
       case 'admin':
       case 'super_admin':
         this.router.navigate(['/admin-dashboard']);
         break;
+      
+      case 'COMPANY_ADMIN':
+        // Redirigir según el tipo de compañía
+        const companyType = (user as any)?.companyType;
+        if (companyType === 'RESTAURANT') {
+          this.router.navigate(['/restaurant-admin/dashboard']);
+        } else if (companyType === 'TRAVEL') {
+          this.router.navigate(['/travel-admin/dashboard']);
+        } else if (companyType === 'MERCHANDISING') {
+          this.router.navigate(['/merchandising-admin/dashboard']);
+        } else {
+          // Fallback si no se reconoce el tipo
+          this.router.navigate(['/shop']);
+        }
+        break;
+      
       case 'vip':
       case 'user':
         this.router.navigate(['/shop']);
         break;
-      case 'company':
-        this.router.navigate(['/shop']);
-        break;
+      
       default:
         this.router.navigate(['/shop']); // Por defecto ir a shop (panel usuario)
     }

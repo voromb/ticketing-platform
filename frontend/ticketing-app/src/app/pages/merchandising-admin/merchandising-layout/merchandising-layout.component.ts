@@ -10,7 +10,6 @@ import { RouterModule, Router } from '@angular/router';
   styles: []
 })
 export class MerchandisingLayoutComponent implements OnInit {
-  sidebarOpen = true;
   currentUser: any = null;
 
   menuItems = [
@@ -32,20 +31,20 @@ export class MerchandisingLayoutComponent implements OnInit {
     this.loadUserData();
   }
 
-  loadUserData() {
-    const userStr = localStorage.getItem('currentUser');
-    if (userStr) {
-      this.currentUser = JSON.parse(userStr);
+  loadUserData(): void {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
     }
   }
 
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/login']);
   }
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.router.navigate(['/login']);
+  isActiveRoute(route: string): boolean {
+    return this.router.url === route;
   }
 }
