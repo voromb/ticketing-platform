@@ -37,6 +37,8 @@ class AuthService {
           username: user.username,
           email: user.email,
           role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
           avatar: user.avatar
         }
       };
@@ -59,8 +61,12 @@ class AuthService {
         throw new Error('El usuario o email ya existe');
       }
 
-      // Crear usuario
-      const user = new User(userData);
+      // Crear usuario con firstName por defecto si no se proporciona
+      const user = new User({
+        ...userData,
+        firstName: userData.firstName || userData.username, // Usar username si no hay firstName
+        lastName: userData.lastName || ''
+      });
       await user.save();
 
       const token = this.generateToken(user);
@@ -72,7 +78,10 @@ class AuthService {
           id: user._id,
           username: user.username,
           email: user.email,
-          role: user.role
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar
         }
       };
     } catch (error) {

@@ -7,7 +7,7 @@
       (click)="toggleLike()"
       [disabled]="!isAuthenticated()"
       aria-label="Dar me gusta a la publicación">
-      <i class="fa-heart" [class.fas]="isLiked()" [class.far]="!isLiked()"></i>
+      <i [ngClass]="isLiked() ? 'fas fa-heart' : 'far fa-heart'"></i>
       <span>{{ likesCount() }}</span>
     </button>
   </div>

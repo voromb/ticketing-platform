@@ -31,6 +31,7 @@ class AuthController {
   register = async (req: Request, res: Response) => {
     try {
       const result = await this.authService.register(req.body);
+      res.status(201).json(result); // ✅ Enviar respuesta exitosa
     } catch (error: any) {
       res.status(400).json({
         success: false,

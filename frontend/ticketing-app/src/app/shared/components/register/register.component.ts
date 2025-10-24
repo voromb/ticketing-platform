@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { timeout, catchError, finalize } from 'rxjs/operators';
-import { of, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -53,55 +53,40 @@ onSubmit() {
 
   this.http.post('http://localhost:3001/api/auth/register', userData)
     .pipe(
-      timeout(1000), // ⏱️ Si el backend no responde en 8s, lanza error TimeoutError
       catchError((error) => {
-        console.error('⚠️ Error detectado en catchError:', error);
+        console.error('⚠️ Error en registro:', error);
+        this.loading = false;
 
-        // Si se trata de un timeout → el servidor no respondió
-        if (error.name === 'TimeoutError') {
-          Swal.fire({
-             icon: 'success',
-            title: '¡Registro exitoso!',
-            text: `Bienvenido ${userData.username}`,
-            confirmButtonText: 'Ir al login'
-          }).then(() => this.router.navigate(['/login']));
-        } else {
-          // Otros errores HTTP reales
-          let errorTitle = 'Error al registrar';
-          let errorMessage = 'Ocurrió un error inesperado.';
+        let errorTitle = 'Error al registrar';
+        let errorMessage = 'Ocurrió un error inesperado.';
 
-          if (error.status === 0) {
-            errorTitle = 'Error de conexión';
-            errorMessage = 'No se pudo conectar con el servidor.';
-          } else if (error.status === 409) {
-            errorTitle = 'Usuario ya existe';
-            errorMessage = 'El email o nombre de usuario ya está registrado.';
-          } else if (error.status === 400) {
-            errorTitle = 'Datos inválidos';
-            errorMessage = error.error?.message || 'Verifica los datos ingresados.';
-          } else if (error.error?.message) {
-            errorMessage = error.error.message;
-          }
-
-          Swal.fire({
-            icon: 'error',
-            title: errorTitle,
-            text: errorMessage,
-            confirmButtonText: 'Entendido'
-          });
+        if (error.status === 0) {
+          errorTitle = 'Error de conexión';
+          errorMessage = 'No se pudo conectar con el servidor.';
+        } else if (error.status === 409) {
+          errorTitle = 'Usuario ya existe';
+          errorMessage = 'El email o nombre de usuario ya está registrado.';
+        } else if (error.status === 400) {
+          errorTitle = 'Datos inválidos';
+          errorMessage = error.error?.message || 'Verifica los datos ingresados.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
         }
 
-        // Propaga el error para que finalize() se ejecute
+        Swal.fire({
+          icon: 'error',
+          title: errorTitle,
+          text: errorMessage,
+          confirmButtonText: 'Entendido'
+        });
+
         return throwError(() => error);
-      }),
-      finalize(() => {
-        this.loading = false;
-        console.log('🔄 finalize(): loading detenido');
       })
     )
     .subscribe({
       next: (response: any) => {
         console.log('✅ Respuesta del servidor:', response);
+        this.loading = false;
 
         if (response?.success || response?.token) {
           // Guardar token y usuario si existen
@@ -121,7 +106,7 @@ onSubmit() {
             timer: 2500,
             toast: true,
           }).then(() => {
-            this.router.navigate(['/events']);
+            this.router.navigate(['/shop']);
           });
         } else {
           // Si el backend devuelve algo distinto pero válido
@@ -137,7 +122,7 @@ onSubmit() {
       },
       error: (error) => {
         console.error('❌ Error en subscribe:', error);
-        // El SweetAlert ya se muestra en catchError, así que no hace falta repetirlo aquí
+        // El SweetAlert ya se muestra en catchError
       }
     });
 }
