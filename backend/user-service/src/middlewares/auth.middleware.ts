@@ -54,5 +54,33 @@ export const roleMiddleware = (...roles: string[]) => {
   };
 };
 
+// Middleware opcional: procesa el token si existe, pero no falla si no hay
+export const optionalAuthMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (token) {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "DAW-servidor-2025"
+      );
+      req.user = decoded;
+      console.log('✅ Token JWT procesado - Usuario:', (decoded as any).id);
+    } else {
+      console.log('⚠️ No hay token JWT - continuando sin autenticación');
+    }
+    
+    next();
+  } catch (error) {
+    console.log('⚠️ Token JWT inválido - continuando sin autenticación');
+    // No fallar, simplemente continuar sin usuario
+    next();
+  }
+};
+
 // Alias para compatibilidad
 export const authenticateToken = authMiddleware;

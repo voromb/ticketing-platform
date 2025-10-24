@@ -90,20 +90,25 @@ function Invoke-SafeCommand {
             Write-ColorOutput "$Description completado" "Green"
             return $true
         } else {
+            $errorMsg = if ($result) { $result | Out-String } else { "Código de salida: $LASTEXITCODE" }
             if ($CriticalError) {
-                Write-ColorOutput "ERROR CRÍTICO en $Description`: $result" "Red"
+                Write-ColorOutput "ERROR CRÍTICO en $Description`:" "Red"
+                Write-ColorOutput $errorMsg "Red"
                 exit 1
             } else {
-                Write-ColorOutput "$Description tuvo problemas pero continuamos: $result" "Yellow"
+                Write-ColorOutput "$Description tuvo problemas pero continuamos:" "Yellow"
+                Write-ColorOutput $errorMsg "Yellow"
                 return $false
             }
         }
     } catch {
         if ($CriticalError) {
-            Write-ColorOutput "ERROR CRÍTICO en $Description`: $($_.Exception.Message)" "Red"
+            Write-ColorOutput "ERROR CRÍTICO en $Description`:" "Red"
+            Write-ColorOutput $_.Exception.Message "Red"
             exit 1
         } else {
-            Write-ColorOutput "Error en $Description pero continuamos: $($_.Exception.Message)" "Yellow"
+            Write-ColorOutput "Error en $Description pero continuamos:" "Yellow"
+            Write-ColorOutput $_.Exception.Message "Yellow"
             return $false
         }
     }
@@ -166,12 +171,37 @@ function Restore-MongoDB {
         return $false
     }
     
-    Invoke-SafeCommand "docker cp `"$mongoBackup`" ticketing-mongodb:/tmp/mongodb_backup.archive" "Copiando backup MongoDB al contenedor" $true
+    Write-ColorOutput "Copiando backup MongoDB al contenedor..." "Blue"
+    docker cp "$mongoBackup" ticketing-mongodb:/tmp/mongodb_backup.archive 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-ColorOutput "Error copiando archivo al contenedor" "Red"
+        return $false
+    }
+    Write-ColorOutput "Archivo copiado correctamente" "Green"
     
-    # 3. Restaurar con autenticación
-    Invoke-SafeCommand "docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip" "Restaurando MongoDB" $true
+    # 3. Restaurar con autenticación - Intentar con gzip
+    Write-ColorOutput "Intentando restauración con gzip..." "Blue"
+    $output = docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip 2>&1
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-ColorOutput "MongoDB restaurada con gzip" "Green"
+    } else {
+        Write-ColorOutput "Fallo con gzip, intentando sin gzip..." "Yellow"
+        Write-ColorOutput "Error: $output" "Yellow"
+        
+        # Intentar sin gzip
+        $output = docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "ERROR en restauración MongoDB:" "Red"
+            Write-ColorOutput "$output" "Red"
+            return $false
+        }
+        Write-ColorOutput "MongoDB restaurada sin gzip" "Green"
+    }
     
     # 4. Verificar restauración
+    Start-Sleep -Seconds 2
     $userCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('ticketing'); db.users.countDocuments()" --quiet 2>$null
     if ($userCount -and $userCount.Trim() -gt 0) {
         Write-ColorOutput "MongoDB restaurada correctamente ($($userCount.Trim()) usuarios)" "Green"

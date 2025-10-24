@@ -184,13 +184,20 @@ class SocialController {
       const userId = (req as any).user?.id;
       const { eventId } = req.params;
 
+      console.log('🔍 getEventLikes - userId:', userId, 'eventId:', eventId);
+
       const totalLikes = await EventLike.countDocuments({ eventId });
       let isLikedByUser = false;
 
       if (userId) {
         const userLike = await EventLike.findOne({ userId, eventId });
         isLikedByUser = !!userLike;
+        console.log('✅ Usuario autenticado - userLike encontrado:', !!userLike);
+      } else {
+        console.log('⚠️ Usuario NO autenticado - no se puede verificar like');
       }
+
+      console.log('📊 Respuesta - totalLikes:', totalLikes, 'isLikedByUser:', isLikedByUser);
 
       res.json({
         success: true,

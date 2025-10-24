@@ -60,19 +60,24 @@ export class SocialInteractionsComponent {
   // ===============================
   readonly loadLikesEffect = effect(() => {
     const id = this.eventId();
-    const user = this.currentUser();
-    if (!id || !user) return;
+    const user = this.currentUser(); // Esperar a que el usuario esté cargado
+    
+    if (!id) return;
 
-  this.social.getEventLikes(id)
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: res => {
-        this.likesCount.set(res.totalLikes);
-        this.isLiked.set(res.isLikedByUser);
-      },
-      error: err => console.error('❌ Error cargando likes:', err)
-    });
-});
+    console.log('🔄 Cargando likes para evento:', id, 'Usuario:', user?.email || 'No autenticado');
+
+    // Cargar likes (con o sin usuario autenticado)
+    this.social.getEventLikes(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.likesCount.set(res.totalLikes);
+          this.isLiked.set(res.isLikedByUser);
+          console.log('✅ Likes cargados - Total:', res.totalLikes, 'Usuario dio like:', res.isLikedByUser);
+        },
+        error: err => console.error('❌ Error cargando likes:', err)
+      });
+  });
 
   // ===============================
   // 🔹 Efecto para cargar comentarios automáticamente
@@ -98,12 +103,16 @@ export class SocialInteractionsComponent {
       return;
     }
 
+    console.log('👆 Toggle like - Estado actual:', this.isLiked());
+
     this.social.likeEvent(this.eventId())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
+          console.log('✅ Toggle like respuesta:', res);
           this.isLiked.set(res.isLiked);
           this.likesCount.set(res.totalLikes);
+          console.log('💖 Nuevo estado del like:', this.isLiked());
         },
         error: err => console.error('❌ Error al dar like:', err)
       });
