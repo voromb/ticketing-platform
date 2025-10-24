@@ -106,4 +106,27 @@ export const routes: Routes = [
       }
     ]
   },
+  // Travel Admin Routes
+  {
+    path: 'travel-admin',
+    loadComponent: () =>
+      import('./pages/travel-admin/travel-layout/travel-layout.component').then((m) => m.TravelLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/travel-admin/travel-dashboard/travel-dashboard.component').then((m) => m.TravelDashboardComponent),
+      },
+      {
+        path: 'list',
+        loadComponent: () =>
+          import('./pages/travel-admin/travel-list/travel-list.component').then((m) => m.TravelListComponent),
+      }
+    ]
+  },
 ];
