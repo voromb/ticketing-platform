@@ -98,7 +98,7 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     this.categoryService.getAllCategories().subscribe((data: ICategory[]) => {
       this.categories = data;
 
-      // Usar setTimeout para evitar el error NG0100
+   
       setTimeout(() => {
         this.slides = this.categories.map(cat => ({
           title: cat.name,
@@ -111,7 +111,7 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
 private loadEventImages(): void {
   if (!this.eventImages || this.eventImages.length === 0) {
     console.warn('⚠️ No hay imágenes o eventos para cargar en el carrusel.');
-    // Usar setTimeout para evitar el error NG0100
+  
     setTimeout(() => {
       this.slides = [];
       this.cdr.detectChanges();
@@ -121,9 +121,9 @@ private loadEventImages(): void {
 
   console.log('📥 Datos recibidos en eventImages:', this.eventImages);
 
-  // Usar setTimeout para evitar el error NG0100
+
   setTimeout(() => {
-    // Si el primer elemento es un objeto con 'images' o 'bannerImage' → son eventos
+    
     if (typeof this.eventImages[0] === 'object') {
       console.log('📦 Se detectó un array de eventos, procesando imágenes...');
 
@@ -138,7 +138,7 @@ private loadEventImages(): void {
           console.log(`🖼️ Banner agregado: ${event.bannerImage}`);
         }
 
-        // 👇 Ojo: tu modelo tiene "images" (plural), no "image"
+       
         if (Array.isArray(event.images) && event.images.length > 0) {
           event.images.forEach(img => {
             slides.push({
@@ -161,12 +161,11 @@ private loadEventImages(): void {
 
     console.log('✅ Imágenes cargadas en slides:', this.slides);
     
-    // Reiniciar el índice si es necesario
+ 
     if (this.currentIndex >= this.slides.length) {
       this.currentIndex = 0;
     }
-    
-    // Forzar detección de cambios después de cargar las imágenes
+ 
     this.cdr.detectChanges();
   }, 0);
 }
