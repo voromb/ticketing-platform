@@ -41,7 +41,7 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     // Detectar cambios en eventImages para recargar el carousel
     if (changes['eventImages'] && !changes['eventImages'].firstChange) {
       console.log('🔄 Cambios detectados en eventImages, recargando carousel...');
-      // Usar setTimeout para evitar el error NG0100
+    
       setTimeout(() => {
         this.loadCarouselItems();
         this.cdr.detectChanges();
