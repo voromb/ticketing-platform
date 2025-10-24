@@ -83,4 +83,27 @@ export const routes: Routes = [
       }
     ]
   },
+  // Restaurant Admin Routes
+  {
+    path: 'restaurant-admin',
+    loadComponent: () =>
+      import('./pages/restaurant-admin/restaurant-layout/restaurant-layout.component').then((m) => m.RestaurantLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/restaurant-admin/restaurant-dashboard/restaurant-dashboard.component').then((m) => m.RestaurantDashboardComponent),
+      },
+      {
+        path: 'list',
+        loadComponent: () =>
+          import('./pages/restaurant-admin/restaurant-list/restaurant-list.component').then((m) => m.RestaurantListComponent),
+      }
+    ]
+  },
 ];

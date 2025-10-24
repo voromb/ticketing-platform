@@ -1,0 +1,349 @@
+<div class="min-h-screen bg-slate-900 p-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-white mb-2">Mis Restaurantes</h1>
+        <p class="text-slate-400">Gestiona todos tus restaurantes y su información</p>
+      </div>
+      <button 
+        (click)="openCreateModal()"
+        class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors shadow-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span class="font-medium">Crear Restaurante</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 mb-6 shadow-xl">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Search -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-300 mb-2">Buscar</label>
+        <input 
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Buscar por nombre, cocina o ubicación..."
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+        <select 
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="applyFilters()"
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="all">Todos</option>
+          <option value="PENDING">Pendiente</option>
+          <option value="APPROVED">Aprobado</option>
+          <option value="REJECTED">Rechazado</option>
+        </select>
+      </div>
+
+      <!-- Region Filter -->
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Región</label>
+        <select 
+          [(ngModel)]="regionFilter"
+          (ngModelChange)="applyFilters()"
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="all">Todas</option>
+          <option value="SPAIN">España</option>
+          <option value="EUROPE">Europa</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="mt-4 flex items-center justify-between text-sm text-slate-400">
+      <span>Mostrando {{ getPaginatedRestaurants().length }} de {{ filteredRestaurants.length }} restaurantes</span>
+      <span>Total: {{ restaurants.length }}</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="bg-slate-800/80 border border-slate-700/50 rounded-xl shadow-xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-slate-700/50 border-b border-slate-600">
+          <tr>
+            <th class="px-6 py-4 text-left">
+              <button 
+                (click)="toggleSort('name')"
+                class="flex items-center space-x-1 text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+                <span>Restaurante</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                </svg>
+              </button>
+            </th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Cocina</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Ubicación</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Ocupación</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Estado</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Rating</th>
+            <th class="px-6 py-4 text-right text-sm font-semibold text-slate-300">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700">
+          <tr *ngFor="let restaurant of getPaginatedRestaurants()" 
+              class="hover:bg-slate-700/30 transition-colors">
+            <!-- Restaurant Info -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-white">{{ restaurant.name }}</p>
+                  <p class="text-xs text-slate-400">{{ restaurant.region }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Cuisine -->
+            <td class="px-6 py-4">
+              <span class="text-sm text-slate-300">{{ restaurant.cuisine }}</span>
+            </td>
+
+            <!-- Location -->
+            <td class="px-6 py-4">
+              <span class="text-sm text-slate-300">{{ restaurant.location }}</span>
+            </td>
+
+            <!-- Occupancy -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-2">
+                <div class="flex-1 bg-slate-700 rounded-full h-2 w-20">
+                  <div 
+                    [class]="getOccupancyColor(getOccupancyPercentage(restaurant))"
+                    [style.width.%]="getOccupancyPercentage(restaurant)"
+                    class="h-2 rounded-full transition-all"></div>
+                </div>
+                <span class="text-xs text-slate-400">{{ restaurant.currentOccupancy }}/{{ restaurant.capacity }}</span>
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <span [class]="getStatusColor(restaurant.approvalStatus)" 
+                    class="text-xs px-2 py-1 rounded-full font-medium">
+                {{ restaurant.approvalStatus }}
+              </span>
+            </td>
+
+            <!-- Rating -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-1">
+                <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span class="text-sm text-slate-300">{{ restaurant.rating || 0 }}</span>
+                <span class="text-xs text-slate-500">({{ restaurant.totalReviews || 0 }})</span>
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end space-x-2">
+                <button 
+                  (click)="openViewModal(restaurant)"
+                  title="Ver detalles"
+                  class="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </button>
+                <button 
+                  (click)="openEditModal(restaurant)"
+                  title="Editar"
+                  class="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+                <button 
+                  (click)="deleteRestaurant(restaurant._id!)"
+                  title="Eliminar"
+                  class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="getPaginatedRestaurants().length === 0">
+            <td colspan="7" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center justify-center space-y-3">
+                <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <p class="text-slate-400">No se encontraron restaurantes</p>
+                <button 
+                  (click)="openCreateModal()"
+                  class="text-green-500 hover:text-green-400 text-sm font-medium">
+                  Crear tu primer restaurante
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="bg-slate-700/30 px-6 py-4 flex items-center justify-between border-t border-slate-700">
+      <div class="text-sm text-slate-400">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+      <div class="flex items-center space-x-2">
+        <button 
+          (click)="changePage(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          [class.opacity-50]="currentPage === 1"
+          [class.cursor-not-allowed]="currentPage === 1"
+          class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:hover:bg-slate-700">
+          Anterior
+        </button>
+        <button 
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          (click)="changePage(i + 1)"
+          [class.bg-green-600]="currentPage === i + 1"
+          [class.text-white]="currentPage === i + 1"
+          [class.bg-slate-700]="currentPage !== i + 1"
+          [class.text-slate-300]="currentPage !== i + 1"
+          class="px-3 py-1 rounded hover:bg-green-700 transition-colors">
+          {{ i + 1 }}
+        </button>
+        <button 
+          (click)="changePage(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+          [class.opacity-50]="currentPage === totalPages"
+          [class.cursor-not-allowed]="currentPage === totalPages"
+          class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:hover:bg-slate-700">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal (Create/Edit/View) -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+  <div class="bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-slate-700">
+      <h3 class="text-xl font-bold text-white">
+        <span *ngIf="modalMode === 'create'">Crear Restaurante</span>
+        <span *ngIf="modalMode === 'edit'">Editar Restaurante</span>
+        <span *ngIf="modalMode === 'view'">Detalles del Restaurante</span>
+      </h3>
+      <button 
+        (click)="closeModal()"
+        class="text-slate-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Name -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-slate-300 mb-2">Nombre *</label>
+          <input 
+            type="text"
+            [(ngModel)]="selectedRestaurant.name"
+            [disabled]="modalMode === 'view'"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+        </div>
+
+        <!-- Cuisine -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Cocina *</label>
+          <input 
+            type="text"
+            [(ngModel)]="selectedRestaurant.cuisine"
+            [disabled]="modalMode === 'view'"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+        </div>
+
+        <!-- Location -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Ubicación *</label>
+          <input 
+            type="text"
+            [(ngModel)]="selectedRestaurant.location"
+            [disabled]="modalMode === 'view'"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+        </div>
+
+        <!-- Capacity -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Capacidad *</label>
+          <input 
+            type="number"
+            [(ngModel)]="selectedRestaurant.capacity"
+            [disabled]="modalMode === 'view'"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+          <select 
+            [(ngModel)]="selectedRestaurant.status"
+            [disabled]="modalMode === 'view'"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+            <option value="OPEN">Abierto</option>
+            <option value="CLOSED">Cerrado</option>
+            <option value="TEMPORARILY_CLOSED">Temporalmente Cerrado</option>
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-slate-300 mb-2">Descripción</label>
+          <textarea 
+            [(ngModel)]="selectedRestaurant.description"
+            [disabled]="modalMode === 'view'"
+            rows="3"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end space-x-3 p-6 border-t border-slate-700">
+      <button 
+        (click)="closeModal()"
+        class="px-6 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+        {{ modalMode === 'view' ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      <button 
+        *ngIf="modalMode !== 'view'"
+        (click)="saveRestaurant()"
+        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        {{ modalMode === 'create' ? 'Crear' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
