@@ -1,0 +1,107 @@
+<div class="min-h-screen bg-slate-900 p-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Gestión de Productos</h1>
+    <p class="text-slate-400">Administra el catálogo de merchandising</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 mb-6 shadow-xl">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="filterProducts()"
+        placeholder="Buscar productos..."
+        class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+      
+      <select 
+        [(ngModel)]="typeFilter"
+        (ngModelChange)="filterProducts()"
+        class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="all">Todos los tipos</option>
+        <option value="clothing">Ropa</option>
+        <option value="accessory">Accesorios</option>
+        <option value="vinyl">Vinilos</option>
+        <option value="cd">CDs</option>
+        <option value="poster">Pósters</option>
+        <option value="other">Otros</option>
+      </select>
+
+      <select 
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="filterProducts()"
+        class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="all">Todos los estados</option>
+        <option value="available">Disponible</option>
+        <option value="out_of_stock">Agotado</option>
+        <option value="coming_soon">Próximamente</option>
+        <option value="discontinued">Descontinuado</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="bg-slate-800/80 border border-slate-700/50 rounded-xl shadow-xl overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-slate-700/50">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Producto</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Tipo</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Precio</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Stock</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Vendidos</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Aprobación</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-700/50">
+        <tr *ngFor="let product of filteredProducts" class="hover:bg-slate-700/30 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center">
+              <img [src]="product.images[0]" alt="{{product.name}}" class="w-12 h-12 rounded-lg object-cover mr-3">
+              <div>
+                <p class="text-white font-medium">{{ product.name }}</p>
+                <p class="text-slate-400 text-sm">{{ product.bandName || 'General' }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-slate-300 capitalize">{{ product.type }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-white font-medium">€{{ product.price.toFixed(2) }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div>
+              <p class="text-white">{{ product.stock.available }} / {{ product.stock.total }}</p>
+              <p class="text-slate-400 text-sm">Reservados: {{ product.stock.reserved }}</p>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-white">{{ product.soldUnits }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <span [class]="getStatusBadgeClass(product.status)" class="px-3 py-1 rounded-full text-xs font-medium capitalize">
+              {{ product.status.replace('_', ' ') }}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <span [class]="getApprovalBadgeClass(product.approvalStatus)" class="px-3 py-1 rounded-full text-xs font-medium">
+              {{ product.approvalStatus || 'N/A' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="filteredProducts.length === 0" class="text-center py-12">
+      <p class="text-slate-400">No se encontraron productos</p>
+    </div>
+  </div>
+</div>

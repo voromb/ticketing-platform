@@ -1,0 +1,126 @@
+<div class="min-h-screen bg-slate-900 p-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Dashboard Merchandising</h1>
+    <p class="text-slate-400">Gestión de productos y ventas</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Total Products -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Total Productos</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ stats.totalProducts }}</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Stock -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Stock Disponible</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ stats.availableStock }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sold Units -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Unidades Vendidas</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ stats.soldUnits }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Revenue -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Ingresos Totales</p>
+          <p class="text-3xl font-bold text-white mt-2">€{{ stats.totalRevenue.toFixed(2) }}</p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Approval -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Pendientes Aprobación</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ stats.pendingApproval }}</p>
+        </div>
+        <div class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved -->
+    <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-slate-400 text-sm">Aprobados</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ stats.approved }}</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6 shadow-xl">
+    <h2 class="text-xl font-bold text-white mb-4">Acciones Rápidas</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <button routerLink="/merchandising-admin/list" 
+              class="flex items-center justify-center px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Crear Producto
+      </button>
+      <button routerLink="/merchandising-admin/list" 
+              class="flex items-center justify-center px-6 py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Ver Todos los Productos
+      </button>
+    </div>
+  </div>
+</div>

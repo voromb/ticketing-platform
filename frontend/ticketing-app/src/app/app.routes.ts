@@ -129,4 +129,27 @@ export const routes: Routes = [
       }
     ]
   },
+  // Merchandising Admin Routes
+  {
+    path: 'merchandising-admin',
+    loadComponent: () =>
+      import('./pages/merchandising-admin/merchandising-layout/merchandising-layout.component').then((m) => m.MerchandisingLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/merchandising-admin/merchandising-dashboard/merchandising-dashboard.component').then((m) => m.MerchandisingDashboardComponent),
+      },
+      {
+        path: 'list',
+        loadComponent: () =>
+          import('./pages/merchandising-admin/merchandising-list/merchandising-list.component').then((m) => m.MerchandisingListComponent),
+      }
+    ]
+  },
 ];
