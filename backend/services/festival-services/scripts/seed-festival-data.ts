@@ -17,6 +17,19 @@ const pgClient = new Client({
 
 // Schemas de MongoDB
 const restaurantSchema = new mongoose.Schema({
+  // Campos de compañía
+  companyId: String,
+  companyName: String,
+  region: String,
+  managedBy: String,
+  
+  // Aprobaciones
+  approvalStatus: { type: String, default: 'APPROVED' },
+  lastModifiedBy: String,
+  lastApprovedBy: String,
+  lastApprovedAt: Date,
+  
+  // Datos del restaurante
   festivalId: String,
   name: String,
   description: String,
@@ -30,12 +43,13 @@ const restaurantSchema = new mongoose.Schema({
     closeTime: String,
   }],
   menu: [{
+    itemId: String,
     name: String,
     description: String,
     price: Number,
     category: String,
-    isVegetarian: Boolean,
-    isVegan: Boolean,
+    dietary: [String],
+    available: Boolean,
   }],
   acceptsReservations: Boolean,
   reservationDurationMinutes: Number,
@@ -43,29 +57,45 @@ const restaurantSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   rating: { type: Number, default: 0 },
   totalReviews: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 const tripSchema = new mongoose.Schema({
+  // Campos de compañía
+  companyId: String,
+  companyName: String,
+  region: String,
+  managedBy: String,
+  
+  // Vehículo
+  vehicleType: String,
+  vehicleCapacity: Number,
+  vehiclePlate: String,
+  driverInfo: {
+    name: String,
+    phone: String,
+    license: String,
+  },
+  
+  // Aprobaciones
+  approvalStatus: { type: String, default: 'APPROVED' },
+  lastModifiedBy: String,
+  lastApprovedBy: String,
+  lastApprovedAt: Date,
+  cancellationPolicy: String,
+  
+  // Datos del viaje
   festivalId: String,
   name: String,
   description: String,
   departure: {
     location: String,
     datetime: Date,
-    coordinates: {
-      lat: Number,
-      lng: Number,
-    },
+    coordinates: [Number],
   },
   arrival: {
     location: String,
     datetime: Date,
-    coordinates: {
-      lat: Number,
-      lng: Number,
-    },
+    coordinates: [Number],
   },
   capacity: Number,
   price: Number,
@@ -77,14 +107,41 @@ const tripSchema = new mongoose.Schema({
   },
   requiresApproval: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 const productSchema = new mongoose.Schema({
+  // Campos de compañía
+  companyId: String,
+  companyName: String,
+  region: String,
+  managedBy: String,
+  
+  // Proveedor
+  supplier: {
+    name: String,
+    contact: String,
+    country: String,
+  },
+  costPrice: Number,
+  margin: Number,
+  
+  // Aprobaciones
+  approvalStatus: { type: String, default: 'APPROVED' },
+  lastModifiedBy: String,
+  lastApprovedBy: String,
+  lastApprovedAt: Date,
+  
+  // Shipping
+  shippingInfo: {
+    weight: Number,
+    dimensions: String,
+    shippingTime: Number,
+  },
+  
+  // Datos del producto
   festivalId: String,
-  eventId: String,
-  eventName: String,
+  bandId: String,
+  bandName: String,
   name: String,
   description: String,
   type: { 
@@ -109,9 +166,7 @@ const productSchema = new mongoose.Schema({
   },
   isActive: { type: Boolean, default: true },
   soldUnits: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 const Restaurant = mongoose.model('Restaurant', restaurantSchema);
 const Trip = mongoose.model('Trip', tripSchema);
@@ -162,12 +217,20 @@ function generateMenu(cuisine: string, isPremium: boolean = false): any[] {
     { name: isPremium ? 'Bebida Premium' : 'Bebida', category: 'DRINK', price: randomInt(3, 8) * priceMultiplier },
   ];
 
-  return menuItems.map(item => ({
-    ...item,
-    description: `${isPremium ? 'Exquisito' : 'Delicioso'} ${item.name.toLowerCase()} de cocina ${cuisine.toLowerCase()}`,
-    isVegetarian: Math.random() > 0.7,
-    isVegan: Math.random() > 0.8,
-  }));
+  return menuItems.map((item, index) => {
+    const dietary: string[] = [];
+    if (Math.random() > 0.7) dietary.push('vegetarian');
+    if (Math.random() > 0.8) dietary.push('vegan');
+    if (Math.random() > 0.85) dietary.push('gluten-free');
+    
+    return {
+      itemId: `item-${Date.now()}-${index}`,
+      ...item,
+      description: `${isPremium ? 'Exquisito' : 'Delicioso'} ${item.name.toLowerCase()} de cocina ${cuisine.toLowerCase()}`,
+      dietary,
+      available: true,
+    };
+  });
 }
 
 function generateSchedule(): any[] {
@@ -179,17 +242,38 @@ function generateSchedule(): any[] {
   }));
 }
 
-async function seedRestaurants(events: any[]) {
+async function seedRestaurants(events: any[], companies: any[]) {
   console.log('\n🍽️  Generando Restaurantes...');
   
   const restaurants: any[] = [];
+  const restaurantCompanies = companies.filter(c => c.type === 'RESTAURANT');
+  
+  if (restaurantCompanies.length === 0) {
+    console.log('⚠️  No hay compañías de restaurantes. Saltando...');
+    return [];
+  }
   
   for (const event of events) {
+    const company = randomElement(restaurantCompanies);
+    
     // Restaurante Económico
     const cuisine1 = randomElement(cuisineTypes);
     const restaurantName1 = randomElement(restaurantNames);
     
     const economicRestaurant = {
+      // Campos de compañía
+      companyId: company.id,
+      companyName: company.name,
+      region: company.region,
+      managedBy: company.contactEmail,
+      
+      // Aprobaciones
+      approvalStatus: 'APPROVED',
+      lastModifiedBy: company.contactEmail,
+      lastApprovedBy: 'voro.super@ticketing.com',
+      lastApprovedAt: new Date(),
+      
+      // Datos del restaurante
       festivalId: event.id,
       name: `${restaurantName1} Económico - ${event.name}`,
       description: `Restaurante de cocina ${cuisine1} con precios accesibles en ${event.name}`,
@@ -210,8 +294,22 @@ async function seedRestaurants(events: any[]) {
     // Restaurante Premium
     const cuisine2 = randomElement(cuisineTypes);
     const restaurantName2 = randomElement(restaurantNames);
+    const company2 = randomElement(restaurantCompanies);
     
     const premiumRestaurant = {
+      // Campos de compañía
+      companyId: company2.id,
+      companyName: company2.name,
+      region: company2.region,
+      managedBy: company2.contactEmail,
+      
+      // Aprobaciones
+      approvalStatus: 'APPROVED',
+      lastModifiedBy: company2.contactEmail,
+      lastApprovedBy: 'voro.super@ticketing.com',
+      lastApprovedAt: new Date(),
+      
+      // Datos del restaurante
       festivalId: event.id,
       name: `${restaurantName2} Premium - ${event.name}`,
       description: `Restaurante gourmet de cocina ${cuisine2} en ${event.name}`,
@@ -237,43 +335,67 @@ async function seedRestaurants(events: any[]) {
   return result;
 }
 
-async function seedTrips(events: any[], venues: any[]) {
+async function seedTrips(events: any[], venues: any[], companies: any[]) {
   console.log('\n🚌 Generando Viajes...');
   
   const trips: any[] = [];
+  const travelCompanies = companies.filter(c => c.type === 'TRAVEL');
+  
+  if (travelCompanies.length === 0) {
+    console.log('⚠️  No hay compañías de viajes. Saltando...');
+    return [];
+  }
   
   for (const event of events) {
     const venue = venues.find(v => v.id === event.venueId);
     const departure = randomElement(departureLocations);
-    
     const eventDate = new Date(event.eventDate);
     
     // Viaje Económico (Autobús)
+    const company1 = randomElement(travelCompanies);
     const economicDepartureTime = new Date(eventDate);
-    economicDepartureTime.setHours(economicDepartureTime.getHours() - 4); // 4 horas antes
+    economicDepartureTime.setHours(economicDepartureTime.getHours() - 4);
     
     const economicArrivalTime = new Date(economicDepartureTime);
-    economicArrivalTime.setHours(economicArrivalTime.getHours() + 3); // 3 horas de viaje
+    economicArrivalTime.setHours(economicArrivalTime.getHours() + 3);
     
     const economicTrip = {
+      // Campos de compañía
+      companyId: company1.id,
+      companyName: company1.name,
+      region: company1.region,
+      managedBy: company1.contactEmail,
+      
+      // Vehículo
+      vehicleType: 'BUS',
+      vehicleCapacity: randomInt(50, 60),
+      vehiclePlate: `${randomInt(1000, 9999)}-ABC`,
+      driverInfo: {
+        name: 'Juan Pérez',
+        phone: '+34 600 123 456',
+        license: 'D-12345678',
+      },
+      
+      // Aprobaciones
+      approvalStatus: 'APPROVED',
+      lastModifiedBy: company1.contactEmail,
+      lastApprovedBy: 'voro.super@ticketing.com',
+      lastApprovedAt: new Date(),
+      cancellationPolicy: 'Cancelación gratuita hasta 24h antes',
+      
+      // Datos del viaje
       festivalId: event.id,
       name: `Autobús Económico a ${event.name}`,
       description: `Viaje en autobús desde ${departure.name} hasta ${venue?.name || 'el evento'}. Opción económica y cómoda.`,
       departure: {
         location: departure.name,
         datetime: economicDepartureTime,
-        coordinates: {
-          lat: departure.lat,
-          lng: departure.lng,
-        },
+        coordinates: [departure.lng, departure.lat],
       },
       arrival: {
         location: venue?.name || event.name,
         datetime: economicArrivalTime,
-        coordinates: {
-          lat: venue?.latitude || 40.4168,
-          lng: venue?.longitude || -3.7038,
-        },
+        coordinates: [venue?.longitude || -3.7038, venue?.latitude || 40.4168],
       },
       capacity: randomInt(50, 60),
       price: randomInt(15, 25),
@@ -284,31 +406,50 @@ async function seedTrips(events: any[], venues: any[]) {
     };
     
     // Viaje Premium (Minibús VIP)
+    const company2 = randomElement(travelCompanies);
     const premiumDepartureTime = new Date(eventDate);
-    premiumDepartureTime.setHours(premiumDepartureTime.getHours() - 2.5); // 2.5 horas antes
+    premiumDepartureTime.setHours(premiumDepartureTime.getHours() - 2.5);
     
     const premiumArrivalTime = new Date(premiumDepartureTime);
-    premiumArrivalTime.setHours(premiumArrivalTime.getHours() + 1.5); // 1.5 horas de viaje (más rápido)
+    premiumArrivalTime.setHours(premiumArrivalTime.getHours() + 1.5);
     
     const premiumTrip = {
+      // Campos de compañía
+      companyId: company2.id,
+      companyName: company2.name,
+      region: company2.region,
+      managedBy: company2.contactEmail,
+      
+      // Vehículo
+      vehicleType: 'MINIBUS',
+      vehicleCapacity: randomInt(15, 25),
+      vehiclePlate: `${randomInt(1000, 9999)}-XYZ`,
+      driverInfo: {
+        name: 'María González',
+        phone: '+34 600 987 654',
+        license: 'D-87654321',
+      },
+      
+      // Aprobaciones
+      approvalStatus: 'APPROVED',
+      lastModifiedBy: company2.contactEmail,
+      lastApprovedBy: 'voro.super@ticketing.com',
+      lastApprovedAt: new Date(),
+      cancellationPolicy: 'Cancelación gratuita hasta 48h antes',
+      
+      // Datos del viaje
       festivalId: event.id,
       name: `Minibús VIP Premium a ${event.name}`,
       description: `Viaje premium en minibús VIP desde ${departure.name} hasta ${venue?.name || 'el evento'}. Incluye WiFi, bebidas y asientos reclinables.`,
       departure: {
         location: departure.name,
         datetime: premiumDepartureTime,
-        coordinates: {
-          lat: departure.lat,
-          lng: departure.lng,
-        },
+        coordinates: [departure.lng, departure.lat],
       },
       arrival: {
         location: venue?.name || event.name,
         datetime: premiumArrivalTime,
-        coordinates: {
-          lat: venue?.latitude || 40.4168,
-          lng: venue?.longitude || -3.7038,
-        },
+        coordinates: [venue?.longitude || -3.7038, venue?.latitude || 40.4168],
       },
       capacity: randomInt(15, 25),
       price: randomInt(45, 80),
@@ -326,17 +467,21 @@ async function seedTrips(events: any[], venues: any[]) {
   return result;
 }
 
-async function seedMerchandising(events: any[]) {
+async function seedMerchandising(events: any[], companies: any[]) {
   console.log('\n👕 Generando Merchandising...');
   
   const products: any[] = [];
+  const merchCompanies = companies.filter(c => c.type === 'MERCHANDISING');
+  
+  if (merchCompanies.length === 0) {
+    console.log('⚠️  No hay compañías de merchandising. Saltando...');
+    return [];
+  }
   
   for (const event of events) {
-    // Generar 5-7 productos variados por evento
     const numProducts = randomInt(5, 7);
     const selectedProducts: any[] = [];
     
-    // Seleccionar productos aleatorios sin repetir
     while (selectedProducts.length < numProducts) {
       const prod = randomElement(productTypes);
       if (!selectedProducts.find(p => p.name === prod.name)) {
@@ -345,27 +490,64 @@ async function seedMerchandising(events: any[]) {
     }
     
     for (const productDef of selectedProducts) {
+      const company = randomElement(merchCompanies);
+      const totalStock = randomInt(50, 200);
+      const soldUnits = randomInt(0, 50);
+      const availableStock = totalStock - soldUnits;
+      const costPrice = randomInt(productDef.priceRange[0] / 2, productDef.priceRange[1] / 2);
+      const salePrice = randomInt(productDef.priceRange[0], productDef.priceRange[1]);
+      const margin = ((salePrice - costPrice) / costPrice * 100).toFixed(2);
+      
       const product = {
+        // Campos de compañía
+        companyId: company.id,
+        companyName: company.name,
+        region: company.region,
+        managedBy: company.contactEmail,
+        
+        // Proveedor
+        supplier: {
+          name: 'Textiles Premium SL',
+          contact: 'supplier@textiles.com',
+          country: company.region === 'SPAIN' ? 'España' : 'Francia',
+        },
+        costPrice,
+        margin: parseFloat(margin),
+        
+        // Aprobaciones
+        approvalStatus: 'APPROVED',
+        lastModifiedBy: company.contactEmail,
+        lastApprovedBy: 'voro.super@ticketing.com',
+        lastApprovedAt: new Date(),
+        
+        // Shipping
+        shippingInfo: {
+          weight: productDef.type === 'TSHIRT' ? 0.2 : productDef.type === 'HOODIE' ? 0.5 : 0.1,
+          dimensions: '30x20x5cm',
+          shippingTime: randomInt(3, 7),
+        },
+        
+        // Datos del producto
         festivalId: event.id,
-        eventId: event.id,
-        eventName: event.name,
+        bandId: event.id,
+        bandName: event.name,
         name: `${productDef.name} - ${event.name}`,
         description: `${productDef.name} oficial del evento ${event.name}. Edición limitada.`,
         type: productDef.type,
-        price: randomInt(productDef.priceRange[0], productDef.priceRange[1]),
+        price: salePrice,
         sizes: productDef.hasSize ? sizes : [],
         stock: {
-          total: randomInt(50, 200),
-          available: randomInt(30, 150),
+          total: totalStock,
+          available: availableStock,
           reserved: 0,
         },
         images: [`/images/merch/${productDef.name.toLowerCase()}-${event.id}.jpg`],
         exclusive: Math.random() > 0.7,
         preOrderEnabled: Math.random() > 0.85,
         releaseDate: new Date(event.eventDate),
-        status: 'AVAILABLE',
+        status: availableStock > 0 ? 'AVAILABLE' : 'OUT_OF_STOCK',
         isActive: true,
-        soldUnits: randomInt(0, 50),
+        soldUnits,
       };
       
       products.push(product);
@@ -405,6 +587,19 @@ async function main() {
     const venues = venuesResult.rows;
     console.log(`✅ ${venues.length} venues encontrados`);
     
+    // Obtener compañías de PostgreSQL
+    console.log('\n📊 Obteniendo compañías de PostgreSQL...');
+    const companiesResult = await pgClient.query('SELECT * FROM companies WHERE is_active = true');
+    const companies = companiesResult.rows;
+    console.log(`✅ ${companies.length} compañías encontradas`);
+    
+    if (companies.length === 0) {
+      console.log('\n⚠️  NO HAY COMPAÑÍAS EN LA BASE DE DATOS!');
+      console.log('⚠️  Ejecuta primero el seed de compañías:');
+      console.log('⚠️  cd backend/admin && npx ts-node scripts/seed-companies.ts');
+      process.exit(1);
+    }
+    
     // Limpiar datos existentes
     console.log('\n🧹 Limpiando datos existentes...');
     await Restaurant.deleteMany({});
@@ -413,9 +608,9 @@ async function main() {
     console.log('✅ Datos limpiados');
     
     // Generar datos
-    await seedRestaurants(events);
-    await seedTrips(events, venues);
-    await seedMerchandising(events);
+    await seedRestaurants(events, companies);
+    await seedTrips(events, venues, companies);
+    await seedMerchandising(events, companies);
     
     console.log('\n🎉 Seed completado exitosamente!');
     console.log('\n📊 RESUMEN:');

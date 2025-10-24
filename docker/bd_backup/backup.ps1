@@ -90,6 +90,8 @@ if (Test-Path $PostgresMainFile) {
     $OrderInserts = (Select-String -Path $PostgresMainFile -Pattern 'INSERT INTO public\."Order"' -AllMatches).Matches.Count
     $TicketInserts = (Select-String -Path $PostgresMainFile -Pattern 'INSERT INTO public\."Ticket"' -AllMatches).Matches.Count
     $AdminInserts = (Select-String -Path $PostgresMainFile -Pattern 'INSERT INTO public\.admins' -AllMatches).Matches.Count
+    $CompanyInserts = (Select-String -Path $PostgresMainFile -Pattern 'INSERT INTO public\.companies' -AllMatches).Matches.Count
+    $CompanyAdminInserts = (Select-String -Path $PostgresMainFile -Pattern 'INSERT INTO public\.company_admins' -AllMatches).Matches.Count
 
     Write-Host "  - Eventos: $EventInserts"
     Write-Host "  - Venues: $VenueInserts"
@@ -98,6 +100,8 @@ if (Test-Path $PostgresMainFile) {
     Write-Host "  - Ordenes: $OrderInserts"
     Write-Host "  - Tickets: $TicketInserts"
     Write-Host "  - Admins: $AdminInserts"
+    Write-Host "  - Compañías: $CompanyInserts" -ForegroundColor Cyan
+    Write-Host "  - Company Admins: $CompanyAdminInserts" -ForegroundColor Cyan
 }
 
 # Verificar PostgreSQL ticketing_admin

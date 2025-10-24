@@ -338,11 +338,21 @@ if ($postgresSuccess -and $mongoSuccess -and $prismaSuccess) {
     
     $events = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null
     $venues = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null
+    $companies = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM companies;' 2>$null
+    $companyAdmins = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM company_admins;' 2>$null
     $users = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('ticketing'); db.users.countDocuments()" --quiet 2>$null
+    $restaurants = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.restaurants.countDocuments()" --quiet 2>$null
+    $trips = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.trips.countDocuments()" --quiet 2>$null
+    $products = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.products.countDocuments()" --quiet 2>$null
     
     if ($events) { Write-ColorOutput "Eventos principales: $($events.Trim())" "Green" }
     if ($venues) { Write-ColorOutput "Venues principales: $($venues.Trim())" "Green" }
+    if ($companies) { Write-ColorOutput "Compañías: $($companies.Trim())" "Cyan" }
+    if ($companyAdmins) { Write-ColorOutput "Company Admins: $($companyAdmins.Trim())" "Cyan" }
     if ($users) { Write-ColorOutput "Usuarios MongoDB: $($users.Trim())" "Green" }
+    if ($restaurants) { Write-ColorOutput "Restaurantes: $($restaurants.Trim())" "Cyan" }
+    if ($trips) { Write-ColorOutput "Viajes: $($trips.Trim())" "Cyan" }
+    if ($products) { Write-ColorOutput "Productos: $($products.Trim())" "Cyan" }
     
     $endTime = Get-Date
     $duration = $endTime - $startTime
