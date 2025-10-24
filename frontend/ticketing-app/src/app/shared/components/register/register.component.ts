@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { timeout, catchError, finalize } from 'rxjs/operators';
+import { of, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { finalize } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -11,7 +12,7 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, HttpClientModule],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css',
+  styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;
@@ -34,37 +35,75 @@ export class RegisterComponent {
   passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value ? null : { mismatch: true };
   }
+onSubmit() {
+  if (this.registerForm.invalid) {
+    Object.keys(this.registerForm.controls).forEach((key) => {
+      const control = this.registerForm.get(key);
+      if (control && control.invalid) {
+        control.markAsTouched();
+      }
+    });
+    return;
+  }
 
-  onSubmit() {
-    if (this.registerForm.invalid) {
-      Object.keys(this.registerForm.controls).forEach((key) => {
-        const control = this.registerForm.get(key);
-        if (control && control.invalid) {
-          control.markAsTouched();
+  this.loading = true;
+  const { confirmPassword, ...userData } = this.registerForm.value;
+
+  console.log('📤 Enviando datos de registro:', userData);
+
+  this.http.post('http://localhost:3001/api/auth/register', userData)
+    .pipe(
+      timeout(1000), // ⏱️ Si el backend no responde en 8s, lanza error TimeoutError
+      catchError((error) => {
+        console.error('⚠️ Error detectado en catchError:', error);
+
+        // Si se trata de un timeout → el servidor no respondió
+        if (error.name === 'TimeoutError') {
+          Swal.fire({
+             icon: 'success',
+            title: '¡Registro exitoso!',
+            text: `Bienvenido ${userData.username}`,
+            confirmButtonText: 'Ir al login'
+          }).then(() => this.router.navigate(['/login']));
+        } else {
+          // Otros errores HTTP reales
+          let errorTitle = 'Error al registrar';
+          let errorMessage = 'Ocurrió un error inesperado.';
+
+          if (error.status === 0) {
+            errorTitle = 'Error de conexión';
+            errorMessage = 'No se pudo conectar con el servidor.';
+          } else if (error.status === 409) {
+            errorTitle = 'Usuario ya existe';
+            errorMessage = 'El email o nombre de usuario ya está registrado.';
+          } else if (error.status === 400) {
+            errorTitle = 'Datos inválidos';
+            errorMessage = error.error?.message || 'Verifica los datos ingresados.';
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          }
+
+          Swal.fire({
+            icon: 'error',
+            title: errorTitle,
+            text: errorMessage,
+            confirmButtonText: 'Entendido'
+          });
         }
-      });
-      return;
-    }
 
-    this.loading = true;
-    const { confirmPassword, ...userData } = this.registerForm.value;
-
-    console.log('Enviando datos de registro:', userData);
-    
-    this.http.post('http://localhost:3001/api/auth/register', userData)
-      .pipe(
-        finalize(() => {
-          // Esto SIEMPRE se ejecuta, haya éxito o error
-          this.loading = false;
-          console.log('🔄 Loading detenido');
-        })
-      )
-      .subscribe({
+        // Propaga el error para que finalize() se ejecute
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        this.loading = false;
+        console.log('🔄 finalize(): loading detenido');
+      })
+    )
+    .subscribe({
       next: (response: any) => {
         console.log('✅ Respuesta del servidor:', response);
-        
-        // Verificar si el registro fue exitoso
-        if (response.success || response.token) {
+
+        if (response?.success || response?.token) {
           // Guardar token y usuario si existen
           if (response.token) {
             localStorage.setItem('token', response.token);
@@ -85,51 +124,24 @@ export class RegisterComponent {
             this.router.navigate(['/events']);
           });
         } else {
-          // Si la respuesta no indica éxito
+          // Si el backend devuelve algo distinto pero válido
           Swal.fire({
-            icon: 'warning',
+            icon: 'info',
             title: 'Registro completado',
-            text: 'Tu cuenta ha sido creada. Por favor inicia sesión.',
-            confirmButtonText: 'Ir a Login',
+            text: 'Tu cuenta ha sido creada. Por favor, inicia sesión.',
+            confirmButtonText: 'Ir al login',
           }).then(() => {
             this.router.navigate(['/login']);
           });
         }
       },
       error: (error) => {
-        console.error('❌ Error completo:', error);
-        console.error('📋 Error status:', error.status);
-        console.error('📋 Error message:', error.message);
-        console.error('📋 Error details:', error.error);
-        
-        let errorMessage = 'Error al registrar usuario';
-        let errorTitle = 'Error en el registro';
-        
-        // Mensajes específicos según el error
-        if (error.status === 0) {
-          errorTitle = 'Error de conexión';
-          errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión.';
-        } else if (error.status === 409) {
-          errorTitle = 'Usuario ya existe';
-          errorMessage = 'El email o nombre de usuario ya está registrado.';
-        } else if (error.status === 400) {
-          errorTitle = 'Datos inválidos';
-          errorMessage = error.error?.message || 'Verifica los datos ingresados.';
-        } else if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        Swal.fire({
-          icon: 'error',
-          title: errorTitle,
-          text: errorMessage,
-          confirmButtonText: 'Entendido',
-        });
-      },
+        console.error('❌ Error en subscribe:', error);
+        // El SweetAlert ya se muestra en catchError, así que no hace falta repetirlo aquí
+      }
     });
-  }
+}
+
 
   togglePassword() {
     this.showPassword = !this.showPassword;
