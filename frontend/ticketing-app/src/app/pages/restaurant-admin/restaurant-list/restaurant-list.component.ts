@@ -8,7 +8,7 @@ import { RestaurantService, Restaurant } from '../../../services/restaurant.serv
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './restaurant-list.component.html',
-  styleUrls: ['./restaurant-list.component.scss']
+  styles: []
 })
 export class RestaurantListComponent implements OnInit {
   loading = true;

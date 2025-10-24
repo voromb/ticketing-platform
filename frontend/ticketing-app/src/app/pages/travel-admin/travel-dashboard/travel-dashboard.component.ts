@@ -8,7 +8,7 @@ import { TravelService, Trip, TripStats } from '../../../services/travel.service
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './travel-dashboard.component.html',
-  styleUrls: ['./travel-dashboard.component.scss']
+  styles: []
 })
 export class TravelDashboardComponent implements OnInit {
   loading = true;

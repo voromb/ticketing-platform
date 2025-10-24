@@ -7,7 +7,7 @@ import { RouterModule, Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './restaurant-layout.component.html',
-  styleUrls: ['./restaurant-layout.component.scss']
+  styles: []
 })
 export class RestaurantLayoutComponent implements OnInit {
   sidebarOpen = true;

@@ -8,7 +8,7 @@ import { TravelService, Trip } from '../../../services/travel.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './travel-list.component.html',
-  styleUrls: ['./travel-list.component.scss']
+  styles: []
 })
 export class TravelListComponent implements OnInit {
   loading = true;

@@ -8,7 +8,7 @@ import { RestaurantService, Restaurant, RestaurantStats } from '../../../service
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './restaurant-dashboard.component.html',
-  styleUrls: ['./restaurant-dashboard.component.scss']
+  styles: []
 })
 export class RestaurantDashboardComponent implements OnInit {
   loading = true;
