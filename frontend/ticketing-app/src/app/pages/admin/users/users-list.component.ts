@@ -1129,13 +1129,15 @@ export class UsersListComponent implements OnInit {
         }).subscribe({
           next: (companyAdminsResponse) => {
             // Añadir el conteo de COMPANY_ADMIN a las estadísticas
-            if (!this.userStats.byRole) {
-              this.userStats.byRole = { user: 0, vip: 0 };
+            if (this.userStats) {
+              if (!this.userStats.byRole) {
+                this.userStats.byRole = { user: 0, vip: 0 };
+              }
+              this.userStats.byRole.company_admin = companyAdminsResponse.companyAdmins.length;
+              
+              // Actualizar el total
+              this.userStats.total = (this.userStats.total || 0) + companyAdminsResponse.companyAdmins.length;
             }
-            this.userStats.byRole.company_admin = companyAdminsResponse.companyAdmins.length;
-            
-            // Actualizar el total
-            this.userStats.total = (this.userStats.total || 0) + companyAdminsResponse.companyAdmins.length;
 
             setTimeout(() => {
               this.cdr.detectChanges();
