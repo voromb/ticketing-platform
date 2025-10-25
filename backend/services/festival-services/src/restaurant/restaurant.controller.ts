@@ -84,6 +84,16 @@ export class RestaurantController {
     return this.restaurantService.updateOccupancy(id, change);
   }
 
+  @Patch(':id/approval-status')
+  @ApiOperation({ summary: 'Actualizar estado de aprobación del restaurante' })
+  @ApiResponse({ status: 200, description: 'Estado actualizado' })
+  updateApprovalStatus(
+    @Param('id') id: string,
+    @Body() body: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }
+  ) {
+    return this.restaurantService.updateApprovalStatus(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Eliminar un restaurante (soft delete)' })

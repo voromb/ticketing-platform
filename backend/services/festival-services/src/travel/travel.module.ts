@@ -6,6 +6,7 @@ import { TravelController } from './travel.controller';
 import { Trip, TripSchema } from './schemas/trip.schema';
 import { Booking, BookingSchema } from './schemas/booking.schema';
 import { AuthModule } from '../auth/auth.module';
+import { ApprovalModule } from '../approval/approval.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from '../auth/auth.module';
       },
     ]),
     AuthModule,
+    ApprovalModule,
   ],
   controllers: [TravelController],
   providers: [TravelService],

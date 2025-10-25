@@ -8,6 +8,7 @@ import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { ApprovalService } from '../approval/approval.service';
 
 @Injectable()
 export class TravelService {
@@ -15,6 +16,7 @@ export class TravelService {
     @InjectModel(Trip.name) private tripModel: Model<TripDocument>,
     @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
     @Inject('RABBITMQ_SERVICE') private readonly client: ClientProxy,
+    private readonly approvalService: ApprovalService,
   ) {}
 
   async create(createTripDto: CreateTripDto): Promise<Trip> {
@@ -39,21 +41,26 @@ export class TravelService {
     const createdTrip = new this.tripModel(tripData);
     const saved = await createdTrip.save();
 
-    // TODO: Reactivar cuando ApprovalModule esté habilitado
-    // Enviar evento de aprobación requerida
-    // this.client.emit('approval.requested', {
-    //   service: 'TRAVEL',
-    //   entityId: (saved as any)._id.toString(),
-    //   entityType: 'Trip',
-    //   requestedBy: admin.email,
-    //   metadata: {
-    //     tripName: saved.name,
-    //     companyName: admin.companyName,
-    //     region: admin.companyRegion,
-    //     capacity: saved.capacity,
-    //   },
-    //   priority: 'MEDIUM',
-    // });
+    // Crear solicitud de aprobación en PostgreSQL
+    try {
+      await this.approvalService.createApprovalRequest({
+        resourceType: 'TRIP',
+        resourceId: (saved as any)._id.toString(),
+        resourceName: saved.name,
+        companyId: admin.companyId,
+        companyName: admin.companyName,
+        requestedBy: admin.email,
+        metadata: {
+          region: admin.companyRegion,
+          capacity: saved.capacity,
+          vehicleType: saved.vehicleType,
+        },
+      });
+      console.log(`[TRAVEL] Solicitud de aprobación creada para ${saved.name}`);
+    } catch (error) {
+      console.error('[TRAVEL] Error creando solicitud de aprobación:', error);
+      // No fallar la creación del viaje si falla la aprobación
+    }
 
     console.log(`[TRAVEL] Nuevo viaje creado por ${admin.email}, requiere aprobación`);
     return saved;
@@ -89,11 +96,24 @@ export class TravelService {
     return updatedTrip;
   }
 
+  async updateApprovalStatus(id: string, data: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }): Promise<Trip> {
+    const updatedTrip = await this.tripModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .exec();
+    
+    if (!updatedTrip) {
+      throw new NotFoundException(`Viaje con ID ${id} no encontrado`);
+    }
+
+    console.log(`[TRAVEL] Estado de aprobación actualizado: ${id} -> ${data.approvalStatus}`);
+    return updatedTrip;
+  }
+
   async remove(id: string): Promise<Trip> {
     const deletedTrip = await this.tripModel
       .findByIdAndUpdate(id, { isActive: false }, { new: true })
       .exec();
-
+    
     if (!deletedTrip) {
       throw new NotFoundException(`Viaje con ID ${id} no encontrado`);
     }

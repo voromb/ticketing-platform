@@ -3,6 +3,9 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { userApiService, UserServiceUser } from '../services/user-api.service';
 import { logger } from '../utils/logger';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Esquemas para validar datos de entrada
 const promoteUserSchema = z.object({
@@ -528,6 +531,13 @@ export class UserManagementController {
             try {
                 const allUsers = await userApiService.getUsers();
 
+                // Contar COMPANY_ADMIN de PostgreSQL
+                const companyAdminCount = await prisma.companyAdmin.count({
+                    where: {
+                        deleted_at: null
+                    }
+                });
+
                 const stats = {
                     total: allUsers.length,
                     active: allUsers.filter(user => user.isActive).length,
@@ -535,6 +545,7 @@ export class UserManagementController {
                     byRole: {
                         user: allUsers.filter(user => user.role === 'user').length,
                         vip: allUsers.filter(user => user.role === 'vip').length,
+                        company_admin: companyAdminCount,
                     },
                     recentUsers: allUsers
                         .sort(

@@ -7,6 +7,7 @@ import { Product, ProductSchema } from './schemas/product.schema';
 import { Cart, CartSchema } from './schemas/cart.schema';
 import { Order, OrderSchema } from './schemas/order.schema';
 import { AuthModule } from '../auth/auth.module';
+import { ApprovalModule } from '../approval/approval.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthModule } from '../auth/auth.module';
       },
     ]),
     AuthModule,
+    ApprovalModule,
   ],
   controllers: [MerchandisingController],
   providers: [MerchandisingService],

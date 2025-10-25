@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict tsGUKxmTnfY9Z2F0cAf9a0l2sgv1DxZ14wBE6DuLze2Z6maXnXG2uy3thV0MfoJ
+\restrict JzDozkpfbm2aFpBexnBaoFKu8LAWQqwJGC4Z5vF8m9mjfX2ARQ4XP7kggaZMLsH
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
@@ -37,6 +37,17 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+--
+-- Name: ApprovalStatus; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ApprovalStatus" AS ENUM (
+    'PENDING',
+    'APPROVED',
+    'REJECTED'
+);
 
 
 --
@@ -75,6 +86,17 @@ CREATE TYPE public."ReservationStatus" AS ENUM (
     'COMPLETED',
     'EXPIRED',
     'CANCELLED'
+);
+
+
+--
+-- Name: ResourceType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ResourceType" AS ENUM (
+    'RESTAURANT',
+    'TRIP',
+    'PRODUCT'
 );
 
 
@@ -353,7 +375,7 @@ CREATE TABLE public."Venue" (
     address text NOT NULL,
     city text NOT NULL,
     state text,
-    country text DEFAULT 'Espa├ö├Â┬úÔö£├é├ö├Â┬úÔö£├®├ö├Â┬╝Ôö£Ôòæ├ö├Â┬úÔö£├é├ö├Â┬ú├ö├▓├╣├ö├Â┬úÔö£├æa'::text NOT NULL,
+    country text DEFAULT 'EspaÔö£├ÂÔö£├éÔö¼├║Ôö£├ÂÔö£ÔòùÔö£├Ña'::text NOT NULL,
     "postalCode" text NOT NULL,
     latitude double precision,
     longitude double precision,
@@ -410,6 +432,29 @@ CREATE TABLE public.admins (
     role public."UserRole" DEFAULT 'ADMIN'::public."UserRole" NOT NULL,
     "isActive" boolean DEFAULT true NOT NULL,
     "lastLogin" timestamp(3) without time zone,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp(3) without time zone NOT NULL
+);
+
+
+--
+-- Name: approvals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.approvals (
+    id text NOT NULL,
+    "resourceType" public."ResourceType" NOT NULL,
+    "resourceId" text NOT NULL,
+    "resourceName" text NOT NULL,
+    "companyId" text NOT NULL,
+    "companyName" text NOT NULL,
+    "requestedBy" text NOT NULL,
+    "requestedAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    status public."ApprovalStatus" DEFAULT 'PENDING'::public."ApprovalStatus" NOT NULL,
+    "reviewedBy" text,
+    "reviewedAt" timestamp(3) without time zone,
+    notes text,
+    metadata jsonb,
     "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp(3) without time zone NOT NULL
 );
@@ -2116,8 +2161,8 @@ INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-399-3', 'evt-2025-399',
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-1', 'evt-2025-400', 'Pista General', 'Zona pista general', 9350, 54.00, 9350, 0, 0, '#3B82F6', true, 1, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-2', 'evt-2025-400', 'Grada', 'Zona grada', 5950, 100.00, 5950, 0, 0, '#10B981', true, 2, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-400-3', 'evt-2025-400', 'Palco VIP', 'Zona palco vip', 1700, 135.00, 1700, 0, 0, '#F59E0B', true, 3, '2025-10-16 16:21:00.315', '2025-10-16 16:21:00.315');
-INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-075-1', 'evt-2025-075', 'Pista General', 'Zona pista general', 9900, 49.00, 9894, 6, 0, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-16 19:21:38.227');
 INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-076-1', 'evt-2025-076', 'Pista General', 'Zona pista general', 10252, 49.00, 10242, 10, 0, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-23 17:26:30.938');
+INSERT INTO public."EventLocality" VALUES ('loc-evt-2025-075-1', 'evt-2025-075', 'Pista General', 'Zona pista general', 9900, 49.00, 9892, 8, 0, '#3B82F6', true, 1, '2025-10-16 16:20:41.136', '2025-10-25 19:24:06.365');
 
 
 --
@@ -2151,6 +2196,7 @@ INSERT INTO public."Order" VALUES ('c233efab-c0a6-464c-a314-f4d1fe180c6e', '68d1
 INSERT INTO public."Order" VALUES ('98859751-9a7a-45e9-bc4c-0e4bbd0da432', '68cecdafebd62af136cdfc92', 'evt-2025-076', 'loc-evt-2025-076-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_98859751-9a7a-45e9-bc4c-0e4bbd0da432', NULL, NULL, 'voromb@hotmail.com', '2025-10-18 18:31:24.092', '2025-10-18 18:31:28.001', '2025-10-18 18:31:28');
 INSERT INTO public."Order" VALUES ('eb7d2fb7-dc50-4515-8d22-984a2ca66784', '68d17160c60cb0338f7819e3', 'evt-2025-076', 'loc-evt-2025-076-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_eb7d2fb7-dc50-4515-8d22-984a2ca66784', NULL, NULL, 'xaviperezcanada1@gmail.com', '2025-10-20 17:53:05.528', '2025-10-20 17:53:11.167', '2025-10-20 17:53:11.166');
 INSERT INTO public."Order" VALUES ('c5ee4521-eecc-4f9d-923e-d81f6fe67554', '68fa6251d3e010c8e7f9ffa6', 'evt-2025-076', 'loc-evt-2025-076-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_c5ee4521-eecc-4f9d-923e-d81f6fe67554', NULL, NULL, 'xaviperezcanada1@gmail.com', '2025-10-23 17:26:19.513', '2025-10-23 17:26:30.932', '2025-10-23 17:26:30.931');
+INSERT INTO public."Order" VALUES ('9e168a6b-d5b4-4c80-ad71-14f575ff7d1e', '68fb90cce7e169974e503ea8', 'evt-2025-075', 'loc-evt-2025-075-1', 1, 49.00, 0.00, 49.00, 'PAID', 'demo_session_9e168a6b-d5b4-4c80-ad71-14f575ff7d1e', NULL, NULL, 'prueba2@prueba.com', '2025-10-25 19:24:03.028', '2025-10-25 19:24:06.36', '2025-10-25 19:24:06.359');
 
 
 --
@@ -2186,6 +2232,8 @@ INSERT INTO public."Ticket" VALUES ('7d23bc80-5199-42d3-80bc-77a38d4c1672', 'eb7
 INSERT INTO public."Ticket" VALUES ('eb017918-0389-444f-a360-21031b619da5', 'eb7d2fb7-dc50-4515-8d22-984a2ca66784', 'evt-2025-076', 'loc-evt-2025-076-1', '68d17160c60cb0338f7819e3', 'TKT-1760982791177-1', 'TICKET-eb7d2fb7-dc50-4515-8d22-984a2ca66784-1', 'VALID', NULL, '2025-10-20 17:53:11.178');
 INSERT INTO public."Ticket" VALUES ('dbab133c-eba5-40d1-b679-30e57d567b2e', 'c5ee4521-eecc-4f9d-923e-d81f6fe67554', 'evt-2025-076', 'loc-evt-2025-076-1', '68fa6251d3e010c8e7f9ffa6', 'c5ee4521-eecc-4f9d-923e-d81f6fe67554-loc-evt-2025-076-1-1', 'QR-c5ee4521-eecc-4f9d-923e-d81f6fe67554-loc-evt-2025-076-1-1', 'VALID', NULL, '2025-10-23 17:26:19.535');
 INSERT INTO public."Ticket" VALUES ('0f203fb8-f247-4af0-85df-3e9084470a05', 'c5ee4521-eecc-4f9d-923e-d81f6fe67554', 'evt-2025-076', 'loc-evt-2025-076-1', '68fa6251d3e010c8e7f9ffa6', 'TKT-1761240390940-1', 'TICKET-c5ee4521-eecc-4f9d-923e-d81f6fe67554-1', 'VALID', NULL, '2025-10-23 17:26:30.941');
+INSERT INTO public."Ticket" VALUES ('901f948c-9715-4d26-8196-2abacb0b5445', '9e168a6b-d5b4-4c80-ad71-14f575ff7d1e', 'evt-2025-075', 'loc-evt-2025-075-1', '68fb90cce7e169974e503ea8', '9e168a6b-d5b4-4c80-ad71-14f575ff7d1e-loc-evt-2025-075-1-1', 'QR-9e168a6b-d5b4-4c80-ad71-14f575ff7d1e-loc-evt-2025-075-1-1', 'VALID', NULL, '2025-10-25 19:24:03.068');
+INSERT INTO public."Ticket" VALUES ('6180614d-16d7-4882-ba91-bf7b96d7a301', '9e168a6b-d5b4-4c80-ad71-14f575ff7d1e', 'evt-2025-075', 'loc-evt-2025-075-1', '68fb90cce7e169974e503ea8', 'TKT-1761420246368-1', 'TICKET-9e168a6b-d5b4-4c80-ad71-14f575ff7d1e-1', 'VALID', NULL, '2025-10-25 19:24:06.369');
 
 
 --
@@ -2316,6 +2364,15 @@ INSERT INTO public.admins VALUES ('26fa8809-a1a4-4242-9d09-42e65e5ee368', 'voro.
 
 
 --
+-- Data for Name: approvals; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.approvals VALUES ('35b9f3d8-5be1-4185-8cc8-d348b63deb7d', 'TRIP', '68fd2926899a12b637a5af7a', 'jose', '2e58e5e8-e565-40a0-ba46-c5ea7fd830bd', 'Viajes Espa├▒a', 'admin.spain.travel@festival.com', '2025-10-25 19:46:46.226', 'APPROVED', 'system', '2025-10-25 19:47:29.167', NULL, '{"region": "SPAIN", "capacity": 2}', '2025-10-25 19:46:46.226', '2025-10-25 19:47:29.168');
+INSERT INTO public.approvals VALUES ('795931fb-7df3-4fdc-a862-9c1c63070205', 'RESTAURANT', '68fd2904899a12b637a57e77', 'pepe1', 'e4431741-8685-4b0d-8363-afde158f14a3', 'Restaurantes Espa├▒a', 'admin.spain.restaurants@festival.com', '2025-10-25 19:46:12.593', 'APPROVED', 'system', '2025-10-25 19:47:32.842', NULL, '{"region": "SPAIN", "cuisine": "pepe", "capacity": 1}', '2025-10-25 19:46:12.593', '2025-10-25 19:47:32.843');
+INSERT INTO public.approvals VALUES ('07c2ed89-f670-49fd-b8d4-e9ea9cd5929f', 'RESTAURANT', '68fd2d3a42b1c32cb9166e92', 'pepe2', 'e4431741-8685-4b0d-8363-afde158f14a3', 'Restaurantes Espa├▒a', 'admin.spain.restaurants@festival.com', '2025-10-25 20:04:10.369', 'APPROVED', 'system', '2025-10-25 20:04:36.655', NULL, '{"region": "SPAIN", "cuisine": "pepe2", "capacity": 2}', '2025-10-25 20:04:10.369', '2025-10-25 20:04:36.657');
+
+
+--
 -- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -2333,10 +2390,9 @@ INSERT INTO public.companies VALUES ('1f663db9-f05c-4c1c-b46c-54de1588d5b8', 'Me
 
 INSERT INTO public.company_admins VALUES ('d4c5f5b2-da38-4554-81cc-3965899a300c', '1f663db9-f05c-4c1c-b46c-54de1588d5b8', 'admin.europe.merch@festival.com', '$2b$10$6o7SZLcaW3pAZImlhjcZzu5o5/vJxlrJKVKVLzcFRZyCMN2A2.oYK', 'MERCHANDISING', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.747', '2025-10-25 17:42:39.747', NULL);
 INSERT INTO public.company_admins VALUES ('703d203b-7475-4cb2-a961-4823e3a68ee4', 'a1caef6a-8cb0-4c04-b95c-fd2900a20045', 'admin.spain.merch@festival.com', '$2b$10$M/w6wopk4kNJQnNCM.0iQe/t6UZD1f6o9wq2nc6FuKqADcP3JDOy2', 'MERCHANDISING', 'SPAIN', true, true, true, true, true, true, '2025-10-25 17:59:05.127', '2025-10-25 17:42:39.592', '2025-10-25 17:42:39.592', NULL);
-INSERT INTO public.company_admins VALUES ('312c1dc8-6223-4e6c-a230-de186438b012', 'e4431741-8685-4b0d-8363-afde158f14a3', 'admin.spain.restaurants@festival.com', '$2b$10$3aERWzYpWE7JiqkVbQDva.QOuIlajDFgbA.5CMtFFastbLrKzRc8a', 'RESTAURANT', 'SPAIN', true, true, true, true, true, true, '2025-10-25 17:59:25.29', '2025-10-25 17:42:39.118', '2025-10-25 17:42:39.118', NULL);
-INSERT INTO public.company_admins VALUES ('fd166e2f-551a-415c-8cb8-e477113a404f', 'e4431741-8685-4b0d-8363-afde158f14a3', 'prueba2@prueba.com', '$2b$10$EwgWqKo4s5xU8uEjH.rI6OeuzwhuEpUUC6qeTh/gkq1eEdpeow.HG', 'uno que pasaba 2', '', true, true, false, true, false, true, '2025-10-25 18:40:02.973', '2025-10-25 18:18:58.629', '2025-10-25 18:18:58.629', NULL);
+INSERT INTO public.company_admins VALUES ('68a4ccc0-4f26-4936-ab8b-76b3f9bc1f87', '2e58e5e8-e565-40a0-ba46-c5ea7fd830bd', 'admin.spain.travel@festival.com', '$2b$10$6uCNChYLOBYGbxp1zPyEvuV6JtiEAIdA/iIcuu96M6y9UJLW.Zkci', 'TRAVEL', 'SPAIN', true, true, true, true, true, true, '2025-10-25 19:46:25.954', '2025-10-25 17:42:39.346', '2025-10-25 17:42:39.346', NULL);
+INSERT INTO public.company_admins VALUES ('312c1dc8-6223-4e6c-a230-de186438b012', 'e4431741-8685-4b0d-8363-afde158f14a3', 'admin.spain.restaurants@festival.com', '$2b$10$3aERWzYpWE7JiqkVbQDva.QOuIlajDFgbA.5CMtFFastbLrKzRc8a', 'RESTAURANT', 'SPAIN', true, true, true, true, true, true, '2025-10-25 20:04:50.8', '2025-10-25 17:42:39.118', '2025-10-25 17:42:39.118', NULL);
 INSERT INTO public.company_admins VALUES ('89164ee2-b29f-49b8-a63e-c94d06aaba80', 'f26b646d-d38c-4ee4-a43f-bb8882448bb6', 'admin.europe.restaurants@festival.com', '$2b$10$yJFr961JPzsmhj1ZECI5l.Mf/s1Hkwc1xympeoosZOoPZCA.xFwue', 'RESTAURANT', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.23', '2025-10-25 17:42:39.23', NULL);
-INSERT INTO public.company_admins VALUES ('68a4ccc0-4f26-4936-ab8b-76b3f9bc1f87', '2e58e5e8-e565-40a0-ba46-c5ea7fd830bd', 'admin.spain.travel@festival.com', '$2b$10$6uCNChYLOBYGbxp1zPyEvuV6JtiEAIdA/iIcuu96M6y9UJLW.Zkci', 'TRAVEL', 'SPAIN', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.346', '2025-10-25 17:42:39.346', NULL);
 INSERT INTO public.company_admins VALUES ('c8ec9ed4-272c-4e92-a976-9542c4cb00b1', '2d14e024-2f7a-4b22-96a9-e7e5ecd8406b', 'admin.europe.travel@festival.com', '$2b$10$YCsRHQPD2msCGXXg1AT7JuClrk.0Ci1B7neRUW3q/cYrnuNS7/m5C', 'TRAVEL', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.455', '2025-10-25 17:42:39.455', NULL);
 
 
@@ -2464,6 +2520,14 @@ ALTER TABLE ONLY public._prisma_migrations
 
 ALTER TABLE ONLY public.admins
     ADD CONSTRAINT admins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: approvals approvals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.approvals
+    ADD CONSTRAINT approvals_pkey PRIMARY KEY (id);
 
 
 --
@@ -2757,6 +2821,27 @@ CREATE UNIQUE INDEX admins_email_key ON public.admins USING btree (email);
 
 
 --
+-- Name: approvals_companyId_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "approvals_companyId_idx" ON public.approvals USING btree ("companyId");
+
+
+--
+-- Name: approvals_resourceType_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "approvals_resourceType_idx" ON public.approvals USING btree ("resourceType");
+
+
+--
+-- Name: approvals_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX approvals_status_idx ON public.approvals USING btree (status);
+
+
+--
 -- Name: AuditLog AuditLog_adminId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2901,6 +2986,14 @@ ALTER TABLE ONLY public."Venue"
 
 
 --
+-- Name: approvals approvals_companyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.approvals
+    ADD CONSTRAINT "approvals_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES public.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
 -- Name: company_admins company_admins_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2928,5 +3021,5 @@ ALTER TABLE ONLY public."Event"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict tsGUKxmTnfY9Z2F0cAf9a0l2sgv1DxZ14wBE6DuLze2Z6maXnXG2uy3thV0MfoJ
+\unrestrict JzDozkpfbm2aFpBexnBaoFKu8LAWQqwJGC4Z5vF8m9mjfX2ARQ4XP7kggaZMLsH
 

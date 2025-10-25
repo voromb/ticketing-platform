@@ -305,6 +305,7 @@ model Company {
   updated_at             DateTime?      @default(now()) @db.Timestamp(6)
   deleted_at             DateTime?      @db.Timestamp(6)
   company_admins         CompanyAdmin[]
+  approvals              Approval[]
 
   @@map("companies")
 }
@@ -367,4 +368,40 @@ enum TicketStatus {
   USED
   CANCELLED
   EXPIRED
+}
+
+model Approval {
+  id            String         @id @default(uuid())
+  resourceType  ResourceType
+  resourceId    String
+  resourceName  String
+  companyId     String
+  companyName   String
+  requestedBy   String
+  requestedAt   DateTime       @default(now())
+  status        ApprovalStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  notes         String?
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  company       Company        @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@index([resourceType])
+  @@map("approvals")
+}
+
+enum ResourceType {
+  RESTAURANT
+  TRIP
+  PRODUCT
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

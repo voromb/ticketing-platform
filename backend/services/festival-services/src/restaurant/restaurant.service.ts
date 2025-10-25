@@ -8,6 +8,7 @@ import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { ApprovalService } from '../approval/approval.service';
 
 @Injectable()
 export class RestaurantService {
@@ -15,6 +16,7 @@ export class RestaurantService {
     @InjectModel(Restaurant.name) private restaurantModel: Model<RestaurantDocument>,
     @InjectModel(Reservation.name) private reservationModel: Model<ReservationDocument>,
     @Inject('RABBITMQ_SERVICE') private readonly client: ClientProxy,
+    private readonly approvalService: ApprovalService,
   ) {}
 
   async create(createRestaurantDto: CreateRestaurantDto): Promise<Restaurant> {
@@ -39,20 +41,26 @@ export class RestaurantService {
     const createdRestaurant = new this.restaurantModel(restaurantData);
     const saved = await createdRestaurant.save();
 
-    // TODO: Reactivar cuando ApprovalModule esté habilitado
-    // Enviar evento de aprobación requerida
-    // this.client.emit('approval.requested', {
-    //   service: 'RESTAURANT',
-    //   entityId: (saved as any)._id.toString(),
-    //   entityType: 'Restaurant',
-    //   requestedBy: admin.email,
-    //   metadata: {
-    //     restaurantName: saved.name,
-    //     companyName: admin.companyName,
-    //     region: admin.companyRegion,
-    //   },
-    //   priority: 'MEDIUM',
-    // });
+    // Crear solicitud de aprobación en PostgreSQL
+    try {
+      await this.approvalService.createApprovalRequest({
+        resourceType: 'RESTAURANT',
+        resourceId: (saved as any)._id.toString(),
+        resourceName: saved.name,
+        companyId: admin.companyId,
+        companyName: admin.companyName,
+        requestedBy: admin.email,
+        metadata: {
+          region: admin.companyRegion,
+          cuisine: saved.cuisine,
+          capacity: saved.capacity,
+        },
+      });
+      console.log(`[RESTAURANT] Solicitud de aprobación creada para ${saved.name}`);
+    } catch (error) {
+      console.error('[RESTAURANT] Error creando solicitud de aprobación:', error);
+      // No fallar la creación del restaurante si falla la aprobación
+    }
 
     console.log(`[RESTAURANT] Nuevo restaurante creado por ${admin.email}, requiere aprobación`);
     return saved;
@@ -102,6 +110,19 @@ export class RestaurantService {
   async getAvailableCapacity(id: string): Promise<number> {
     const restaurant = await this.findOne(id);
     return restaurant.capacity - restaurant.currentOccupancy;
+  }
+
+  async updateApprovalStatus(id: string, data: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }): Promise<Restaurant> {
+    const updatedRestaurant = await this.restaurantModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .exec();
+    
+    if (!updatedRestaurant) {
+      throw new NotFoundException(`Restaurante con ID ${id} no encontrado`);
+    }
+
+    console.log(`[RESTAURANT] Estado de aprobación actualizado: ${id} -> ${data.approvalStatus}`);
+    return updatedRestaurant;
   }
 
   async updateOccupancy(id: string, change: number): Promise<Restaurant> {

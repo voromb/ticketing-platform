@@ -79,6 +79,16 @@ export class TravelController {
     return this.travelService.update(id, updateTripDto);
   }
 
+  @Patch(':id/approval-status')
+  @ApiOperation({ summary: 'Actualizar estado de aprobación del viaje' })
+  @ApiResponse({ status: 200, description: 'Estado actualizado' })
+  updateApprovalStatus(
+    @Param('id') id: string,
+    @Body() body: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }
+  ) {
+    return this.travelService.updateApprovalStatus(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Eliminar un viaje (soft delete)' })

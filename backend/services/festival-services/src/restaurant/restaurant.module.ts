@@ -6,6 +6,7 @@ import { RestaurantController } from './restaurant.controller';
 import { Restaurant, RestaurantSchema } from './schemas/restaurant.schema';
 import { Reservation, ReservationSchema } from './schemas/reservation.schema';
 import { AuthModule } from '../auth/auth.module';
+import { ApprovalModule } from '../approval/approval.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from '../auth/auth.module';
       },
     ]),
     AuthModule, // Importar AuthModule para acceder a guards
+    ApprovalModule, // Importar ApprovalModule para crear solicitudes
   ],
   controllers: [RestaurantController],
   providers: [RestaurantService],

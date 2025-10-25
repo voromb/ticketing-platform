@@ -9,6 +9,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AddToCartDto, UpdateCartItemDto, ApplyCouponDto } from './dto/cart.dto';
 import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
+import { ApprovalService } from '../approval/approval.service';
 
 @Injectable()
 export class MerchandisingService {
@@ -17,6 +18,7 @@ export class MerchandisingService {
     @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @Inject('RABBITMQ_SERVICE') private readonly client: ClientProxy,
+    private readonly approvalService: ApprovalService,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -45,6 +47,27 @@ export class MerchandisingService {
 
     const createdProduct = new this.productModel(productData);
     const saved = await createdProduct.save();
+
+    // Crear solicitud de aprobación en PostgreSQL
+    try {
+      await this.approvalService.createApprovalRequest({
+        resourceType: 'PRODUCT',
+        resourceId: (saved as any)._id.toString(),
+        resourceName: saved.name,
+        companyId: admin.companyId,
+        companyName: admin.companyName,
+        requestedBy: admin.email,
+        metadata: {
+          region: admin.companyRegion,
+          price: saved.price,
+          stock: saved.stock,
+        },
+      });
+      console.log(`[MERCHANDISING] Solicitud de aprobación creada para ${saved.name}`);
+    } catch (error) {
+      console.error('[MERCHANDISING] Error creando solicitud de aprobación:', error);
+      // No fallar la creación del producto si falla la aprobación
+    }
 
     // Enviar evento de aprobación requerida
     this.client.emit('approval.requested', {
@@ -116,6 +139,19 @@ export class MerchandisingService {
     if (!updatedProduct) {
       throw new NotFoundException(`Producto con ID ${id} no encontrado`);
     }
+    return updatedProduct;
+  }
+
+  async updateApprovalStatus(id: string, data: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }): Promise<Product> {
+    const updatedProduct = await this.productModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .exec();
+    
+    if (!updatedProduct) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+
+    console.log(`[MERCHANDISING] Estado de aprobación actualizado: ${id} -> ${data.approvalStatus}`);
     return updatedProduct;
   }
 

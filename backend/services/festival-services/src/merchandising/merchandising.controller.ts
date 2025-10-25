@@ -119,6 +119,16 @@ export class MerchandisingController {
     return this.merchandisingService.releaseStock(id, quantity);
   }
 
+  @Patch(':id/approval-status')
+  @ApiOperation({ summary: 'Actualizar estado de aprobación del producto' })
+  @ApiResponse({ status: 200, description: 'Estado actualizado' })
+  updateApprovalStatus(
+    @Param('id') id: string,
+    @Body() body: { approvalStatus: string; reviewedBy?: string; reviewedAt?: Date; rejectionReason?: string }
+  ) {
+    return this.merchandisingService.updateApprovalStatus(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Eliminar un producto (soft delete)' })

@@ -76,6 +76,12 @@ export const routes: Routes = [
           import('./pages/admin/categories/categories-list.component').then((m) => m.CategoriesListComponent),
       },
       {
+        path: 'approvals',
+        loadComponent: () =>
+          import('./pages/admin/approvals/approvals-list.component').then((m) => m.ApprovalsListComponent),
+        canActivate: [SuperAdminGuard],
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./pages/admin/settings/settings.component').then((m) => m.SettingsComponent),

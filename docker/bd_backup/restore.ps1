@@ -366,6 +366,12 @@ if ($pgSuccess -and $mongoSuccess -and $comparisonSuccess) {
     Write-ColorOutput "`n✓ RESTAURACIÓN COMPLETADA EXITOSAMENTE" "Green"
     Write-ColorOutput "✓ Todos los datos coinciden con el backup" "Green"
     Write-ColorOutput "`nTiempo total: $($duration.Minutes)m $($duration.Seconds)s" "Cyan"
+    Write-ColorOutput "`n⚠️  IMPORTANTE: Sincroniza Prisma manualmente:" "Yellow"
+    Write-ColorOutput "  cd backend\admin" "White"
+    Write-ColorOutput "  npx prisma db push --skip-generate" "White"
+    Write-ColorOutput "`nLuego inicia los servicios:" "Yellow"
+    Write-ColorOutput "  npm run dev" "White"
+    Write-ColorOutput "  cd ..\services\festival-services && npm run start:dev" "White"
 } elseif ($DryRun) {
     Write-ColorOutput "`n[DRY RUN] Simulación completada" "Yellow"
     Write-ColorOutput "La restauración real se ejecutaría correctamente" "Green"

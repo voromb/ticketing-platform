@@ -23,6 +23,7 @@ import { paymentRoutes } from './routes/payment.routes';
 import { imageUploadRoutes } from './routes/image-upload.routes';
 import { companyRoutes } from './routes/company.routes';
 import { companyAdminRoutes } from './routes/company-admin.routes';
+import { approvalRoutes } from './routes/approval.routes';
 
 // Services
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -233,6 +234,10 @@ export async function buildServer(): Promise<FastifyInstance> {
         console.log('[REGISTER] Registrando companyAdminRoutes...');
         await server.register(companyAdminRoutes, { prefix: '/api' });
         console.log('[OK] companyAdminRoutes OK');
+
+        console.log('[REGISTER] Registrando approvalRoutes...');
+        await server.register(approvalRoutes, { prefix: '/api/approvals' });
+        console.log('[OK] approvalRoutes OK');
 
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     } catch (error: any) {

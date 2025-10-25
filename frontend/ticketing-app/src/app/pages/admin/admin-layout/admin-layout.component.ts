@@ -79,15 +79,14 @@ import { AuthService } from '../../../core/services/auth.service';
             </a>
 
             <a *ngIf="isSuperAdmin"
-               routerLink="/admin-dashboard/settings"
+               routerLink="/admin-dashboard/approvals"
                routerLinkActive="bg-slate-700/90"
                style="border-radius: 24px;"
                class="group flex items-center px-6 py-4 text-sm font-medium text-white bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800/90 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-              <svg class="w-5 h-5 mr-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <svg class="w-5 h-5 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>Configuración</span>
+              <span>Aprobaciones</span>
             </a>
 
           </div>
@@ -122,7 +121,8 @@ export class AdminLayoutComponent implements OnInit {
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      this.isSuperAdmin = user?.role === 'super_admin';
+      this.isSuperAdmin = user?.role === 'super_admin' || user?.role === 'SUPER_ADMIN';
+      console.log('[ADMIN-LAYOUT] User role:', user?.role, 'isSuperAdmin:', this.isSuperAdmin);
     });
 
     this.router.events.subscribe(() => {
@@ -145,6 +145,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Gestión de Usuarios';
     } else if (url.includes('/categories')) {
       return 'Gestión de Categorías';
+    } else if (url.includes('/approvals')) {
+      return 'Aprobaciones Pendientes';
     } else if (url.includes('/settings')) {
       return 'Configuración del Sistema';
     } else {
@@ -162,6 +164,8 @@ export class AdminLayoutComponent implements OnInit {
       return 'Administra usuarios y promociones VIP';
     } else if (url.includes('/categories')) {
       return 'Organiza eventos por categorías y subcategorías';
+    } else if (url.includes('/approvals')) {
+      return 'Aprueba o rechaza solicitudes de restaurantes, viajes y merchandising';
     } else if (url.includes('/settings')) {
       return 'Configuración avanzada del sistema';
     } else {
