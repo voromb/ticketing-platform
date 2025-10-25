@@ -69,23 +69,29 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = Date.now() - startTime;
         const statusCode = error.status || 500;
 
-        this.logger.error(
-          `[ERROR] ERROR: ${method} ${url} - ${statusCode} (${duration}ms)`,
-          {
-            timestamp: new Date().toISOString(),
-            method,
-            url,
-            statusCode,
-            duration,
-            user: user ? user.email : 'Anonymous',
-            error: {
-              message: error.message,
-              stack: error.stack,
-              name: error.name,
+        // No loguear errores 401/400 en endpoints de login (son intentos esperados)
+        const isLoginEndpoint = url.includes('/login');
+        const isExpectedAuthError = (statusCode === 401 || statusCode === 400) && isLoginEndpoint;
+
+        if (!isExpectedAuthError) {
+          this.logger.error(
+            `[ERROR] ERROR: ${method} ${url} - ${statusCode} (${duration}ms)`,
+            {
+              timestamp: new Date().toISOString(),
+              method,
+              url,
+              statusCode,
+              duration,
+              user: user ? user.email : 'Anonymous',
+              error: {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              },
+              type: 'ERROR',
             },
-            type: 'ERROR',
-          },
-        );
+          );
+        }
 
         return throwError(() => error);
       }),

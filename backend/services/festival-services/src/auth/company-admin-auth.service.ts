@@ -97,6 +97,7 @@ export class CompanyAdminAuthService {
         email: admin.email,
         firstName: admin.first_name,
         lastName: admin.last_name,
+        role: 'COMPANY_ADMIN',
         company: {
           id: admin.companies.id,
           name: admin.companies.name,
