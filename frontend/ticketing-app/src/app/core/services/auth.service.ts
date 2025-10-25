@@ -58,28 +58,43 @@ export class AuthService {
 
   login(email: string, password: string): Observable<any> {
     return new Observable(observer => {
-      this.tryAdminLogin(email, password).subscribe({
+      // 1. Intentar login como COMPANY_ADMIN (festival-service)
+      this.tryCompanyAdminLogin(email, password).subscribe({
         next: (response) => {
           this.handleSuccessfulLogin(response);
           observer.next(response);
           observer.complete();
         },
-        error: (adminError) => {
-          // Si falla admin, intentar con user-service (para usuarios normales)
-          this.tryUserLogin(email, password).subscribe({
+        error: (companyAdminError) => {
+          // 2. Si falla, intentar como ADMIN/SUPER_ADMIN (admin-service)
+          this.tryAdminLogin(email, password).subscribe({
             next: (response) => {
               this.handleSuccessfulLogin(response);
               observer.next(response);
               observer.complete();
             },
-            error: (userError) => {
-              // Si ambos fallan, devolver error
-              observer.error(userError);
+            error: (adminError) => {
+              // 3. Si falla, intentar como USER/VIP (user-service)
+              this.tryUserLogin(email, password).subscribe({
+                next: (response) => {
+                  this.handleSuccessfulLogin(response);
+                  observer.next(response);
+                  observer.complete();
+                },
+                error: (userError) => {
+                  // Si todos fallan, devolver error
+                  observer.error(userError);
+                }
+              });
             }
           });
         }
       });
     });
+  }
+
+  private tryCompanyAdminLogin(email: string, password: string): Observable<any> {
+    return this.http.post<any>('http://localhost:3004/api/auth/company-admin/login', { email, password });
   }
 
   private tryAdminLogin(email: string, password: string): Observable<any> {
@@ -91,23 +106,27 @@ export class AuthService {
   }
 
   private handleSuccessfulLogin(response: any): void {
-    if (response.token) {
-      localStorage.setItem('token', response.token);
+    // Manejar token (puede venir como 'token' o 'access_token')
+    const token = response.token || response.access_token;
+    
+    if (token) {
+      localStorage.setItem('token', token);
       
       // Usar la información del admin/user que viene en la respuesta
-      const adminData = response.admin || response.user;
+      const userData = response.admin || response.user;
       
-      if (adminData) {
+      if (userData) {
         const user: any = {
-          id: adminData.id,
-          email: adminData.email,
-          firstName: adminData.firstName,
-          lastName: adminData.lastName,
-          role: adminData.role,
-          companyId: adminData.companyId,
-          companyType: adminData.companyType,
-          companyName: adminData.companyName,
-          permissions: adminData.permissions
+          id: userData.id,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          role: userData.role || 'COMPANY_ADMIN',
+          companyId: userData.company?.id || userData.companyId,
+          companyType: userData.company?.type || userData.companyType,
+          companyName: userData.company?.name || userData.companyName,
+          companyRegion: userData.company?.region || userData.companyRegion,
+          permissions: userData.permissions
         };
         
         localStorage.setItem('user', JSON.stringify(user));

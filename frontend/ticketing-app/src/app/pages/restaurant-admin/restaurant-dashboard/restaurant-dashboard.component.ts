@@ -100,10 +100,10 @@ export class RestaurantDashboardComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'APPROVED': return 'bg-green-100 text-green-800';
-      case 'REJECTED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+      case 'APPROVED': return 'bg-green-500/20 text-green-400 border border-green-500/30';
+      case 'REJECTED': return 'bg-red-500/20 text-red-400 border border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
     }
   }
 }

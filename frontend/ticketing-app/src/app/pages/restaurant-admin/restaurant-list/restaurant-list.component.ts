@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RestaurantService, Restaurant } from '../../../services/restaurant.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-restaurant-list',
@@ -29,8 +30,10 @@ export class RestaurantListComponent implements OnInit {
 
   // Paginación
   currentPage = 1;
-  itemsPerPage = 10;
-  totalPages = 1;
+  pageSize = 10;
+  totalPages = 0;
+  paginatedRestaurants: Restaurant[] = [];
+  Math = Math;
 
   constructor(
     private restaurantService: RestaurantService,
@@ -101,21 +104,68 @@ export class RestaurantListComponent implements OnInit {
     });
 
     this.filteredRestaurants = filtered;
-    this.totalPages = Math.ceil(filtered.length / this.itemsPerPage);
     this.currentPage = 1;
+    this.updatePagination();
   }
 
-  getPaginatedRestaurants(): Restaurant[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredRestaurants.slice(start, end);
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredRestaurants.length / this.pageSize);
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedRestaurants = this.filteredRestaurants.slice(startIndex, endIndex);
   }
 
-  changePage(page: number): void {
+  goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.updatePagination();
     }
   }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  previousPage(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  goToFirstPage(): void {
+    this.goToPage(1);
+  }
+
+  goToLastPage(): void {
+    this.goToPage(this.totalPages);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const current = this.currentPage;
+    const total = this.totalPages;
+    
+    if (total > 0) {
+      pages.push(1);
+    }
+    
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      if (!pages.includes(i)) {
+        pages.push(i);
+      }
+    }
+    
+    if (total > 1 && !pages.includes(total)) {
+      pages.push(total);
+    }
+    
+    return pages.sort((a, b) => a - b);
+  }
+  
+  showEllipsisBefore(page: number): boolean {
+    const pages = this.pageNumbers;
+    const index = pages.indexOf(page);
+    return index > 0 && pages[index] - pages[index - 1] > 1;
+  }
+
 
   toggleSort(field: string): void {
     if (this.sortBy === field) {
@@ -165,12 +215,37 @@ export class RestaurantListComponent implements OnInit {
 
   saveRestaurant(): void {
     if (this.modalMode === 'create') {
-      this.restaurantService.create(this.selectedRestaurant).subscribe({
+      // Transformar datos para que coincidan con el DTO del backend
+      const restaurantData: any = {
+        ...this.selectedRestaurant,
+        festivalId: 'default-festival', // TODO: Obtener del contexto
+        schedule: this.selectedRestaurant.schedule || [
+          { day: 'Lunes-Viernes', openTime: '12:00', closeTime: '23:00' }
+        ]
+      };
+      
+      this.restaurantService.create(restaurantData).subscribe({
         next: () => {
           this.loadRestaurants();
           this.closeModal();
+          // SweetAlert de éxito
+          Swal.fire({
+            icon: 'success',
+            title: '¡Restaurante creado!',
+            text: 'El restaurante ha sido creado exitosamente y está pendiente de aprobación.',
+            confirmButtonColor: '#10b981',
+            timer: 3000
+          });
         },
-        error: (error) => console.error('Error creando restaurante:', error)
+        error: (error) => {
+          console.error('Error creando restaurante:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo crear el restaurante. Inténtalo de nuevo.',
+            confirmButtonColor: '#ef4444'
+          });
+        }
       });
     } else if (this.modalMode === 'edit' && this.selectedRestaurant._id) {
       this.restaurantService.update(this.selectedRestaurant._id, this.selectedRestaurant).subscribe({
@@ -194,10 +269,10 @@ export class RestaurantListComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'APPROVED': return 'bg-green-100 text-green-800';
-      case 'REJECTED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+      case 'APPROVED': return 'bg-green-500/20 text-green-400 border border-green-500/30';
+      case 'REJECTED': return 'bg-red-500/20 text-red-400 border border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
     }
   }
 

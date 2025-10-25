@@ -35,7 +35,7 @@ export class Restaurant {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
   @Prop({ required: true })
@@ -95,6 +95,9 @@ export class Restaurant {
 
   @Prop({ default: 30 })
   reservationDurationMinutes: number;
+
+  @Prop({ default: 25 })
+  reservationPrice: number; // Precio de la reserva para paquetes
 
   @Prop({
     type: String,

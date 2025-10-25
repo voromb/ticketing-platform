@@ -46,8 +46,12 @@ export class TravelController {
   @Get()
   @Public() // Cualquiera puede ver viajes disponibles
   @ApiOperation({ summary: 'Obtener todos los viajes activos' })
+  @ApiQuery({ name: 'festivalId', required: false, description: 'Filtrar por festival' })
   @ApiResponse({ status: 200, description: 'Lista de viajes' })
-  findAll() {
+  findAll(@Query('festivalId') festivalId?: string) {
+    if (festivalId) {
+      return this.travelService.findByFestival(festivalId);
+    }
     return this.travelService.findAll();
   }
 

@@ -1,8 +1,18 @@
 <div class="min-h-screen bg-slate-900 p-8">
   <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-white mb-2">Gestión de Productos</h1>
-    <p class="text-slate-400">Administra el catálogo de merchandising</p>
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Gestión de Productos</h1>
+      <p class="text-slate-400">Administra el catálogo de merchandising</p>
+    </div>
+    <button 
+      (click)="openCreateModal()"
+      class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center space-x-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      <span>Crear Producto</span>
+    </button>
   </div>
 
   <!-- Filters -->
@@ -58,13 +68,17 @@
           <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Vendidos</th>
           <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Estado</th>
           <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Aprobación</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-700/50">
-        <tr *ngFor="let product of filteredProducts" class="hover:bg-slate-700/30 transition-colors">
+        <tr *ngFor="let product of paginatedProducts" class="hover:bg-slate-700/30 transition-colors">
           <td class="px-6 py-4">
-            <div class="flex items-center">
-              <img [src]="product.images[0]" alt="{{product.name}}" class="w-12 h-12 rounded-lg object-cover mr-3">
+            <div class="flex items-center space-x-3">
+              <img [src]="product.images[0]" 
+                   alt="{{ product.name }}" 
+                   loading="lazy"
+                   class="w-12 h-12 rounded-lg object-cover border border-slate-600 bg-slate-700">
               <div>
                 <p class="text-white font-medium">{{ product.name }}</p>
                 <p class="text-slate-400 text-sm">{{ product.bandName || 'General' }}</p>
@@ -93,8 +107,37 @@
           </td>
           <td class="px-6 py-4">
             <span [class]="getApprovalBadgeClass(product.approvalStatus)" class="px-3 py-1 rounded-full text-xs font-medium">
-              {{ product.approvalStatus || 'N/A' }}
+              {{ getApprovalText(product.approvalStatus) }}
             </span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center space-x-2">
+              <button 
+                (click)="openDetailsModal(product)"
+                title="Ver detalles"
+                class="p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+              <button 
+                (click)="openEditModal(product)"
+                title="Editar"
+                class="p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button 
+                (click)="openDeleteModal(product)"
+                title="Eliminar"
+                class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -102,6 +145,357 @@
     
     <div *ngIf="filteredProducts.length === 0" class="text-center py-12">
       <p class="text-slate-400">No se encontraron productos</p>
+    </div>
+    
+    <!-- Paginación -->
+    <div *ngIf="filteredProducts.length > 0" class="bg-slate-700/30 px-6 py-4 flex items-center justify-between border-t border-slate-700/50">
+      <div class="text-sm text-slate-400">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredProducts.length) }} de {{ filteredProducts.length }} productos
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <!-- Botón Primera -->
+        <button 
+          (click)="goToFirstPage()" 
+          [disabled]="currentPage === 1"
+          [class.opacity-50]="currentPage === 1"
+          [class.cursor-not-allowed]="currentPage === 1"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105"
+          title="Primera página">
+          ««
+        </button>
+        
+        <!-- Botón Anterior -->
+        <button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1"
+          [class.opacity-50]="currentPage === 1"
+          [class.cursor-not-allowed]="currentPage === 1"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105">
+          ‹
+        </button>
+        
+        <!-- Números de página con puntos suspensivos -->
+        <div class="flex items-center space-x-1">
+          <ng-container *ngFor="let page of pageNumbers; let i = index">
+            <span *ngIf="showEllipsisBefore(page)" class="text-slate-400 px-2">...</span>
+            <button 
+              (click)="goToPage(page)"
+              [class.bg-gray-700]="page === currentPage"
+              [class.bg-gray-600]="page !== currentPage"
+              [class.hover:bg-gray-700]="page !== currentPage"
+              class="px-3 py-1 text-white rounded-full transition-colors text-sm min-w-[36px] shadow-md hover:shadow-lg hover:scale-105">
+              {{ page }}
+            </button>
+          </ng-container>
+        </div>
+        
+        <!-- Botón Siguiente -->
+        <button 
+          (click)="nextPage()" 
+          [disabled]="currentPage === totalPages"
+          [class.opacity-50]="currentPage === totalPages"
+          [class.cursor-not-allowed]="currentPage === totalPages"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105">
+          ›
+        </button>
+        
+        <!-- Botón Última -->
+        <button 
+          (click)="goToLastPage()" 
+          [disabled]="currentPage === totalPages"
+          [class.opacity-50]="currentPage === totalPages"
+          [class.cursor-not-allowed]="currentPage === totalPages"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105"
+          title="Última página">
+          »»
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Producto -->
+<div *ngIf="showCreateModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+    <div class="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-white">Crear Nuevo Producto</h2>
+      <button (click)="closeModals()" class="text-slate-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Nombre del Producto</label>
+        <input type="text" [(ngModel)]="productForm.name" 
+               class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Descripción</label>
+        <textarea [(ngModel)]="productForm.description" rows="3"
+                  class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+          <select [(ngModel)]="productForm.type"
+                  class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="TSHIRT">Camiseta</option>
+            <option value="HOODIE">Sudadera</option>
+            <option value="VINYL">Vinilo</option>
+            <option value="CD">CD</option>
+            <option value="POSTER">Póster</option>
+            <option value="ACCESSORIES">Accesorios</option>
+            <option value="OTHER">Otros</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Precio (€)</label>
+          <input type="number" [(ngModel)]="productForm.price" step="0.01"
+                 class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Stock Total</label>
+        <input type="number" [(ngModel)]="productForm.stock!.total"
+               class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+      
+      <!-- Upload de imágenes -->
+      <app-image-upload
+        label="Imágenes del Producto"
+        description="Sube imágenes del producto (máximo 10 imágenes, 5MB cada una)"
+        uploadType="products"
+        [multiple]="true"
+        [maxFiles]="10"
+        [existingImages]="productForm.images || []"
+        (imagesUploaded)="onImagesUploaded($event)"
+        (imageRemoved)="onImageRemoved($event)">
+      </app-image-upload>
+      
+      <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+        <p class="text-yellow-400 text-sm">
+          <strong>Nota:</strong> El producto será creado con estado <strong>PENDING</strong> y deberá ser aprobado por un administrador.
+        </p>
+      </div>
+    </div>
+    
+    <div class="sticky bottom-0 bg-slate-800 border-t border-slate-700 px-6 py-4 flex justify-end space-x-3">
+      <button (click)="closeModals()" 
+              class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
+        Cancelar
+      </button>
+      <button (click)="createProduct()" 
+              class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors shadow-lg hover:shadow-xl hover:scale-105">
+        Crear Producto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Producto -->
+<div *ngIf="showEditModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+    <div class="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-white">Editar Producto</h2>
+      <button (click)="closeModals()" class="text-slate-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Nombre del Producto</label>
+        <input type="text" [(ngModel)]="productForm.name" 
+               class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Descripción</label>
+        <textarea [(ngModel)]="productForm.description" rows="3"
+                  class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Tipo</label>
+          <select [(ngModel)]="productForm.type"
+                  class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="TSHIRT">Camiseta</option>
+            <option value="HOODIE">Sudadera</option>
+            <option value="VINYL">Vinilo</option>
+            <option value="CD">CD</option>
+            <option value="POSTER">Póster</option>
+            <option value="ACCESSORIES">Accesorios</option>
+            <option value="OTHER">Otros</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Precio (€)</label>
+          <input type="number" [(ngModel)]="productForm.price" step="0.01"
+                 class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Stock Total</label>
+          <input type="number" [(ngModel)]="productForm.stock!.total"
+                 class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Stock Disponible</label>
+          <input type="number" [(ngModel)]="productForm.stock!.available"
+                 class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+        <select [(ngModel)]="productForm.status"
+                class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <option value="available">Disponible</option>
+          <option value="out_of_stock">Agotado</option>
+          <option value="coming_soon">Próximamente</option>
+          <option value="discontinued">Descontinuado</option>
+        </select>
+      </div>
+      
+      <!-- Upload de imágenes -->
+      <app-image-upload
+        label="Imágenes del Producto"
+        description="Sube imágenes del producto (máximo 10 imágenes, 5MB cada una)"
+        uploadType="products"
+        [multiple]="true"
+        [maxFiles]="10"
+        [existingImages]="productForm.images || []"
+        (imagesUploaded)="onImagesUploaded($event)"
+        (imageRemoved)="onImageRemoved($event)">
+      </app-image-upload>
+    </div>
+    
+    <div class="sticky bottom-0 bg-slate-800 border-t border-slate-700 px-6 py-4 flex justify-end space-x-3">
+      <button (click)="closeModals()" 
+              class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-full transition-colors shadow-md hover:shadow-lg hover:scale-105">
+        Cancelar
+      </button>
+      <button (click)="updateProduct()" 
+              class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors shadow-lg hover:shadow-xl hover:scale-105">
+        Guardar Cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Detalles -->
+<div *ngIf="showDetailsModal && selectedProduct" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+    <div class="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-white">Detalles del Producto</h2>
+      <button (click)="closeModals()" class="text-slate-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="p-6">
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <img [src]="selectedProduct.images[0]" [alt]="selectedProduct.name" class="w-full h-64 object-cover rounded-lg">
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <h3 class="text-2xl font-bold text-white">{{ selectedProduct.name }}</h3>
+            <p class="text-slate-400">{{ selectedProduct.bandName || 'General' }}</p>
+          </div>
+          
+          <div class="flex items-center space-x-3">
+            <span [class]="getStatusBadgeClass(selectedProduct.status)" class="px-3 py-1 rounded-full text-xs font-medium capitalize">
+              {{ selectedProduct.status.replace('_', ' ') }}
+            </span>
+            <span [class]="getApprovalBadgeClass(selectedProduct.approvalStatus)" class="px-3 py-1 rounded-full text-xs font-medium">
+              {{ getApprovalText(selectedProduct.approvalStatus) }}
+            </span>
+          </div>
+          
+          <div class="bg-slate-700/50 rounded-lg p-4 space-y-2">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Precio:</span>
+              <span class="text-white font-bold text-xl">€{{ selectedProduct.price.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Stock Total:</span>
+              <span class="text-white font-medium">{{ selectedProduct.stock.total }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Disponible:</span>
+              <span class="text-green-400 font-medium">{{ selectedProduct.stock.available }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Reservados:</span>
+              <span class="text-yellow-400 font-medium">{{ selectedProduct.stock.reserved }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Vendidos:</span>
+              <span class="text-purple-400 font-medium">{{ selectedProduct.soldUnits }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="text-lg font-semibold text-white mb-2">Descripción</h4>
+        <p class="text-slate-300">{{ selectedProduct.description }}</p>
+      </div>
+    </div>
+    
+    <div class="sticky bottom-0 bg-slate-800 border-t border-slate-700 px-6 py-4 flex justify-end">
+      <button (click)="closeModals()" 
+              class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-full transition-colors shadow-md hover:shadow-lg hover:scale-105">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar -->
+<div *ngIf="showDeleteModal && selectedProduct" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full border border-slate-700">
+    <div class="px-6 py-4 border-b border-slate-700">
+      <h2 class="text-xl font-bold text-white">Confirmar Eliminación</h2>
+    </div>
+    
+    <div class="p-6">
+      <p class="text-slate-300 mb-4">
+        ¿Estás seguro de que deseas eliminar el producto <strong class="text-white">{{ selectedProduct.name }}</strong>?
+      </p>
+      <p class="text-red-400 text-sm">
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+    
+    <div class="px-6 py-4 border-t border-slate-700 flex justify-end space-x-3">
+      <button (click)="closeModals()" 
+              class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-full transition-colors shadow-md hover:shadow-lg hover:scale-105">
+        Cancelar
+      </button>
+      <button (click)="deleteProduct()" 
+              class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-lg hover:shadow-xl hover:scale-105">
+        Eliminar
+      </button>
     </div>
   </div>
 </div>

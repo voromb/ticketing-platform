@@ -25,9 +25,12 @@ async function bootstrap() {
   );
 
   // Servir archivos estáticos (imágenes subidas)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // __dirname en producción apunta a dist/src, necesitamos subir 2 niveles
+  const uploadsPath = join(process.cwd(), 'uploads');
+  app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
   });
+  console.log('📁 Sirviendo archivos estáticos desde:', uploadsPath);
 
   // Configurar puerto
   const port = 3004; // Forzado a 3004

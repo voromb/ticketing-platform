@@ -74,7 +74,7 @@ export class Trip {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
   @Prop({ type: Location, required: true })

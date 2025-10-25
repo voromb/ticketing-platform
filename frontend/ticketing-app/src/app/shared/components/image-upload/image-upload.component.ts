@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { ImageUploadService } from '../../../core/services/image-upload.service';
 import Swal from 'sweetalert2';
 
-export type UploadType = 'events' | 'venues' | 'categories' | 'subcategories';
+export type UploadType = 'events' | 'venues' | 'categories' | 'subcategories' | 'products';
 
 @Component({
   selector: 'app-image-upload',
@@ -271,7 +271,7 @@ export class ImageUploadComponent implements OnInit, OnChanges {
 
     try {
       let uploadObservable;
-
+      
       switch (this.uploadType) {
         case 'events':
           uploadObservable = this.imageUploadService.uploadEventImages(this.selectedFiles);
@@ -285,6 +285,11 @@ export class ImageUploadComponent implements OnInit, OnChanges {
         case 'subcategories':
           uploadObservable = this.imageUploadService.uploadSubcategoryImages(this.selectedFiles);
           break;
+        case 'products':
+          uploadObservable = this.imageUploadService.uploadProductImages(this.selectedFiles);
+          break;
+        default:
+          throw new Error('Tipo de upload no válido');
       }
 
       uploadObservable.subscribe({

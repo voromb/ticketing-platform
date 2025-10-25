@@ -101,14 +101,48 @@ if [ -f "$POSTGRES_MAIN_FILE" ]; then
     TICKET_INSERTS=$(grep -c 'INSERT INTO public."Ticket"' "$POSTGRES_MAIN_FILE" 2>/dev/null || echo "0")
     ADMIN_INSERTS=$(grep -c 'INSERT INTO public.admins' "$POSTGRES_MAIN_FILE" 2>/dev/null || echo "0")
 
+    COMPANY_INSERTS=$(grep -c 'INSERT INTO public.companies' "$POSTGRES_MAIN_FILE" 2>/dev/null || echo "0")
+    COMPANY_ADMIN_INSERTS=$(grep -c 'INSERT INTO public.company_admins' "$POSTGRES_MAIN_FILE" 2>/dev/null || echo "0")
+
     echo "  - Eventos: $EVENT_INSERTS"
     echo "  - Venues: $VENUE_INSERTS"
     echo "  - Categorias: $CATEGORY_INSERTS"
     echo "  - Subcategorias: $SUBCATEGORY_INSERTS"
-    echo "  - Ordenes: $ORDER_INSERTS"
+    echo "  - Ordenes PostgreSQL: $ORDER_INSERTS"
     echo "  - Tickets: $TICKET_INSERTS"
     echo "  - Admins: $ADMIN_INSERTS"
+    echo -e "  - ${CYAN}Compañías: $COMPANY_INSERTS${NC}"
+    echo -e "  - ${CYAN}Company Admins: $COMPANY_ADMIN_INSERTS${NC}"
 fi
+
+# Verificar MongoDB (conteo de colecciones)
+echo ""
+echo "MongoDB Collections:"
+USERS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing').users.countDocuments()" 2>/dev/null || echo "0")
+RESTAURANTS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').restaurants.countDocuments()" 2>/dev/null || echo "0")
+RESERVATIONS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').reservations.countDocuments()" 2>/dev/null || echo "0")
+TRIPS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').trips.countDocuments()" 2>/dev/null || echo "0")
+BOOKINGS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').bookings.countDocuments()" 2>/dev/null || echo "0")
+PRODUCTS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').products.countDocuments()" 2>/dev/null || echo "0")
+CARTS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').carts.countDocuments()" 2>/dev/null || echo "0")
+ORDER_ITEMS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orderitems.countDocuments()" 2>/dev/null || echo "0")
+PACKAGE_ORDERS_COUNT=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orders.countDocuments()" 2>/dev/null || echo "0")
+
+echo ""
+echo -e "  ${CYAN}[ticketing]${NC}"
+echo -e "  - ${YELLOW}Usuarios: $USERS_COUNT${NC}"
+
+echo ""
+echo -e "  ${CYAN}[festival_services]${NC}"
+echo -e "  - ${YELLOW}Restaurantes: $RESTAURANTS_COUNT${NC}"
+echo -e "  - ${YELLOW}Reservas Restaurantes: $RESERVATIONS_COUNT${NC}"
+echo -e "  - ${YELLOW}Viajes: $TRIPS_COUNT${NC}"
+echo -e "  - ${YELLOW}Bookings Viajes: $BOOKINGS_COUNT${NC}"
+echo -e "  - ${YELLOW}Productos: $PRODUCTS_COUNT${NC}"
+echo -e "  - ${YELLOW}Carritos: $CARTS_COUNT${NC}"
+echo -e "  - ${YELLOW}Ordenes Merchandising: $ORDER_ITEMS_COUNT${NC}"
+echo -e "  - \033[0;35mOrdenes Paquetes: $PACKAGE_ORDERS_COUNT\033[0m"
+echo ""
 
 # Verificar PostgreSQL ticketing_admin
 if [ -f "$POSTGRES_ADMIN_FILE" ]; then

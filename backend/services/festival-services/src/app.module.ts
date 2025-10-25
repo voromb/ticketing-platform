@@ -6,7 +6,8 @@ import { AppService } from './app.service';
 import { TravelModule } from './travel/travel.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { MerchandisingModule } from './merchandising/merchandising.module';
-import { ApprovalModule } from './approval/approval.module';
+import { OrderModule } from './order/order.module';
+// import { ApprovalModule } from './approval/approval.module'; // Temporalmente deshabilitado hasta crear tabla en PostgreSQL
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
@@ -27,7 +28,8 @@ import appConfig from './config/app.config';
     TravelModule,
     RestaurantModule,
     MerchandisingModule,
-    ApprovalModule,
+    OrderModule,
+    // ApprovalModule, // Temporalmente deshabilitado hasta crear tabla en PostgreSQL
     UploadModule,
   ],
   controllers: [AppController],

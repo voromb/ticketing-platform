@@ -40,9 +40,113 @@
     }
 
     @if (canBuy) {
-      <button (click)="buy()" class="buy-btn">Comprar</button>
+      <div class="package-buttons">
+        <h3 style="color: white; margin-bottom: 1rem;">Elige tu opción:</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; max-width: 500px; margin: 0 auto;">
+          
+          <!-- Solo Ticket -->
+          <button (click)="buyTicketOnly()" class="package-btn ticket-only">
+            Solo Ticket
+            <span class="price">{{event.minPrice}}€</span>
+          </button>
+
+          <!-- Ticket + Pack (solo si hay servicios disponibles) -->
+          @if (availableTrips.length > 0 || availableRestaurants.length > 0 || availableProducts.length > 0) {
+            <button (click)="openPackageModal()" class="package-btn package-deal">
+              Ticket + Pack
+              <span class="price">Personaliza</span>
+            </button>
+          }
+        </div>
+      </div>
     }
   </div>
     </div>
   </div>
+
+  <!-- MODAL UNIFICADO DE PAQUETES -->
+  @if (showPackageModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content large" (click)="$event.stopPropagation()">
+        <h2>Personaliza tu Pack</h2>
+        <p style="color: #94a3b8; margin-bottom: 1.5rem;">Selecciona los servicios que quieras agregar a tu ticket</p>
+        
+        <!-- VIAJES -->
+        @if (availableTrips.length > 0) {
+          <div class="package-section">
+            <h3>Viajes</h3>
+            <div class="options-grid">
+              @for (trip of availableTrips; track trip._id) {
+                <div 
+                  class="option-card" 
+                  [class.selected]="selectedTrip?._id === trip._id"
+                  (click)="selectTrip(trip)">
+                  <h4>{{trip.name}}</h4>
+                  <p>{{trip.description}}</p>
+                  <p><strong>Salida:</strong> {{trip.departure}}</p>
+                  <p><strong>Llegada:</strong> {{trip.arrival}}</p>
+                  <p><strong>Tipo:</strong> {{trip.vehicleType}}</p>
+                  <p class="price">{{trip.price}}€</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- RESTAURANTES -->
+        @if (availableRestaurants.length > 0) {
+          <div class="package-section">
+            <h3>Restaurantes</h3>
+            <div class="options-grid">
+              @for (restaurant of availableRestaurants; track restaurant._id) {
+                <div 
+                  class="option-card" 
+                  [class.selected]="selectedRestaurant?._id === restaurant._id"
+                  (click)="selectRestaurant(restaurant)">
+                  <h4>{{restaurant.name}}</h4>
+                  <p>{{restaurant.description}}</p>
+                  <p><strong>Cocina:</strong> {{restaurant.cuisine}}</p>
+                  <p><strong>Ubicación:</strong> {{restaurant.location}}</p>
+                  <p class="price">{{restaurant.reservationPrice}}€</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- MERCHANDISING -->
+        @if (availableProducts.length > 0) {
+          <div class="package-section">
+            <h3>Merchandising</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.75rem;">Puedes seleccionar múltiples productos</p>
+            <div class="products-grid">
+              @for (product of availableProducts; track product._id) {
+                <div 
+                  class="product-card" 
+                  [class.selected]="isProductSelected(product)"
+                  (click)="toggleProduct(product)">
+                  @if (isProductSelected(product)) {
+                    <div class="check-mark">✓</div>
+                  }
+                  <img [src]="product.images[0]" [alt]="product.name" />
+                  <h4>{{product.name}}</h4>
+                  <p>{{product.description}}</p>
+                  <p class="price">{{product.price}}€</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button (click)="closeModal()" class="btn-cancel">Cancelar</button>
+          <button 
+            (click)="confirmPackage()" 
+            class="btn-confirm">
+            Continuar con mi pack
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 }

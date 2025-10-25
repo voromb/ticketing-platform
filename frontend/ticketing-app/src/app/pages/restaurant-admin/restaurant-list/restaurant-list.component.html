@@ -61,7 +61,7 @@
 
     <!-- Results Count -->
     <div class="mt-4 flex items-center justify-between text-sm text-slate-400">
-      <span>Mostrando {{ getPaginatedRestaurants().length }} de {{ filteredRestaurants.length }} restaurantes</span>
+      <span>Mostrando {{ paginatedRestaurants.length }} de {{ filteredRestaurants.length }} restaurantes</span>
       <span>Total: {{ restaurants.length }}</span>
     </div>
   </div>
@@ -96,7 +96,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-700">
-          <tr *ngFor="let restaurant of getPaginatedRestaurants()" 
+          <tr *ngFor="let restaurant of paginatedRestaurants" 
               class="hover:bg-slate-700/30 transition-colors">
             <!-- Restaurant Info -->
             <td class="px-6 py-4">
@@ -188,7 +188,7 @@
           </tr>
 
           <!-- Empty State -->
-          <tr *ngIf="getPaginatedRestaurants().length === 0">
+          <tr *ngIf="paginatedRestaurants.length === 0">
             <td colspan="7" class="px-6 py-12 text-center">
               <div class="flex flex-col items-center justify-center space-y-3">
                 <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,37 +207,68 @@
       </table>
     </div>
 
-    <!-- Pagination -->
-    <div *ngIf="totalPages > 1" class="bg-slate-700/30 px-6 py-4 flex items-center justify-between border-t border-slate-700">
+    <!-- Paginación -->
+    <div *ngIf="filteredRestaurants.length > 0" class="bg-slate-700/30 px-6 py-4 flex items-center justify-between border-t border-slate-700/50">
       <div class="text-sm text-slate-400">
-        Página {{ currentPage }} de {{ totalPages }}
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredRestaurants.length) }} de {{ filteredRestaurants.length }} restaurantes
       </div>
+      
       <div class="flex items-center space-x-2">
+        <!-- Botón Primera -->
         <button 
-          (click)="changePage(currentPage - 1)"
+          (click)="goToFirstPage()" 
           [disabled]="currentPage === 1"
           [class.opacity-50]="currentPage === 1"
           [class.cursor-not-allowed]="currentPage === 1"
-          class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:hover:bg-slate-700">
-          Anterior
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105"
+          title="Primera página">
+          ««
         </button>
+        
+        <!-- Botón Anterior -->
         <button 
-          *ngFor="let page of [].constructor(totalPages); let i = index"
-          (click)="changePage(i + 1)"
-          [class.bg-green-600]="currentPage === i + 1"
-          [class.text-white]="currentPage === i + 1"
-          [class.bg-slate-700]="currentPage !== i + 1"
-          [class.text-slate-300]="currentPage !== i + 1"
-          class="px-3 py-1 rounded hover:bg-green-700 transition-colors">
-          {{ i + 1 }}
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1"
+          [class.opacity-50]="currentPage === 1"
+          [class.cursor-not-allowed]="currentPage === 1"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105">
+          ‹
         </button>
+        
+        <!-- Números de página con puntos suspensivos -->
+        <div class="flex items-center space-x-1">
+          <ng-container *ngFor="let page of pageNumbers; let i = index">
+            <span *ngIf="showEllipsisBefore(page)" class="text-slate-400 px-2">...</span>
+            <button 
+              (click)="goToPage(page)"
+              [class.bg-gray-700]="page === currentPage"
+              [class.bg-gray-600]="page !== currentPage"
+              [class.hover:bg-gray-700]="page !== currentPage"
+              class="px-3 py-1 text-white rounded-full transition-colors text-sm min-w-[36px] shadow-md hover:shadow-lg hover:scale-105">
+              {{ page }}
+            </button>
+          </ng-container>
+        </div>
+        
+        <!-- Botón Siguiente -->
         <button 
-          (click)="changePage(currentPage + 1)"
+          (click)="nextPage()" 
           [disabled]="currentPage === totalPages"
           [class.opacity-50]="currentPage === totalPages"
           [class.cursor-not-allowed]="currentPage === totalPages"
-          class="px-3 py-1 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:hover:bg-slate-700">
-          Siguiente
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105">
+          ›
+        </button>
+        
+        <!-- Botón Última -->
+        <button 
+          (click)="goToLastPage()" 
+          [disabled]="currentPage === totalPages"
+          [class.opacity-50]="currentPage === totalPages"
+          [class.cursor-not-allowed]="currentPage === totalPages"
+          class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-full transition-colors disabled:hover:bg-gray-600 shadow-md hover:shadow-lg hover:scale-105"
+          title="Última página">
+          »»
         </button>
       </div>
     </div>

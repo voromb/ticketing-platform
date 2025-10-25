@@ -62,6 +62,10 @@ export class TravelService {
     return this.http.get<any>(this.apiUrl);
   }
 
+  getByFestival(festivalId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}?festivalId=${festivalId}`);
+  }
+
   getById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }

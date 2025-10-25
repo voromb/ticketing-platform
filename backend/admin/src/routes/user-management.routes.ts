@@ -24,4 +24,7 @@ export async function userManagementRoutes(fastify: FastifyInstance) {
   
   // POST /api/user-management/:id/demote - Degradar usuario VIP a normal
   fastify.post('/:id/demote', UserManagementController.demoteVipToUser.bind(UserManagementController));
+  
+  // POST /api/user-management/:id/promote-company-admin - Promocionar usuario a COMPANY_ADMIN
+  fastify.post('/:id/promote-company-admin', UserManagementController.promoteUserToCompanyAdmin.bind(UserManagementController));
 }

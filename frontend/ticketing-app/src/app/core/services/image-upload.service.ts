@@ -21,7 +21,8 @@ export interface DeleteMultipleImagesRequest {
   providedIn: 'root',
 })
 export class ImageUploadService {
-  private apiUrl = environment.apiUrl || 'http://localhost:3004/api';
+  // Upload siempre va a festival-services (puerto 3004)
+  private apiUrl = 'http://localhost:3004/api';
 
   constructor(private http: HttpClient) {}
 
@@ -101,6 +102,25 @@ export class ImageUploadService {
 
     // ✅ CORREGIDO: Sin /api/ extra
     return this.http.post<UploadResponse>(`${this.apiUrl}/upload/subcategories`, formData, {
+      headers,
+    });
+  }
+
+  /**
+   * Sube múltiples imágenes para productos de merchandising
+   */
+  uploadProductImages(files: File[]): Observable<UploadResponse> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file, file.name);
+    });
+
+    const token = localStorage.getItem('adminToken');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    return this.http.post<UploadResponse>(`${this.apiUrl}/upload/products`, formData, {
       headers,
     });
   }

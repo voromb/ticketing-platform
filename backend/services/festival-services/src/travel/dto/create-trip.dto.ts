@@ -31,6 +31,7 @@ export class CreateTripDto {
   @IsString()
   name: string;
 
+  @IsOptional()
   @IsString()
   description: string;
 

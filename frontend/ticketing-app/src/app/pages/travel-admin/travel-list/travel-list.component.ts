@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TravelService, Trip } from '../../../services/travel.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-travel-list',
@@ -14,6 +15,7 @@ export class TravelListComponent implements OnInit {
   loading = true;
   trips: Trip[] = [];
   filteredTrips: Trip[] = [];
+  paginatedTrips: Trip[] = [];
   
   // Filtros
   searchTerm = '';
@@ -29,8 +31,9 @@ export class TravelListComponent implements OnInit {
 
   // Paginación
   currentPage = 1;
-  itemsPerPage = 10;
-  totalPages = 1;
+  pageSize = 10;
+  totalPages = 0;
+  Math = Math;
 
   constructor(
     private travelService: TravelService,
@@ -102,20 +105,66 @@ export class TravelListComponent implements OnInit {
     });
 
     this.filteredTrips = filtered;
-    this.totalPages = Math.ceil(filtered.length / this.itemsPerPage);
     this.currentPage = 1;
+    this.updatePagination();
   }
 
-  getPaginatedTrips(): Trip[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredTrips.slice(start, end);
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredTrips.length / this.pageSize);
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedTrips = this.filteredTrips.slice(startIndex, endIndex);
   }
 
-  changePage(page: number): void {
+  goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.updatePagination();
     }
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  previousPage(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  goToFirstPage(): void {
+    this.goToPage(1);
+  }
+
+  goToLastPage(): void {
+    this.goToPage(this.totalPages);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const current = this.currentPage;
+    const total = this.totalPages;
+    
+    if (total > 0) {
+      pages.push(1);
+    }
+    
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      if (!pages.includes(i)) {
+        pages.push(i);
+      }
+    }
+    
+    if (total > 1 && !pages.includes(total)) {
+      pages.push(total);
+    }
+    
+    return pages.sort((a, b) => a - b);
+  }
+  
+  showEllipsisBefore(page: number): boolean {
+    const pages = this.pageNumbers;
+    const index = pages.indexOf(page);
+    return index > 0 && pages[index] - pages[index - 1] > 1;
   }
 
   toggleSort(field: string): void {
@@ -164,15 +213,56 @@ export class TravelListComponent implements OnInit {
 
   saveTrip(): void {
     if (this.modalMode === 'create') {
-      this.travelService.create(this.selectedTrip).subscribe({
+      // Transformar datos para que coincidan con el DTO del backend
+      const tripData: any = {
+        ...this.selectedTrip,
+        festivalId: 'default-festival', // TODO: Obtener del contexto
+        departure: {
+          location: this.selectedTrip.departure,
+          datetime: this.selectedTrip.departureTime || new Date()
+        },
+        arrival: {
+          location: this.selectedTrip.arrival,
+          datetime: this.selectedTrip.arrivalTime || new Date()
+        }
+      };
+      
+      this.travelService.create(tripData).subscribe({
         next: () => {
           this.loadTrips();
           this.closeModal();
+          // SweetAlert de éxito
+          Swal.fire({
+            icon: 'success',
+            title: '¡Viaje creado!',
+            text: 'El viaje ha sido creado exitosamente y está pendiente de aprobación.',
+            confirmButtonColor: '#3b82f6',
+            timer: 3000
+          });
         },
-        error: (error) => console.error('Error creando viaje:', error)
+        error: (error) => {
+          console.error('Error creando viaje:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo crear el viaje. Inténtalo de nuevo.',
+            confirmButtonColor: '#ef4444'
+          });
+        }
       });
     } else if (this.modalMode === 'edit' && this.selectedTrip._id) {
-      this.travelService.update(this.selectedTrip._id, this.selectedTrip).subscribe({
+      // Transformar datos para edición
+      const tripData: any = {
+        ...this.selectedTrip,
+        departure: typeof this.selectedTrip.departure === 'string' 
+          ? { location: this.selectedTrip.departure }
+          : this.selectedTrip.departure,
+        arrival: typeof this.selectedTrip.arrival === 'string'
+          ? { location: this.selectedTrip.arrival }
+          : this.selectedTrip.arrival
+      };
+      
+      this.travelService.update(this.selectedTrip._id, tripData).subscribe({
         next: () => {
           this.loadTrips();
           this.closeModal();

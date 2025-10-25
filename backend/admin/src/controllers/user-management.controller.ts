@@ -282,6 +282,137 @@ export class UserManagementController {
     }
 
     /**
+     * Promocionar un usuario a COMPANY_ADMIN
+     */
+    async promoteUserToCompanyAdmin(
+        request: FastifyRequest<{ 
+            Params: { id: string }; 
+            Body: {
+                companyId: string;
+                serviceType: 'RESTAURANT' | 'TRAVEL' | 'MERCHANDISING';
+                reason?: string;
+                notes?: string;
+            }
+        }>, 
+        reply: FastifyReply
+    ) {
+        try {
+            // Solo SUPER_ADMIN puede promocionar usuarios
+            if (!request.user || request.user.role !== 'SUPER_ADMIN') {
+                return reply.status(403).send({
+                    error: 'Solo SUPER_ADMIN puede promocionar usuarios a COMPANY_ADMIN'
+                });
+            }
+
+            const { id } = request.params;
+            const { companyId, serviceType, reason, notes } = request.body;
+
+            // Verificar que el usuario existe en MongoDB
+            const existingUser = await userApiService.getUserById(id);
+            if (!existingUser) {
+                return reply.status(404).send({
+                    error: 'Usuario no encontrado en MongoDB'
+                });
+            }
+
+            // Verificar que la compañía existe
+            const company = await request.server.prisma.company.findUnique({
+                where: { id: companyId }
+            });
+
+            if (!company) {
+                return reply.status(404).send({
+                    error: 'Compañía no encontrada'
+                });
+            }
+
+            // Verificar que el tipo de servicio coincide
+            if (company.type !== serviceType) {
+                return reply.status(400).send({
+                    error: `La compañía no es de tipo ${serviceType}`
+                });
+            }
+
+            // Verificar que no existe ya un COMPANY_ADMIN con ese email
+            const existingCompanyAdmin = await request.server.prisma.companyAdmin.findUnique({
+                where: { email: existingUser.email }
+            });
+
+            if (existingCompanyAdmin) {
+                return reply.status(400).send({
+                    error: 'Ya existe un COMPANY_ADMIN con ese email'
+                });
+            }
+
+            // Crear COMPANY_ADMIN en PostgreSQL
+            const companyAdmin = await request.server.prisma.companyAdmin.create({
+                data: {
+                    company_id: companyId,
+                    email: existingUser.email,
+                    password: existingUser.password, // Usar la misma contraseña hasheada
+                    first_name: existingUser.firstName || existingUser.username,
+                    last_name: existingUser.lastName || '',
+                    can_create: true,
+                    can_update: true,
+                    can_delete: false,
+                    can_view_stats: true,
+                    can_manage_stock: serviceType === 'MERCHANDISING',
+                    is_active: true
+                },
+                include: {
+                    companies: true
+                }
+            });
+
+            logger.info(`Usuario ${existingUser.email} promocionado a COMPANY_ADMIN de ${company.name}`);
+
+            return reply.send({
+                success: true,
+                message: `Usuario promocionado a COMPANY_ADMIN de ${serviceType} exitosamente`,
+                companyAdmin: {
+                    id: companyAdmin.id,
+                    email: companyAdmin.email,
+                    firstName: companyAdmin.first_name,
+                    lastName: companyAdmin.last_name,
+                    company: {
+                        id: company.id,
+                        name: company.name,
+                        type: company.type,
+                        region: company.region
+                    },
+                    permissions: {
+                        canCreate: companyAdmin.can_create,
+                        canUpdate: companyAdmin.can_update,
+                        canDelete: companyAdmin.can_delete,
+                        canViewStats: companyAdmin.can_view_stats,
+                        canManageStock: companyAdmin.can_manage_stock
+                    }
+                },
+                mongoUser: {
+                    id: existingUser._id,
+                    email: existingUser.email,
+                    username: existingUser.username
+                },
+                promotedBy: {
+                    adminId: request.user!.id,
+                    adminEmail: request.user!.email
+                },
+                reason,
+                notes,
+                timestamp: new Date()
+            });
+
+        } catch (error: any) {
+            logger.error(`Error promocionando usuario ${request.params.id} a COMPANY_ADMIN:`, error);
+            
+            return reply.status(500).send({
+                error: 'Error promocionando usuario a COMPANY_ADMIN',
+                details: error.message
+            });
+        }
+    }
+
+    /**
      * Obtener estadísticas de usuarios
      */
     async getUserStats(request: FastifyRequest, reply: FastifyReply) {

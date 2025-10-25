@@ -39,20 +39,21 @@ export class TravelService {
     const createdTrip = new this.tripModel(tripData);
     const saved = await createdTrip.save();
 
+    // TODO: Reactivar cuando ApprovalModule esté habilitado
     // Enviar evento de aprobación requerida
-    this.client.emit('approval.requested', {
-      service: 'TRAVEL',
-      entityId: (saved as any)._id.toString(),
-      entityType: 'Trip',
-      requestedBy: admin.email,
-      metadata: {
-        tripName: saved.name,
-        companyName: admin.companyName,
-        region: admin.companyRegion,
-        capacity: saved.capacity,
-      },
-      priority: 'MEDIUM',
-    });
+    // this.client.emit('approval.requested', {
+    //   service: 'TRAVEL',
+    //   entityId: (saved as any)._id.toString(),
+    //   entityType: 'Trip',
+    //   requestedBy: admin.email,
+    //   metadata: {
+    //     tripName: saved.name,
+    //     companyName: admin.companyName,
+    //     region: admin.companyRegion,
+    //     capacity: saved.capacity,
+    //   },
+    //   priority: 'MEDIUM',
+    // });
 
     console.log(`[TRAVEL] Nuevo viaje creado por ${admin.email}, requiere aprobación`);
     return saved;
@@ -60,6 +61,13 @@ export class TravelService {
 
   async findAll(): Promise<Trip[]> {
     return this.tripModel.find({ isActive: true }).exec();
+  }
+
+  async findByFestival(festivalId: string): Promise<Trip[]> {
+    return this.tripModel.find({ 
+      festivalId, 
+      isActive: true 
+    }).exec();
   }
 
   async findOne(id: string): Promise<Trip> {

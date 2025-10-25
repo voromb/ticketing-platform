@@ -37,15 +37,7 @@ export class CompanyAdminAuthService {
     const admin = await this.prisma.companyAdmin.findUnique({
       where: { email },
       include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true,
-            isActive: true,
-          },
-        },
+        companies: true,
       },
     });
 
@@ -54,12 +46,12 @@ export class CompanyAdminAuthService {
     }
 
     // Verificar que el admin esté activo
-    if (!admin.isActive) {
+    if (!admin.is_active) {
       throw new UnauthorizedException('Cuenta desactivada');
     }
 
     // Verificar que la compañía esté activa
-    if (!admin.company.isActive) {
+    if (!admin.companies.is_active) {
       throw new UnauthorizedException('Compañía desactivada');
     }
 
@@ -69,33 +61,33 @@ export class CompanyAdminAuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Actualizar lastLogin
+    // Actualizar last_login
     await this.prisma.companyAdmin.update({
       where: { id: admin.id },
-      data: { lastLogin: new Date() },
+      data: { last_login: new Date() },
     });
 
     // Crear payload JWT
     const payload: CompanyAdminPayload = {
       id: admin.id,
       email: admin.email,
-      companyId: admin.companyId,
-      companyName: admin.company.name,
-      companyType: admin.company.type,
-      companyRegion: admin.company.region,
+      companyId: admin.company_id,
+      companyName: admin.companies.name,
+      companyType: admin.companies.type,
+      companyRegion: admin.companies.region,
       permissions: {
-        canCreate: admin.canCreate,
-        canUpdate: admin.canUpdate,
-        canDelete: admin.canDelete,
-        canViewStats: admin.canViewStats,
-        canManageStock: admin.canManageStock,
+        canCreate: admin.can_create ?? false,
+        canUpdate: admin.can_update ?? false,
+        canDelete: admin.can_delete ?? false,
+        canViewStats: admin.can_view_stats ?? false,
+        canManageStock: admin.can_manage_stock ?? false,
       },
     };
 
     const access_token = this.jwtService.sign(payload);
 
     console.log(
-      `[COMPANY_ADMIN] ${admin.email} de ${admin.company.name} ha iniciado sesión`,
+      `[COMPANY_ADMIN] ${admin.email} de ${admin.companies.name} ha iniciado sesión`,
     );
 
     return {
@@ -103,13 +95,13 @@ export class CompanyAdminAuthService {
       user: {
         id: admin.id,
         email: admin.email,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
+        firstName: admin.first_name,
+        lastName: admin.last_name,
         company: {
-          id: admin.company.id,
-          name: admin.company.name,
-          type: admin.company.type,
-          region: admin.company.region,
+          id: admin.companies.id,
+          name: admin.companies.name,
+          type: admin.companies.type,
+          region: admin.companies.region,
         },
         permissions: payload.permissions,
       },
@@ -123,35 +115,27 @@ export class CompanyAdminAuthService {
     const admin = await this.prisma.companyAdmin.findUnique({
       where: { id: payload.id },
       include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true,
-            isActive: true,
-          },
-        },
+        companies: true,
       },
     });
 
-    if (!admin || !admin.isActive || !admin.company.isActive) {
+    if (!admin || !admin.is_active || !admin.companies.is_active) {
       return null;
     }
 
     return {
       id: admin.id,
       email: admin.email,
-      companyId: admin.companyId,
-      companyName: admin.company.name,
-      companyType: admin.company.type,
-      companyRegion: admin.company.region,
+      companyId: admin.company_id,
+      companyName: admin.companies.name,
+      companyType: admin.companies.type,
+      companyRegion: admin.companies.region,
       permissions: {
-        canCreate: admin.canCreate,
-        canUpdate: admin.canUpdate,
-        canDelete: admin.canDelete,
-        canViewStats: admin.canViewStats,
-        canManageStock: admin.canManageStock,
+        canCreate: admin.can_create ?? false,
+        canUpdate: admin.can_update ?? false,
+        canDelete: admin.can_delete ?? false,
+        canViewStats: admin.can_view_stats ?? false,
+        canManageStock: admin.can_manage_stock ?? false,
       },
     };
   }
@@ -163,16 +147,7 @@ export class CompanyAdminAuthService {
     const admin = await this.prisma.companyAdmin.findUnique({
       where: { id: adminId },
       include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true,
-            contactEmail: true,
-            contactPhone: true,
-          },
-        },
+        companies: true,
       },
     });
 

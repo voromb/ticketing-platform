@@ -99,9 +99,17 @@ Write-Host "  📝 Reservas Viajes:   $($bookings.Trim())" -ForegroundColor Gree
 $reservations = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.reservations.countDocuments()" --quiet 2>$null
 Write-Host "  🍴 Reservas Rest.:    $($reservations.Trim())" -ForegroundColor Green
 
-# Orders Merchandising
-$merchOrders = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.orders.countDocuments()" --quiet 2>$null
-Write-Host "  🛍️  Órdenes Merch:     $($merchOrders.Trim())" -ForegroundColor Green
+# Carts
+$carts = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.carts.countDocuments()" --quiet 2>$null
+Write-Host "  🛒 Carritos:          $($carts.Trim())" -ForegroundColor Green
+
+# Order Items (Merchandising)
+$orderItems = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.orderitems.countDocuments()" --quiet 2>$null
+Write-Host "  📦 Órdenes Merch:     $($orderItems.Trim())" -ForegroundColor Green
+
+# Orders (Paquetes Completos)
+$packageOrders = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.orders.countDocuments()" --quiet 2>$null
+Write-Host "  🎁 Órdenes Paquetes:  $($packageOrders.Trim())" -ForegroundColor Magenta
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host "RESUMEN TOTAL" -ForegroundColor Cyan
@@ -130,9 +138,11 @@ $tripsCount = if ($trips) { [int]$trips.Trim() } else { 0 }
 $productsCount = if ($products) { [int]$products.Trim() } else { 0 }
 $bookingsCount = if ($bookings) { [int]$bookings.Trim() } else { 0 }
 $reservationsCount = if ($reservations) { [int]$reservations.Trim() } else { 0 }
-$merchOrdersCount = if ($merchOrders) { [int]$merchOrders.Trim() } else { 0 }
+$cartsCount = if ($carts) { [int]$carts.Trim() } else { 0 }
+$orderItemsCount = if ($orderItems) { [int]$orderItems.Trim() } else { 0 }
+$packageOrdersCount = if ($packageOrders) { [int]$packageOrders.Trim() } else { 0 }
 
-$totalMongo = $usersCount + $likesCount + $eventLikesCount + $commentsCount + $followsCount + $userTicketsCount + $restaurantsCount + $tripsCount + $productsCount + $bookingsCount + $reservationsCount + $merchOrdersCount
+$totalMongo = $usersCount + $likesCount + $eventLikesCount + $commentsCount + $followsCount + $userTicketsCount + $restaurantsCount + $tripsCount + $productsCount + $bookingsCount + $reservationsCount + $cartsCount + $orderItemsCount + $packageOrdersCount
 $totalGeneral = $totalPostgres + $totalMongo
 
 Write-Host "  📊 Total PostgreSQL:  $totalPostgres registros" -ForegroundColor Cyan

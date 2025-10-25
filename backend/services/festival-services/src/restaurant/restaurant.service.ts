@@ -39,19 +39,20 @@ export class RestaurantService {
     const createdRestaurant = new this.restaurantModel(restaurantData);
     const saved = await createdRestaurant.save();
 
+    // TODO: Reactivar cuando ApprovalModule esté habilitado
     // Enviar evento de aprobación requerida
-    this.client.emit('approval.requested', {
-      service: 'RESTAURANT',
-      entityId: (saved as any)._id.toString(),
-      entityType: 'Restaurant',
-      requestedBy: admin.email,
-      metadata: {
-        restaurantName: saved.name,
-        companyName: admin.companyName,
-        region: admin.companyRegion,
-      },
-      priority: 'MEDIUM',
-    });
+    // this.client.emit('approval.requested', {
+    //   service: 'RESTAURANT',
+    //   entityId: (saved as any)._id.toString(),
+    //   entityType: 'Restaurant',
+    //   requestedBy: admin.email,
+    //   metadata: {
+    //     restaurantName: saved.name,
+    //     companyName: admin.companyName,
+    //     region: admin.companyRegion,
+    //   },
+    //   priority: 'MEDIUM',
+    // });
 
     console.log(`[RESTAURANT] Nuevo restaurante creado por ${admin.email}, requiere aprobación`);
     return saved;

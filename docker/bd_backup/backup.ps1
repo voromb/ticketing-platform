@@ -97,11 +97,43 @@ if (Test-Path $PostgresMainFile) {
     Write-Host "  - Venues: $VenueInserts"
     Write-Host "  - Categorias: $CategoryInserts"
     Write-Host "  - Subcategorias: $SubcategoryInserts"
-    Write-Host "  - Ordenes: $OrderInserts"
+    Write-Host "  - Ordenes PostgreSQL: $OrderInserts"
     Write-Host "  - Tickets: $TicketInserts"
     Write-Host "  - Admins: $AdminInserts"
     Write-Host "  - Compañías: $CompanyInserts" -ForegroundColor Cyan
     Write-Host "  - Company Admins: $CompanyAdminInserts" -ForegroundColor Cyan
+}
+
+# Verificar MongoDB (conteo de colecciones)
+Write-Host "`nMongoDB Collections:"
+try {
+    # Base de datos ticketing
+    $UsersCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing').users.countDocuments()"
+    
+    # Base de datos festival_services
+    $RestaurantsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').restaurants.countDocuments()"
+    $ReservationsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').reservations.countDocuments()"
+    $TripsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').trips.countDocuments()"
+    $BookingsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').bookings.countDocuments()"
+    $ProductsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').products.countDocuments()"
+    $CartsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').carts.countDocuments()"
+    $MerchOrdersCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orderitems.countDocuments()"
+    $PackageOrdersCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orders.countDocuments()"
+    
+    Write-Host "`n  [ticketing]" -ForegroundColor Cyan
+    Write-Host "    - Usuarios: $UsersCount" -ForegroundColor Yellow
+    
+    Write-Host "`n  [festival_services]" -ForegroundColor Cyan
+    Write-Host "    - Restaurantes: $RestaurantsCount" -ForegroundColor Yellow
+    Write-Host "    - Reservas Restaurantes: $ReservationsCount" -ForegroundColor Yellow
+    Write-Host "    - Viajes: $TripsCount" -ForegroundColor Yellow
+    Write-Host "    - Bookings Viajes: $BookingsCount" -ForegroundColor Yellow
+    Write-Host "    - Productos: $ProductsCount" -ForegroundColor Yellow
+    Write-Host "    - Carritos: $CartsCount" -ForegroundColor Yellow
+    Write-Host "    - Ordenes Merchandising: $MerchOrdersCount" -ForegroundColor Yellow
+    Write-Host "    - Ordenes Paquetes: $PackageOrdersCount" -ForegroundColor Magenta
+} catch {
+    Write-Host "  - No se pudo verificar conteo de MongoDB (backup completo realizado)" -ForegroundColor Gray
 }
 
 # Verificar PostgreSQL ticketing_admin

@@ -53,6 +53,7 @@ export class CreateRestaurantDto {
   @IsString()
   name: string;
 
+  @IsOptional()
   @IsString()
   description: string;
 

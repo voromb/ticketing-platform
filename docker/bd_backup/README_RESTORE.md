@@ -6,6 +6,14 @@
 
 ## 🚀 INSTRUCCIONES DE USO
 
+### 📖 Guía de Restauración de Backups - VERSIÓN 3.0
+
+Este documento explica cómo restaurar un backup del sistema de ticketing.
+
+## 🆕 NUEVO: Restauración Segura V3.0
+
+Ahora disponemos de scripts ultra seguros que verifican TODO antes y después de restaurar.
+
 ### 1. Restauración Completa
 
 ```powershell

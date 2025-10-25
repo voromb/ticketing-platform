@@ -103,6 +103,11 @@ export const routes: Routes = [
         path: 'list',
         loadComponent: () =>
           import('./pages/restaurant-admin/restaurant-list/restaurant-list.component').then((m) => m.RestaurantListComponent),
+      },
+      {
+        path: 'reservations',
+        loadComponent: () =>
+          import('./pages/restaurant-admin/restaurant-reservations/restaurant-reservations.component').then((m) => m.RestaurantReservationsComponent),
       }
     ]
   },
@@ -126,6 +131,11 @@ export const routes: Routes = [
         path: 'list',
         loadComponent: () =>
           import('./pages/travel-admin/travel-list/travel-list.component').then((m) => m.TravelListComponent),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () =>
+          import('./pages/travel-admin/travel-bookings/travel-bookings.component').then((m) => m.TravelBookingsComponent),
       }
     ]
   },

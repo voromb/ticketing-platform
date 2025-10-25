@@ -23,6 +23,7 @@ export interface Restaurant {
   menu: any[];
   acceptsReservations: boolean;
   reservationDurationMinutes: number;
+  reservationPrice: number;
   status: string;
   isActive: boolean;
   rating?: number;

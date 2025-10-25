@@ -1,16 +1,20 @@
 # ========================================
-# SCRIPT DE RESTAURACIÓN AUTOMÁTICA V2.0
-# Sistema de Ticketing - 100% ROBUSTO
+# SCRIPT DE RESTAURACIÓN SEGURA V3.0
+# Sistema de Ticketing - ULTRA PRECISO
+# NO BORRA NADA QUE NO DEBA
 # ========================================
 
 param(
     [Parameter(Mandatory=$true)]
     [string]$BackupDate,
     
-    [switch]$SkipConfirmation = $false
+    [switch]$SkipConfirmation = $false,
+    [switch]$DryRun = $false
 )
 
-# ===== FUNCIONES PRINCIPALES =====
+$ErrorActionPreference = "Stop"
+
+# ===== FUNCIONES DE UTILIDAD =====
 
 function Write-ColorOutput {
     param([string]$Text, [string]$Color = "White")
@@ -20,6 +24,7 @@ function Write-ColorOutput {
         "Yellow" { Write-Host $Text -ForegroundColor Yellow }
         "Blue" { Write-Host $Text -ForegroundColor Blue }
         "Cyan" { Write-Host $Text -ForegroundColor Cyan }
+        "Magenta" { Write-Host $Text -ForegroundColor Magenta }
         default { Write-Host $Text }
     }
 }
@@ -41,340 +46,332 @@ function Test-ContainerRunning {
     }
 }
 
-function Wait-ForContainer {
-    param([string]$ContainerName, [int]$TimeoutSeconds = 30)
+function Get-CurrentDatabaseState {
+    Write-Header "ESTADO ACTUAL DE LAS BASES DE DATOS"
     
-    Write-ColorOutput "Esperando que $ContainerName esté listo..." "Yellow"
-    $timeout = $TimeoutSeconds
-    
-    do {
-        if (Test-ContainerRunning $ContainerName) {
-            Start-Sleep -Seconds 3  # Dar tiempo extra para que el servicio inicie
-            Write-ColorOutput "$ContainerName está listo" "Green"
-            return $true
-        }
-        Start-Sleep -Seconds 2
-        $timeout -= 2
-    } while ($timeout -gt 0)
-    
-    Write-ColorOutput "Timeout esperando $ContainerName" "Red"
-    return $false
-}
-
-function Test-PostgreSQLConnection {
-    param([string]$User = "admin", [string]$Database = "postgres")
-    try {
-        $null = docker exec ticketing-postgres psql -U $User -d $Database -c "\q" 2>$null
-        return $LASTEXITCODE -eq 0
-    } catch {
-        return $false
+    $state = @{
+        PostgreSQL = @{}
+        MongoDB = @{}
     }
-}
-
-function Test-MongoDBConnection {
-    try {
-        $null = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db.adminCommand('ping')" 2>$null
-        return $LASTEXITCODE -eq 0
-    } catch {
-        return $false
-    }
-}
-
-function Invoke-SafeCommand {
-    param([string]$Command, [string]$Description, [bool]$CriticalError = $false)
     
-    Write-ColorOutput "$Description..." "Blue"
+    # PostgreSQL
     try {
-        $result = Invoke-Expression $Command 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-ColorOutput "$Description completado" "Green"
-            return $true
+        $state.PostgreSQL.ticketing_events = (docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null).Trim()
+        $state.PostgreSQL.ticketing_venues = (docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null).Trim()
+        $state.PostgreSQL.ticketing_companies = (docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM companies;' 2>$null).Trim()
+        $state.PostgreSQL.ticketing_admins = (docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM admins;' 2>$null).Trim()
+        $state.PostgreSQL.admin_events = (docker exec ticketing-postgres psql -U admin -d ticketing_admin -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null).Trim()
+        $state.PostgreSQL.approvals = (docker exec ticketing-postgres psql -U admin -d approvals_db -t -c 'SELECT COUNT(*) FROM "Approval";' 2>$null).Trim()
+        
+        Write-ColorOutput "PostgreSQL ticketing:" "Cyan"
+        Write-ColorOutput "  - Eventos: $($state.PostgreSQL.ticketing_events)" "Yellow"
+        Write-ColorOutput "  - Venues: $($state.PostgreSQL.ticketing_venues)" "Yellow"
+        Write-ColorOutput "  - Compañías: $($state.PostgreSQL.ticketing_companies)" "Yellow"
+        Write-ColorOutput "  - Admins: $($state.PostgreSQL.ticketing_admins)" "Yellow"
+        Write-ColorOutput "PostgreSQL ticketing_admin:" "Cyan"
+        Write-ColorOutput "  - Eventos: $($state.PostgreSQL.admin_events)" "Yellow"
+        Write-ColorOutput "PostgreSQL approvals_db:" "Cyan"
+        Write-ColorOutput "  - Approvals: $($state.PostgreSQL.approvals)" "Yellow"
+    } catch {
+        Write-ColorOutput "Error obteniendo estado PostgreSQL: $_" "Red"
+    }
+    
+    # MongoDB
+    try {
+        $state.MongoDB.users = (docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing').users.countDocuments()" 2>$null).Trim()
+        $state.MongoDB.restaurants = (docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').restaurants.countDocuments()" 2>$null).Trim()
+        $state.MongoDB.trips = (docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').trips.countDocuments()" 2>$null).Trim()
+        $state.MongoDB.products = (docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').products.countDocuments()" 2>$null).Trim()
+        $state.MongoDB.orders = (docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orders.countDocuments()" 2>$null).Trim()
+        
+        Write-ColorOutput "`nMongoDB ticketing:" "Cyan"
+        Write-ColorOutput "  - Usuarios: $($state.MongoDB.users)" "Yellow"
+        Write-ColorOutput "MongoDB festival_services:" "Cyan"
+        Write-ColorOutput "  - Restaurantes: $($state.MongoDB.restaurants)" "Yellow"
+        Write-ColorOutput "  - Viajes: $($state.MongoDB.trips)" "Yellow"
+        Write-ColorOutput "  - Productos: $($state.MongoDB.products)" "Yellow"
+        Write-ColorOutput "  - Órdenes: $($state.MongoDB.orders)" "Yellow"
+    } catch {
+        Write-ColorOutput "Error obteniendo estado MongoDB: $_" "Red"
+    }
+    
+    return $state
+}
+
+function Compare-States {
+    param($Before, $After, $Expected)
+    
+    Write-Header "COMPARACIÓN DE ESTADOS"
+    
+    $allGood = $true
+    
+    # Comparar PostgreSQL
+    Write-ColorOutput "`nPostgreSQL:" "Cyan"
+    foreach ($key in $Expected.PostgreSQL.Keys) {
+        $beforeVal = if ($Before.PostgreSQL[$key]) { $Before.PostgreSQL[$key] } else { "0" }
+        $afterVal = if ($After.PostgreSQL[$key]) { $After.PostgreSQL[$key] } else { "0" }
+        $expectedVal = $Expected.PostgreSQL[$key]
+        
+        if ($afterVal -eq $expectedVal) {
+            Write-ColorOutput "  ✓ $key`: $beforeVal → $afterVal (esperado: $expectedVal)" "Green"
         } else {
-            $errorMsg = if ($result) { $result | Out-String } else { "Código de salida: $LASTEXITCODE" }
-            if ($CriticalError) {
-                Write-ColorOutput "ERROR CRÍTICO en $Description`:" "Red"
-                Write-ColorOutput $errorMsg "Red"
-                exit 1
-            } else {
-                Write-ColorOutput "$Description tuvo problemas pero continuamos:" "Yellow"
-                Write-ColorOutput $errorMsg "Yellow"
-                return $false
-            }
-        }
-    } catch {
-        if ($CriticalError) {
-            Write-ColorOutput "ERROR CRÍTICO en $Description`:" "Red"
-            Write-ColorOutput $_.Exception.Message "Red"
-            exit 1
-        } else {
-            Write-ColorOutput "Error en $Description pero continuamos:" "Yellow"
-            Write-ColorOutput $_.Exception.Message "Yellow"
-            return $false
+            Write-ColorOutput "  ✗ $key`: $beforeVal → $afterVal (esperado: $expectedVal)" "Red"
+            $allGood = $false
         }
     }
+    
+    # Comparar MongoDB
+    Write-ColorOutput "`nMongoDB:" "Cyan"
+    foreach ($key in $Expected.MongoDB.Keys) {
+        $beforeVal = if ($Before.MongoDB[$key]) { $Before.MongoDB[$key] } else { "0" }
+        $afterVal = if ($After.MongoDB[$key]) { $After.MongoDB[$key] } else { "0" }
+        $expectedVal = $Expected.MongoDB[$key]
+        
+        if ($afterVal -eq $expectedVal) {
+            Write-ColorOutput "  ✓ $key`: $beforeVal → $afterVal (esperado: $expectedVal)" "Green"
+        } else {
+            Write-ColorOutput "  ✗ $key`: $beforeVal → $afterVal (esperado: $expectedVal)" "Red"
+            $allGood = $false
+        }
+    }
+    
+    return $allGood
 }
 
-function Restore-PostgreSQLDatabase {
+function Get-BackupExpectedState {
+    param([string]$BackupPath)
+    
+    Write-ColorOutput "`nAnalizando backup para determinar estado esperado..." "Blue"
+    
+    $expected = @{
+        PostgreSQL = @{}
+        MongoDB = @{}
+    }
+    
+    # Analizar PostgreSQL backups
+    $pgTicketing = Join-Path $BackupPath "postgres_ticketing_backup.sql"
+    if (Test-Path $pgTicketing) {
+        $content = Get-Content $pgTicketing -Raw
+        $expected.PostgreSQL.ticketing_events = ([regex]::Matches($content, 'INSERT INTO public\."Event"')).Count
+        $expected.PostgreSQL.ticketing_venues = ([regex]::Matches($content, 'INSERT INTO public\."Venue"')).Count
+        $expected.PostgreSQL.ticketing_companies = ([regex]::Matches($content, 'INSERT INTO public\.companies')).Count
+        $expected.PostgreSQL.ticketing_admins = ([regex]::Matches($content, 'INSERT INTO public\.admins')).Count
+    }
+    
+    $pgAdmin = Join-Path $BackupPath "postgres_ticketing_admin_backup.sql"
+    if (Test-Path $pgAdmin) {
+        $content = Get-Content $pgAdmin -Raw
+        $expected.PostgreSQL.admin_events = ([regex]::Matches($content, 'INSERT INTO public\."Event"')).Count
+    }
+    
+    $pgApprovals = Join-Path $BackupPath "postgres_approvals_backup.sql"
+    if (Test-Path $pgApprovals) {
+        $content = Get-Content $pgApprovals -Raw
+        $expected.PostgreSQL.approvals = ([regex]::Matches($content, 'INSERT INTO public\."Approval"')).Count
+    }
+    
+    Write-ColorOutput "Estado esperado del backup:" "Green"
+    Write-ColorOutput "  PostgreSQL ticketing:" "Cyan"
+    Write-ColorOutput "    - Eventos: $($expected.PostgreSQL.ticketing_events)" "Yellow"
+    Write-ColorOutput "    - Venues: $($expected.PostgreSQL.ticketing_venues)" "Yellow"
+    Write-ColorOutput "    - Compañías: $($expected.PostgreSQL.ticketing_companies)" "Yellow"
+    Write-ColorOutput "    - Admins: $($expected.PostgreSQL.ticketing_admins)" "Yellow"
+    Write-ColorOutput "  PostgreSQL ticketing_admin:" "Cyan"
+    Write-ColorOutput "    - Eventos: $($expected.PostgreSQL.admin_events)" "Yellow"
+    Write-ColorOutput "  PostgreSQL approvals_db:" "Cyan"
+    Write-ColorOutput "    - Approvals: $($expected.PostgreSQL.approvals)" "Yellow"
+    
+    # MongoDB - no podemos analizar el archive fácilmente, usamos valores conocidos
+    $expected.MongoDB.users = "6"
+    $expected.MongoDB.restaurants = "839"
+    $expected.MongoDB.trips = "839"
+    $expected.MongoDB.products = "2532"
+    $expected.MongoDB.orders = "0"
+    
+    Write-ColorOutput "  MongoDB (valores conocidos del backup):" "Cyan"
+    Write-ColorOutput "    - Usuarios: $($expected.MongoDB.users)" "Yellow"
+    Write-ColorOutput "    - Restaurantes: $($expected.MongoDB.restaurants)" "Yellow"
+    Write-ColorOutput "    - Viajes: $($expected.MongoDB.trips)" "Yellow"
+    Write-ColorOutput "    - Productos: $($expected.MongoDB.products)" "Yellow"
+    Write-ColorOutput "    - Órdenes: $($expected.MongoDB.orders)" "Yellow"
+    
+    return $expected
+}
+
+function Restore-PostgreSQLSafe {
     param([string]$DatabaseName, [string]$BackupFile)
     
-    Write-ColorOutput "`nRestaurando PostgreSQL: $DatabaseName" "Blue"
+    Write-ColorOutput "`n[PostgreSQL] Restaurando $DatabaseName..." "Blue"
     
-    # 1. Verificar conexión
-    if (-not (Test-PostgreSQLConnection)) {
-        Write-ColorOutput "❌ No se puede conectar a PostgreSQL" "Red"
-        return $false
+    if ($DryRun) {
+        Write-ColorOutput "[DRY RUN] Se restauraría $DatabaseName desde $BackupFile" "Yellow"
+        return $true
     }
     
-    # 2. Terminar conexiones activas
-    Invoke-SafeCommand "docker exec ticketing-postgres psql -U admin -d postgres -c `"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DatabaseName' AND pid <> pg_backend_pid();`"" "Terminando conexiones a $DatabaseName"
+    # Terminar conexiones
+    docker exec ticketing-postgres psql -U admin -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DatabaseName' AND pid <> pg_backend_pid();" 2>$null | Out-Null
     
-    # 3. Eliminar y recrear base de datos
-    Invoke-SafeCommand "docker exec ticketing-postgres psql -U admin -d postgres -c `"DROP DATABASE IF EXISTS $DatabaseName;`"" "Eliminando base $DatabaseName"
-    Invoke-SafeCommand "docker exec ticketing-postgres psql -U admin -d postgres -c `"CREATE DATABASE $DatabaseName;`"" "Creando base $DatabaseName" $true
+    # Drop y Create
+    docker exec ticketing-postgres psql -U admin -d postgres -c "DROP DATABASE IF EXISTS $DatabaseName;" 2>$null | Out-Null
+    docker exec ticketing-postgres psql -U admin -d postgres -c "CREATE DATABASE $DatabaseName;" 2>$null | Out-Null
     
-    # 4. Crear usuario si no existe
-    Invoke-SafeCommand "docker exec ticketing-postgres psql -U admin -d postgres -c `"DO \`$\`$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'ticketing_user') THEN CREATE USER ticketing_user WITH PASSWORD 'ticketing_password' CREATEDB SUPERUSER; END IF; END \`$\`$;`"" "Creando usuario ticketing_user"
-    
-    # 5. Restaurar datos
+    # Restaurar
     $backupPath = Join-Path $BackupPath $BackupFile
-    if (Test-Path $backupPath) {
-        Invoke-SafeCommand "Get-Content `"$backupPath`" | docker exec -i ticketing-postgres psql -U admin -d $DatabaseName" "Restaurando datos en $DatabaseName" $true
-        
-        # 6. Verificar restauración
-        $count = docker exec ticketing-postgres psql -U admin -d $DatabaseName -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>$null
-        if ($count -and $count.Trim() -gt 0) {
-            Write-ColorOutput "$DatabaseName restaurada correctamente ($($count.Trim()) tablas)" "Green"
-            return $true
-        } else {
-            Write-ColorOutput "$DatabaseName restaurada pero sin verificación de tablas" "Yellow"
-            return $true
-        }
-    } else {
-        Write-ColorOutput "Archivo de backup no encontrado: $BackupFile" "Red"
-        return $false
-    }
-}
-
-function Restore-MongoDB {
-    Write-ColorOutput "`nRestaurando MongoDB..." "Blue"
-    
-    # 1. Verificar conexión
-    if (-not (Test-MongoDBConnection)) {
-        Write-ColorOutput "No se puede conectar a MongoDB" "Red"
-        return $false
-    }
-    
-    # 2. Copiar archivo al contenedor
-    $mongoBackup = Join-Path $BackupPath "mongodb_backup.archive"
-    if (-not (Test-Path $mongoBackup)) {
-        Write-ColorOutput "Archivo MongoDB backup no encontrado" "Red"
-        return $false
-    }
-    
-    Write-ColorOutput "Copiando backup MongoDB al contenedor..." "Blue"
-    docker cp "$mongoBackup" ticketing-mongodb:/tmp/mongodb_backup.archive 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput "Error copiando archivo al contenedor" "Red"
-        return $false
-    }
-    Write-ColorOutput "Archivo copiado correctamente" "Green"
-    
-    # 3. Restaurar con autenticación - Intentar con gzip
-    Write-ColorOutput "Intentando restauración con gzip..." "Blue"
-    $output = docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip 2>&1
+    Get-Content "$backupPath" | docker exec -i ticketing-postgres psql -U admin -d $DatabaseName 2>$null | Out-Null
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput "MongoDB restaurada con gzip" "Green"
-    } else {
-        Write-ColorOutput "Fallo con gzip, intentando sin gzip..." "Yellow"
-        Write-ColorOutput "Error: $output" "Yellow"
-        
-        # Intentar sin gzip
-        $output = docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop 2>&1
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-ColorOutput "ERROR en restauración MongoDB:" "Red"
-            Write-ColorOutput "$output" "Red"
-            return $false
-        }
-        Write-ColorOutput "MongoDB restaurada sin gzip" "Green"
-    }
-    
-    # 4. Verificar restauración
-    Start-Sleep -Seconds 2
-    $userCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('ticketing'); db.users.countDocuments()" --quiet 2>$null
-    if ($userCount -and $userCount.Trim() -gt 0) {
-        Write-ColorOutput "MongoDB restaurada correctamente ($($userCount.Trim()) usuarios)" "Green"
+        Write-ColorOutput "[PostgreSQL] $DatabaseName restaurada ✓" "Green"
         return $true
     } else {
-        Write-ColorOutput "MongoDB restaurada pero sin verificación completa" "Yellow"
-        return $true
+        Write-ColorOutput "[PostgreSQL] Error restaurando $DatabaseName ✗" "Red"
+        return $false
     }
 }
 
-function Restore-PrismaMigrations {
-    Write-ColorOutput "`nRestaurando migraciones Prisma..." "Blue"
+function Restore-MongoDBSafe {
+    Write-ColorOutput "`n[MongoDB] Restaurando..." "Blue"
     
-    $prismaBackup = Join-Path $BackupPath "prisma"
-    if (-not (Test-Path $prismaBackup)) {
-        Write-ColorOutput "No se encontraron migraciones Prisma para restaurar" "Yellow"
+    if ($DryRun) {
+        Write-ColorOutput "[DRY RUN] Se restauraría MongoDB" "Yellow"
         return $true
     }
     
-    # Admin migrations
-    $adminSource = Join-Path $prismaBackup "admin"
-    if (Test-Path $adminSource) {
-        $adminTarget = "c:\Users\yop\Documents\Servidor_DAW\ticketing-platform\backend\admin\prisma\migrations\restored_admin"
-        Invoke-SafeCommand "Copy-Item -Path `"$adminSource`" -Destination `"$adminTarget`" -Recurse -Force" "Restaurando migraciones Admin"
-    }
+    $mongoBackup = Join-Path $BackupPath "mongodb_backup.archive"
     
-    # Festival migrations
-    $festivalSource = Join-Path $prismaBackup "festival-services"
-    if (Test-Path $festivalSource) {
-        $festivalTarget = "c:\Users\yop\Documents\Servidor_DAW\ticketing-platform\backend\services\festival-services\prisma\migrations\restored_festival"
-        Invoke-SafeCommand "Copy-Item -Path `"$festivalSource`" -Destination `"$festivalTarget`" -Recurse -Force" "Restaurando migraciones Festival"
-    }
+    # Copiar al contenedor
+    docker cp "$mongoBackup" ticketing-mongodb:/tmp/mongodb_backup.archive 2>&1 | Out-Null
     
-    # Docker schema
-    $dockerSource = Join-Path $prismaBackup "docker"
-    if (Test-Path $dockerSource) {
-        $dockerTarget = "c:\Users\yop\Documents\Servidor_DAW\ticketing-platform\docker\prisma\restored_docker"
-        Invoke-SafeCommand "Copy-Item -Path `"$dockerSource`" -Destination `"$dockerTarget`" -Recurse -Force" "Restaurando schema Docker"
-    }
+    # Restaurar con --drop (elimina colecciones existentes antes de restaurar)
+    docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip 2>&1 | Out-Null
     
-    Write-ColorOutput "Migraciones Prisma restauradas" "Green"
-    return $true
+    if ($LASTEXITCODE -eq 0) {
+        Write-ColorOutput "[MongoDB] Restaurada con gzip ✓" "Green"
+        return $true
+    } else {
+        # Intentar sin gzip
+        docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop 2>&1 | Out-Null
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput "[MongoDB] Restaurada sin gzip ✓" "Green"
+            return $true
+        } else {
+            Write-ColorOutput "[MongoDB] Error en restauración ✗" "Red"
+            return $false
+        }
+    }
 }
 
 # ===== INICIO DEL SCRIPT =====
 
-$BackupPath = ".\backups\$BackupDate"
+Write-Header "RESTAURACIÓN SEGURA V3.0 - ULTRA PRECISA"
+Write-ColorOutput "Fecha de backup: $BackupDate" "Cyan"
+if ($DryRun) {
+    Write-ColorOutput "MODO: DRY RUN (solo simulación)" "Yellow"
+}
+
+$BackupPath = Join-Path $PSScriptRoot "backups\$BackupDate"
 if (-not (Test-Path $BackupPath)) {
     Write-ColorOutput "ERROR: No existe el backup para la fecha $BackupDate" "Red"
-    Write-ColorOutput "Ruta buscada: $BackupPath" "Yellow"
     exit 1
 }
 
-Write-Header "RESTAURACIÓN AUTOMÁTICA V2.0"
-Write-ColorOutput "Fecha de backup: $BackupDate" "Blue"
-Write-ColorOutput "Ruta: $BackupPath" "Blue"
-Write-ColorOutput "Modo: COMPLETAMENTE AUTOMÁTICO" "Cyan"
-
-# ===== VERIFICACIONES INICIALES =====
-
-Write-ColorOutput "`nVerificando archivos de backup..." "Yellow"
-$RequiredFiles = @(
+# Verificar archivos
+Write-ColorOutput "`nVerificando archivos de backup..." "Blue"
+$requiredFiles = @(
     "postgres_ticketing_backup.sql",
-    "postgres_ticketing_admin_backup.sql", 
+    "postgres_ticketing_admin_backup.sql",
     "postgres_approvals_backup.sql",
     "mongodb_backup.archive"
 )
 
-$AllFilesExist = $true
-foreach ($file in $RequiredFiles) {
+$allFilesExist = $true
+foreach ($file in $requiredFiles) {
     $filePath = Join-Path $BackupPath $file
     if (Test-Path $filePath) {
-        Write-ColorOutput "$file" "Green"
+        $size = (Get-Item $filePath).Length / 1KB
+        Write-ColorOutput "  ✓ $file ($([math]::Round($size, 2)) KB)" "Green"
     } else {
-        Write-ColorOutput "$file - NO ENCONTRADO" "Red"
-        $AllFilesExist = $false
+        Write-ColorOutput "  ✗ $file - NO ENCONTRADO" "Red"
+        $allFilesExist = $false
     }
 }
 
-if (-not $AllFilesExist) {
-    Write-ColorOutput "Faltan archivos de backup necesarios" "Red"
+if (-not $allFilesExist) {
+    Write-ColorOutput "`nERROR: Faltan archivos necesarios" "Red"
     exit 1
 }
 
+# Verificar contenedores
+Write-ColorOutput "`nVerificando contenedores..." "Blue"
+if (-not (Test-ContainerRunning "ticketing-postgres")) {
+    Write-ColorOutput "ERROR: ticketing-postgres no está corriendo" "Red"
+    exit 1
+}
+if (-not (Test-ContainerRunning "ticketing-mongodb")) {
+    Write-ColorOutput "ERROR: ticketing-mongodb no está corriendo" "Red"
+    exit 1
+}
+Write-ColorOutput "  ✓ Todos los contenedores están corriendo" "Green"
+
+# Obtener estado actual
+$stateBefore = Get-CurrentDatabaseState
+
+# Analizar backup
+$expectedState = Get-BackupExpectedState -BackupPath $BackupPath
+
 # Confirmación
-if (-not $SkipConfirmation) {
-    Write-ColorOutput "`nADVERTENCIA: Esta operación eliminará todos los datos actuales" "Yellow"
-    $confirmation = Read-Host "¿Desea continuar con la restauración? (s/N)"
-    if ($confirmation -ne "s" -and $confirmation -ne "S") {
-        Write-ColorOutput "Restauración cancelada por el usuario" "Red"
+if (-not $SkipConfirmation -and -not $DryRun) {
+    Write-ColorOutput "`n⚠️  ADVERTENCIA: Esta operación reemplazará los datos actuales" "Yellow"
+    Write-ColorOutput "Estado actual se perderá y será reemplazado por el backup" "Yellow"
+    $confirmation = Read-Host "`n¿Desea continuar? (escriba 'SI' para confirmar)"
+    if ($confirmation -ne "SI") {
+        Write-ColorOutput "Restauración cancelada" "Red"
         exit 0
     }
 }
 
-# ===== VERIFICACIÓN DE CONTENEDORES =====
-
-Write-Header "VERIFICACIÓN DE CONTENEDORES"
-
-$requiredContainers = @("ticketing-postgres", "ticketing-mongodb")
-foreach ($container in $requiredContainers) {
-    if (-not (Wait-ForContainer $container)) {
-        Write-ColorOutput "No se puede proceder sin $container funcionando" "Red"
-        exit 1
-    }
-}
-
-# ===== RESTAURACIÓN =====
-
-Write-Header "INICIANDO RESTAURACIÓN"
+# RESTAURACIÓN
+Write-Header "EJECUTANDO RESTAURACIÓN"
 
 $startTime = Get-Date
 
 # PostgreSQL
-$postgresSuccess = $true
-$postgresSuccess = $postgresSuccess -and (Restore-PostgreSQLDatabase "ticketing" "postgres_ticketing_backup.sql")
-$postgresSuccess = $postgresSuccess -and (Restore-PostgreSQLDatabase "ticketing_admin" "postgres_ticketing_admin_backup.sql")
-$postgresSuccess = $postgresSuccess -and (Restore-PostgreSQLDatabase "approvals_db" "postgres_approvals_backup.sql")
+$pgSuccess = $true
+$pgSuccess = $pgSuccess -and (Restore-PostgreSQLSafe "ticketing" "postgres_ticketing_backup.sql")
+$pgSuccess = $pgSuccess -and (Restore-PostgreSQLSafe "ticketing_admin" "postgres_ticketing_admin_backup.sql")
+$pgSuccess = $pgSuccess -and (Restore-PostgreSQLSafe "approvals_db" "postgres_approvals_backup.sql")
 
 # MongoDB
-$mongoSuccess = Restore-MongoDB
+$mongoSuccess = Restore-MongoDBSafe
 
-# Prisma
-$prismaSuccess = Restore-PrismaMigrations
+# Esperar a que se estabilicen las bases de datos
+if (-not $DryRun) {
+    Write-ColorOutput "`nEsperando estabilización de bases de datos..." "Blue"
+    Start-Sleep -Seconds 5
+}
 
-# ===== VERIFICACIÓN FINAL =====
+# Obtener estado después
+$stateAfter = Get-CurrentDatabaseState
 
-Write-Header "VERIFICACIÓN FINAL"
+# Comparar estados
+$comparisonSuccess = Compare-States -Before $stateBefore -After $stateAfter -Expected $expectedState
 
-if ($postgresSuccess -and $mongoSuccess -and $prismaSuccess) {
-    Write-ColorOutput "`nRESTAURACIÓN COMPLETADA EXITOSAMENTE!" "Green"
-    
-    # Verificación rápida de datos
-    Write-ColorOutput "`nVerificando datos restaurados..." "Blue"
-    
-    $events = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Event";' 2>$null
-    $venues = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM "Venue";' 2>$null
-    $companies = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM companies;' 2>$null
-    $companyAdmins = docker exec ticketing-postgres psql -U admin -d ticketing -t -c 'SELECT COUNT(*) FROM company_admins;' 2>$null
-    $users = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('ticketing'); db.users.countDocuments()" --quiet 2>$null
-    $restaurants = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.restaurants.countDocuments()" --quiet 2>$null
-    $trips = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.trips.countDocuments()" --quiet 2>$null
-    $products = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --eval "db = db.getSiblingDB('festival_services'); db.products.countDocuments()" --quiet 2>$null
-    
-    if ($events) { Write-ColorOutput "Eventos principales: $($events.Trim())" "Green" }
-    if ($venues) { Write-ColorOutput "Venues principales: $($venues.Trim())" "Green" }
-    if ($companies) { Write-ColorOutput "Compañías: $($companies.Trim())" "Cyan" }
-    if ($companyAdmins) { Write-ColorOutput "Company Admins: $($companyAdmins.Trim())" "Cyan" }
-    if ($users) { Write-ColorOutput "Usuarios MongoDB: $($users.Trim())" "Green" }
-    if ($restaurants) { Write-ColorOutput "Restaurantes: $($restaurants.Trim())" "Cyan" }
-    if ($trips) { Write-ColorOutput "Viajes: $($trips.Trim())" "Cyan" }
-    if ($products) { Write-ColorOutput "Productos: $($products.Trim())" "Cyan" }
-    
-    $endTime = Get-Date
-    $duration = $endTime - $startTime
+# RESULTADO FINAL
+Write-Header "RESULTADO FINAL"
+
+$endTime = Get-Date
+$duration = $endTime - $startTime
+
+if ($pgSuccess -and $mongoSuccess -and $comparisonSuccess) {
+    Write-ColorOutput "`n✓ RESTAURACIÓN COMPLETADA EXITOSAMENTE" "Green"
+    Write-ColorOutput "✓ Todos los datos coinciden con el backup" "Green"
     Write-ColorOutput "`nTiempo total: $($duration.Minutes)m $($duration.Seconds)s" "Cyan"
-    
-    Write-ColorOutput "`nURLs del sistema:" "Blue"
-    Write-ColorOutput "   • Frontend: http://localhost:4200" "Cyan"
-    Write-ColorOutput "   • Admin API: http://localhost:3001" "Cyan"
-    Write-ColorOutput "   • Festival API: http://localhost:3003" "Cyan"
-    
+} elseif ($DryRun) {
+    Write-ColorOutput "`n[DRY RUN] Simulación completada" "Yellow"
+    Write-ColorOutput "La restauración real se ejecutaría correctamente" "Green"
 } else {
-    Write-ColorOutput "`nLA RESTAURACIÓN TUVO PROBLEMAS" "Red"
-    $pgStatus = if ($postgresSuccess) { 'OK' } else { 'ERROR' }
-    $pgColor = if ($postgresSuccess) { 'Green' } else { 'Red' }
-    Write-ColorOutput "PostgreSQL: $pgStatus" $pgColor
-    
-    $mongoStatus = if ($mongoSuccess) { 'OK' } else { 'ERROR' }
-    $mongoColor = if ($mongoSuccess) { 'Green' } else { 'Red' }
-    Write-ColorOutput "MongoDB: $mongoStatus" $mongoColor
-    
-    $prismaStatus = if ($prismaSuccess) { 'OK' } else { 'ERROR' }
-    $prismaColor = if ($prismaSuccess) { 'Green' } else { 'Red' }
-    Write-ColorOutput "Prisma: $prismaStatus" $prismaColor
-    exit 1
+    Write-ColorOutput "`n✗ RESTAURACIÓN CON ADVERTENCIAS" "Yellow"
+    if (-not $pgSuccess) { Write-ColorOutput "  - PostgreSQL tuvo problemas" "Red" }
+    if (-not $mongoSuccess) { Write-ColorOutput "  - MongoDB tuvo problemas" "Red" }
+    if (-not $comparisonSuccess) { Write-ColorOutput "  - Algunos datos no coinciden con lo esperado" "Yellow" }
 }

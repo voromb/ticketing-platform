@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('api/upload')
+@Controller('upload')
 export class UploadController {
   private readonly uploadPath = join(process.cwd(), 'uploads');
 
@@ -31,6 +31,7 @@ export class UploadController {
       join(this.uploadPath, 'venues'),
       join(this.uploadPath, 'categories'),
       join(this.uploadPath, 'subcategories'),
+      join(this.uploadPath, 'products'),
     ];
 
     directories.forEach((dir) => {
@@ -176,6 +177,42 @@ export class UploadController {
 
     const baseUrl = process.env.API_URL || 'http://localhost:3004';
     const imageUrls = files.map((file) => `${baseUrl}/uploads/subcategories/${file.filename}`);
+
+    return {
+      message: 'Imágenes subidas exitosamente',
+      images: imageUrls,
+      count: imageUrls.length,
+    };
+  }
+
+  @Post('products')
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: join(process.cwd(), 'uploads', 'products'),
+        filename: (req, file, cb) => {
+          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowedMimes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Tipo de archivo no permitido'), false);
+        }
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async uploadProductImages(@UploadedFiles() files: Express.Multer.File[]) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No se han proporcionado archivos');
+    }
+
+    const baseUrl = process.env.API_URL || 'http://localhost:3004';
+    const imageUrls = files.map((file) => `${baseUrl}/uploads/products/${file.filename}`);
 
     return {
       message: 'Imágenes subidas exitosamente',

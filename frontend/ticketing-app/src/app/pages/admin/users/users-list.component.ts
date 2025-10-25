@@ -675,8 +675,11 @@ import Swal from 'sweetalert2';
               </svg>
             </div>
             <h3 class="text-lg leading-6 font-medium text-white mb-4">
-              Promocionar a Administrador
+              Promocionar a Company Admin
             </h3>
+            <p class="text-sm text-slate-400 mb-4">
+              Asigna un usuario como administrador de una compañía de servicios (Restaurantes, Viajes o Merchandising)
+            </p>
 
             <div class="mt-2 text-left">
               <!-- Búsqueda de usuario -->
@@ -743,6 +746,48 @@ import Swal from 'sweetalert2';
                   class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                 ></textarea>
               </div>
+
+              <!-- Tipo de Administrador -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Tipo de Administrador *</label
+                >
+                <select
+                  [(ngModel)]="selectedCompanyType"
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="RESTAURANT">🍽️ Administrador de Restaurantes</option>
+                  <option value="TRAVEL">✈️ Administrador de Viajes</option>
+                  <option value="MERCHANDISING">🛍️ Administrador de Merchandising</option>
+                </select>
+              </div>
+
+              <!-- Región -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Región *</label
+                >
+                <select
+                  [(ngModel)]="selectedRegion"
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="SPAIN">🇪🇸 España</option>
+                  <option value="EUROPE">🇪🇺 Europa</option>
+                </select>
+              </div>
+
+              <!-- Nombre de Compañía -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-300 mb-2"
+                  >Nombre de la Compañía *</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="companyName"
+                  placeholder="Ej: Restaurantes Gourmet S.L."
+                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                />
+              </div>
             </div>
 
             <div class="flex justify-center space-x-4 px-4 py-3">
@@ -754,10 +799,10 @@ import Swal from 'sweetalert2';
               </button>
               <button
                 (click)="confirmPromoteToAdmin()"
-                [disabled]="!selectedUserForAdmin || !adminPromotionReason"
+                [disabled]="!selectedUserForAdmin || !adminPromotionReason || !companyName"
                 class="px-4 py-2 bg-red-400 text-white text-base font-medium rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Promocionar a Admin
+                Promocionar a Company Admin
               </button>
             </div>
           </div>
@@ -921,6 +966,9 @@ export class UsersListComponent implements OnInit {
   selectedUserForAdmin: User | null = null;
   adminPromotionReason = '';
   adminPromotionNotes = '';
+  selectedCompanyType = 'RESTAURANT'; // RESTAURANT, TRAVEL, MERCHANDISING
+  selectedRegion = 'SPAIN'; // SPAIN, EUROPE
+  companyName = '';
 
   constructor(
     private adminService: AdminService,
@@ -1261,33 +1309,57 @@ export class UsersListComponent implements OnInit {
   }
 
   confirmPromoteToAdmin() {
-    if (!this.selectedUserForAdmin || !this.adminPromotionReason) {
+    if (!this.selectedUserForAdmin || !this.adminPromotionReason || !this.companyName) {
       Swal.fire({
         icon: 'warning',
         title: 'Datos incompletos',
-        text: 'Por favor selecciona un usuario y proporciona una razón.',
+        text: 'Por favor completa todos los campos requeridos.',
         confirmButtonText: 'Entendido',
       });
       return;
     }
 
-    const data = {
-      reason: this.adminPromotionReason,
-      notes: this.adminPromotionNotes || 'Promoción a administrador desde panel de gestión',
+    const companyTypeNames: any = {
+      'RESTAURANT': 'Restaurantes',
+      'TRAVEL': 'Viajes',
+      'MERCHANDISING': 'Merchandising'
     };
 
-    // Aquí iría la llamada al servicio para promocionar a admin
-    console.log('Promocionando a admin:', this.selectedUserForAdmin, data);
+    const regionNames: any = {
+      'SPAIN': 'España',
+      'EUROPE': 'Europa'
+    };
+
+    const data = {
+      userId: this.selectedUserForAdmin._id,
+      email: this.selectedUserForAdmin.email,
+      username: this.selectedUserForAdmin.username,
+      companyType: this.selectedCompanyType,
+      region: this.selectedRegion,
+      companyName: this.companyName,
+      reason: this.adminPromotionReason,
+      notes: this.adminPromotionNotes || 'Promoción a Company Admin desde panel de gestión',
+    };
+
+    // Aquí iría la llamada al servicio para promocionar a Company Admin
+    console.log('Promocionando a Company Admin:', data);
 
     // Simular promoción exitosa
     Swal.fire({
-      position: 'top-end',
       icon: 'success',
-      title: '¡Promoción a Admin exitosa!',
-      text: `${this.selectedUserForAdmin.username} ha sido promocionado a administrador exitosamente`,
-      showConfirmButton: false,
-      timer: 2000,
-      toast: true,
+      title: '¡Promoción exitosa!',
+      html: `
+        <div class="text-left">
+          <p><strong>${this.selectedUserForAdmin.username}</strong> ha sido promocionado a:</p>
+          <ul class="mt-2 space-y-1">
+            <li><strong>Compañía:</strong> ${this.companyName}</li>
+            <li><strong>Tipo:</strong> ${companyTypeNames[this.selectedCompanyType]}</li>
+            <li><strong>Región:</strong> ${regionNames[this.selectedRegion]}</li>
+          </ul>
+        </div>
+      `,
+      confirmButtonColor: '#ef4444',
+      timer: 5000
     });
     this.closeAdminPromotionModal();
     this.refreshData();
@@ -1300,5 +1372,8 @@ export class UsersListComponent implements OnInit {
     this.selectedUserForAdmin = null;
     this.adminPromotionReason = '';
     this.adminPromotionNotes = '';
+    this.selectedCompanyType = 'RESTAURANT';
+    this.selectedRegion = 'SPAIN';
+    this.companyName = '';
   }
 }

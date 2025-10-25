@@ -36,11 +36,24 @@ export class MerchandisingDashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.loading = true;
-    this.stats = this.merchandisingService.getProductStats();
-    this.loading = false;
+    this.cdr.markForCheck();
     
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 100);
+    this.merchandisingService.getProductStats().subscribe({
+      next: (stats) => {
+        this.stats = stats;
+        this.loading = false;
+        this.cdr.markForCheck();
+        
+        // Forzar detección de cambios adicional después de un momento
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Error cargando estadísticas:', error);
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 }
