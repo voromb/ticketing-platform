@@ -60,6 +60,28 @@ export class MerchandisingController {
     return this.merchandisingService.findAll();
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Obtener estadísticas de productos' })
+  @ApiResponse({ status: 200, description: 'Estadísticas de productos' })
+  async getStats() {
+    const products = await this.merchandisingService.findAll();
+    const totalProducts = products.length;
+    const totalStock = products.reduce((sum, p) => sum + (p.stock?.available || 0), 0);
+    const totalSold = products.reduce((sum, p) => sum + (p.soldUnits || 0), 0);
+    const activeProducts = products.filter(p => p.isActive).length;
+    const lowStock = products.filter(p => (p.stock?.available || 0) < 10).length;
+    const outOfStock = products.filter(p => (p.stock?.available || 0) === 0).length;
+
+    return {
+      totalProducts,
+      activeProducts,
+      totalStock,
+      totalSold,
+      lowStock,
+      outOfStock,
+    };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un producto por ID' })
   @ApiResponse({ status: 200, description: 'Producto encontrado' })
