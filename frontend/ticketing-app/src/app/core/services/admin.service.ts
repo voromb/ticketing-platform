@@ -55,6 +55,9 @@ export interface UserStats {
   byRole: {
     user: number;
     vip: number;
+    company_admin?: number;
+    admin?: number;
+    super_admin?: number;
   };
   recentUsers: User[];
 }

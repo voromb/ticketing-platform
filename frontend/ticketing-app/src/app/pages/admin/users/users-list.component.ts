@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AdminService, User, UserStats } from '../../../core/services/admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
@@ -73,6 +74,27 @@ import Swal from 'sweetalert2';
               ></path>
             </svg>
             Promocionar Admin
+          </button>
+          <button
+            *ngIf="isSuperAdmin"
+            (click)="openDemoteAdminModal()"
+            style="border-radius: 24px;"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 font-medium transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <svg
+              class="w-5 h-5 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
+              ></path>
+            </svg>
+            Degradar Admin
           </button>
           <button
             (click)="refreshData()"
@@ -196,6 +218,58 @@ import Swal from 'sweetalert2';
             </div>
           </div>
         </div>
+
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg
+                class="w-6 h-6 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                ></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-slate-400">Admins</p>
+              <p class="text-lg font-semibold text-red-600">{{ (userStats?.byRole?.admin || 0) + (userStats?.byRole?.super_admin || 0) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-6"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg
+                class="w-6 h-6 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                ></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-slate-400">Gestores</p>
+              <p class="text-lg font-semibold text-emerald-600">{{ userStats?.byRole?.company_admin || 0 }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -223,6 +297,9 @@ import Swal from 'sweetalert2';
               <option value="">Todos los roles</option>
               <option value="user">Usuario Normal</option>
               <option value="vip">Usuario VIP</option>
+              <option value="COMPANY_ADMIN">Gestor de Servicios</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
             </select>
           </div>
 
@@ -716,37 +793,6 @@ import Swal from 'sweetalert2';
                 <div class="text-sm text-slate-400">{{ selectedUserForAdmin.email }}</div>
               </div>
 
-              <!-- Razón de promoción -->
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-2"
-                  >Razón de la promoción *</label
-                >
-                <select
-                  [(ngModel)]="adminPromotionReason"
-                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
-                >
-                  <option value="">Selecciona una razón</option>
-                  <option value="experiencia_tecnica">Experiencia y conocimiento técnico</option>
-                  <option value="liderazgo">Capacidades de liderazgo</option>
-                  <option value="confianza">Confianza y responsabilidad demostrada</option>
-                  <option value="necesidad_operativa">Necesidad operativa del equipo</option>
-                  <option value="promocion_interna">Promoción interna</option>
-                </select>
-              </div>
-
-              <!-- Notas adicionales -->
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-2"
-                  >Notas adicionales</label
-                >
-                <textarea
-                  [(ngModel)]="adminPromotionNotes"
-                  rows="3"
-                  placeholder="Notas opcionales..."
-                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
-                ></textarea>
-              </div>
-
               <!-- Tipo de Administrador -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-300 mb-2"
@@ -756,9 +802,9 @@ import Swal from 'sweetalert2';
                   [(ngModel)]="selectedCompanyType"
                   class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-red-500 focus:border-red-500"
                 >
-                  <option value="RESTAURANT">🍽️ Administrador de Restaurantes</option>
-                  <option value="TRAVEL">✈️ Administrador de Viajes</option>
-                  <option value="MERCHANDISING">🛍️ Administrador de Merchandising</option>
+                  <option value="RESTAURANT">Administrador de Restaurantes</option>
+                  <option value="TRAVEL">Administrador de Viajes</option>
+                  <option value="MERCHANDISING">Administrador de Merchandising</option>
                 </select>
               </div>
 
@@ -799,7 +845,7 @@ import Swal from 'sweetalert2';
               </button>
               <button
                 (click)="confirmPromoteToAdmin()"
-                [disabled]="!selectedUserForAdmin || !adminPromotionReason || !companyName"
+                [disabled]="!selectedUserForAdmin || !companyName"
                 class="px-4 py-2 bg-red-400 text-white text-base font-medium rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Promocionar a Company Admin
@@ -974,7 +1020,8 @@ export class UsersListComponent implements OnInit {
     private adminService: AdminService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
   ngOnInit() {
     this.loadUsers();
@@ -1005,15 +1052,62 @@ export class UsersListComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
+    
+    // Obtener usuarios de MongoDB
     this.adminService.getUsers().subscribe({
       next: (response) => {
-        this.users = response.users;
-        this.filteredUsers = [...this.users];
-        this.loading = false;
+        const mongoUsers = response.users;
+        
+        // Obtener COMPANY_ADMIN de PostgreSQL
+        const token = localStorage.getItem('token');
+        this.http.get<any>('http://localhost:3003/api/user-management/company-admins', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).subscribe({
+          next: (companyAdminsResponse) => {
+            // Convertir COMPANY_ADMIN a formato de usuario
+            const companyAdminUsers = companyAdminsResponse.companyAdmins.map((ca: any) => ({
+              _id: ca.id,
+              username: ca.first_name + ' ' + ca.last_name,
+              email: ca.email,
+              firstName: ca.first_name,
+              lastName: ca.last_name,
+              role: 'COMPANY_ADMIN',
+              isActive: ca.is_active,
+              createdAt: ca.created_at,
+              updatedAt: ca.updated_at,
+              companyId: ca.company_id,
+              companyName: ca.companies?.name
+            }));
+            
+            // Obtener emails de COMPANY_ADMIN para filtrar duplicados
+            const companyAdminEmails = companyAdminUsers.map((ca: any) => ca.email);
+            
+            // Filtrar usuarios de MongoDB que NO sean COMPANY_ADMIN
+            const filteredMongoUsers = mongoUsers.filter((user: any) => 
+              !companyAdminEmails.includes(user.email)
+            );
+            
+            // Combinar: usuarios de MongoDB (sin duplicados) + COMPANY_ADMIN de PostgreSQL
+            this.users = [...filteredMongoUsers, ...companyAdminUsers];
+            this.filteredUsers = [...this.users];
+            this.loading = false;
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+            console.log('✅ Usuarios cargados:', this.users.length);
+            console.log('📊 COMPANY_ADMIN:', companyAdminUsers.length);
+
+            setTimeout(() => {
+              this.cdr.detectChanges();
+            }, 100);
+          },
+          error: (error) => {
+            console.error('Error loading company admins:', error);
+            // Si falla, al menos mostrar los usuarios de MongoDB
+            this.users = mongoUsers;
+            this.filteredUsers = [...this.users];
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading users:', error);
@@ -1028,9 +1122,32 @@ export class UsersListComponent implements OnInit {
       next: (response) => {
         this.userStats = response.stats;
 
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        // Obtener COMPANY_ADMIN de PostgreSQL para actualizar las estadísticas
+        const token = localStorage.getItem('token');
+        this.http.get<any>('http://localhost:3003/api/user-management/company-admins', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).subscribe({
+          next: (companyAdminsResponse) => {
+            // Añadir el conteo de COMPANY_ADMIN a las estadísticas
+            if (!this.userStats.byRole) {
+              this.userStats.byRole = { user: 0, vip: 0 };
+            }
+            this.userStats.byRole.company_admin = companyAdminsResponse.companyAdmins.length;
+            
+            // Actualizar el total
+            this.userStats.total = (this.userStats.total || 0) + companyAdminsResponse.companyAdmins.length;
+
+            setTimeout(() => {
+              this.cdr.detectChanges();
+            }, 100);
+          },
+          error: (error) => {
+            console.error('Error loading company admins stats:', error);
+            setTimeout(() => {
+              this.cdr.detectChanges();
+            }, 100);
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading user stats:', error);
@@ -1061,12 +1178,12 @@ export class UsersListComponent implements OnInit {
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
-      }
+      },
     });
-    
+
     this.loadUsers();
     this.loadUserStats();
-    
+
     // Cerrar el loading después de 1 segundo
     setTimeout(() => {
       Swal.close();
@@ -1103,6 +1220,8 @@ export class UsersListComponent implements OnInit {
         return 'Admin';
       case 'super_admin':
         return 'Super Admin';
+      case 'company_admin':
+        return 'Gestor de Servicios';
       default:
         return 'Usuario';
     }
@@ -1116,6 +1235,8 @@ export class UsersListComponent implements OnInit {
         return 'bg-red-100 text-red-800';
       case 'super_admin':
         return 'bg-purple-100 text-purple-800';
+      case 'company_admin':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -1257,11 +1378,33 @@ export class UsersListComponent implements OnInit {
   }
 
   getRoleClass(role: string): string {
-    return role === 'vip' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800';
+    switch (role?.toLowerCase()) {
+      case 'vip':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'company_admin':
+        return 'bg-green-100 text-green-800';
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'super_admin':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
+    }
   }
 
   getRoleText(role: string): string {
-    return role === 'vip' ? 'VIP' : 'Usuario';
+    switch (role?.toLowerCase()) {
+      case 'vip':
+        return 'VIP';
+      case 'company_admin':
+        return 'Gestor de Servicios';
+      case 'admin':
+        return 'Admin';
+      case 'super_admin':
+        return 'Super Admin';
+      default:
+        return 'Usuario';
+    }
   }
 
   getStatusClass(isActive: boolean): string {
@@ -1309,7 +1452,7 @@ export class UsersListComponent implements OnInit {
   }
 
   confirmPromoteToAdmin() {
-    if (!this.selectedUserForAdmin || !this.adminPromotionReason || !this.companyName) {
+    if (!this.selectedUserForAdmin || !this.companyName) {
       Swal.fire({
         icon: 'warning',
         title: 'Datos incompletos',
@@ -1320,49 +1463,95 @@ export class UsersListComponent implements OnInit {
     }
 
     const companyTypeNames: any = {
-      'RESTAURANT': 'Restaurantes',
-      'TRAVEL': 'Viajes',
-      'MERCHANDISING': 'Merchandising'
+      RESTAURANT: 'Restaurantes',
+      TRAVEL: 'Viajes',
+      MERCHANDISING: 'Merchandising',
     };
 
     const regionNames: any = {
-      'SPAIN': 'España',
-      'EUROPE': 'Europa'
+      SPAIN: 'España',
+      EUROPE: 'Europa',
     };
+
+    // Mapear tipo y región a companyId
+    const companyIds: any = {
+      RESTAURANT_SPAIN: 'e4431741-8685-4b0d-8363-afde158f14a3',
+      RESTAURANT_EUROPE: 'f26b646d-d38c-4ee4-a43f-bb8882448bb6',
+      TRAVEL_SPAIN: '2e58e5e8-e565-40a0-ba46-c5ea7fd830bd',
+      TRAVEL_EUROPE: '2d14e024-2f7a-4b22-96a9-e7e5ecd8406b',
+      MERCHANDISING_SPAIN: 'a1caef6a-8cb0-4c04-b95c-fd2900a20045',
+      MERCHANDISING_EUROPE: '1f663db9-f05c-4c1c-b46c-54de1588d5b8',
+    };
+
+    const companyKey = `${this.selectedCompanyType}_${this.selectedRegion}`;
+    const companyId = companyIds[companyKey];
 
     const data = {
-      userId: this.selectedUserForAdmin._id,
-      email: this.selectedUserForAdmin.email,
-      username: this.selectedUserForAdmin.username,
-      companyType: this.selectedCompanyType,
-      region: this.selectedRegion,
-      companyName: this.companyName,
-      reason: this.adminPromotionReason,
-      notes: this.adminPromotionNotes || 'Promoción a Company Admin desde panel de gestión',
+      companyId: companyId,
+      serviceType: this.selectedCompanyType,
+      reason: 'Promoción desde panel de administración',
+      notes: 'Promoción a Company Admin desde panel de gestión',
     };
 
-    // Aquí iría la llamada al servicio para promocionar a Company Admin
-    console.log('Promocionando a Company Admin:', data);
+    // Llamada real al backend
+    const token = localStorage.getItem('token');
+    const username = this.selectedUserForAdmin?.username || 'Usuario';
+    const userId = this.selectedUserForAdmin?._id;
 
-    // Simular promoción exitosa
-    Swal.fire({
-      icon: 'success',
-      title: '¡Promoción exitosa!',
-      html: `
-        <div class="text-left">
-          <p><strong>${this.selectedUserForAdmin.username}</strong> ha sido promocionado a:</p>
-          <ul class="mt-2 space-y-1">
-            <li><strong>Compañía:</strong> ${this.companyName}</li>
-            <li><strong>Tipo:</strong> ${companyTypeNames[this.selectedCompanyType]}</li>
-            <li><strong>Región:</strong> ${regionNames[this.selectedRegion]}</li>
-          </ul>
-        </div>
-      `,
-      confirmButtonColor: '#ef4444',
-      timer: 5000
-    });
-    this.closeAdminPromotionModal();
-    this.refreshData();
+    if (!userId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo obtener el ID del usuario',
+        confirmButtonColor: '#ef4444',
+      });
+      return;
+    }
+
+    this.http
+      .post(`http://localhost:3003/api/user-management/${userId}/promote-company-admin`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .subscribe({
+        next: (response: any) => {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Promoción exitosa!',
+            html: `
+            <div class="text-left">
+              <p><strong>${username}</strong> ha sido promocionado a Company Admin:</p>
+              <ul class="mt-2 space-y-1">
+                <li><strong>Compañía:</strong> ${this.companyName}</li>
+                <li><strong>Tipo:</strong> ${companyTypeNames[this.selectedCompanyType]}</li>
+                <li><strong>Región:</strong> ${regionNames[this.selectedRegion]}</li>
+              </ul>
+              <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                <p class="text-sm font-semibold text-green-800">✅ Acceso al panel:</p>
+                <p class="text-sm text-green-700 mt-1"><strong>Email:</strong> ${
+                  response.companyAdmin?.email || 'N/A'
+                }</p>
+                <p class="text-sm text-green-700"><strong>Contraseña:</strong> Su contraseña actual</p>
+                <p class="text-xs text-green-600 mt-2">El usuario puede acceder al panel de ${companyTypeNames[this.selectedCompanyType]} con su email y contraseña habitual.</p>
+              </div>
+            </div>
+          `,
+            confirmButtonColor: '#ef4444',
+            width: 600,
+            timer: 12000,
+          });
+          this.closeAdminPromotionModal();
+          this.refreshData();
+        },
+        error: (error: any) => {
+          console.error('Error promocionando a Company Admin:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error en la promoción',
+            text: error.error?.error || 'No se pudo promocionar el usuario a Company Admin',
+            confirmButtonColor: '#ef4444',
+          });
+        },
+      });
   }
 
   closeAdminPromotionModal() {
@@ -1375,5 +1564,105 @@ export class UsersListComponent implements OnInit {
     this.selectedCompanyType = 'RESTAURANT';
     this.selectedRegion = 'SPAIN';
     this.companyName = '';
+  }
+
+  // ==================== DEGRADAR COMPANY_ADMIN ====================
+  
+  openDemoteAdminModal() {
+    // Filtrar solo usuarios que son COMPANY_ADMIN
+    const companyAdmins = this.users.filter((user: any) => user.role === 'COMPANY_ADMIN');
+    
+    if (companyAdmins.length === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sin Company Admins',
+        text: 'No hay usuarios con rol de Company Admin para degradar.',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
+    // Mostrar lista de COMPANY_ADMIN para seleccionar
+    const options: any = {};
+    companyAdmins.forEach((admin: any) => {
+      options[admin._id] = `${admin.username} (${admin.email})`;
+    });
+
+    Swal.fire({
+      title: 'Degradar Company Admin',
+      text: 'Selecciona el usuario que deseas degradar a usuario normal',
+      input: 'select',
+      inputOptions: options,
+      inputPlaceholder: 'Selecciona un Company Admin',
+      showCancelButton: true,
+      confirmButtonText: 'Degradar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#f97316',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes seleccionar un usuario';
+        }
+        return null;
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        this.confirmDemoteAdmin(result.value);
+      }
+    });
+  }
+
+  confirmDemoteAdmin(companyAdminId: string) {
+    const admin = this.users.find((u: any) => u._id === companyAdminId);
+    
+    if (!admin) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se encontró el usuario seleccionado',
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      html: `
+        <p>Vas a degradar a <strong>${admin.username}</strong> de Company Admin a usuario normal.</p>
+        <p class="text-sm text-gray-500 mt-2">Esta acción eliminará todos sus permisos administrativos.</p>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f97316',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, degradar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        
+        this.http.delete(`http://localhost:3003/api/user-management/company-admins/${companyAdminId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).subscribe({
+          next: (response: any) => {
+            Swal.fire({
+              icon: 'success',
+              title: '¡Degradación exitosa!',
+              text: `${admin.username} ha sido degradado a usuario normal`,
+              confirmButtonColor: '#f97316',
+              timer: 3000,
+            });
+            this.refreshData();
+          },
+          error: (error: any) => {
+            console.error('Error degradando Company Admin:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error en la degradación',
+              text: error.error?.error || 'No se pudo degradar el usuario',
+              confirmButtonColor: '#f97316',
+            });
+          }
+        });
+      }
+    });
   }
 }

@@ -8,7 +8,12 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'user' | 'vip' | 'admin' | 'super_admin' | 'ADMIN' | 'SUPER_ADMIN';
+  role: 'user' | 'vip' | 'admin' | 'super_admin' | 'ADMIN' | 'SUPER_ADMIN' | 'COMPANY_ADMIN';
+  companyId?: string;
+  companyType?: string;
+  companyName?: string;
+  companyRegion?: string;
+  permissions?: any;
 }
 
 @Injectable({
@@ -113,15 +118,15 @@ export class AuthService {
       localStorage.setItem('token', token);
       
       // Usar la información del admin/user que viene en la respuesta
-      const userData = response.admin || response.user;
+      const userData = response.admin || response.user || response.companyAdmin;
       
       if (userData) {
         const user: any = {
           id: userData.id,
           email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          role: userData.role || 'COMPANY_ADMIN',
+          firstName: userData.firstName || userData.first_name,
+          lastName: userData.lastName || userData.last_name,
+          role: userData.role || 'user',
           companyId: userData.company?.id || userData.companyId,
           companyType: userData.company?.type || userData.companyType,
           companyName: userData.company?.name || userData.companyName,
@@ -129,6 +134,7 @@ export class AuthService {
           permissions: userData.permissions
         };
         
+        console.log('🔐 Usuario logueado:', user);
         localStorage.setItem('user', JSON.stringify(user));
         this.currentUserSubject.next(user);
       }

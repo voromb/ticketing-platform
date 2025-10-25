@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Sv9dLwrcTjmtutBVpxE66v4BMjkQSNULskfGb3pLbKj6uIR99jU6dPDpGaiGnRn
+\restrict tsGUKxmTnfY9Z2F0cAf9a0l2sgv1DxZ14wBE6DuLze2Z6maXnXG2uy3thV0MfoJ
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
@@ -2319,24 +2319,25 @@ INSERT INTO public.admins VALUES ('26fa8809-a1a4-4242-9d09-42e65e5ee368', 'voro.
 -- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.companies VALUES ('d60baaa2-ddea-423e-a504-d52b8533bba5', 'Restaurantes Espa├▒a', 'RESTAURANT', 'SPAIN', 'admin.spain.restaurants@festival.com', '+34 600 111 222', 'Calle Gran V├¡a 1, Madrid', 'Compa├▒├¡a de restaurantes para eventos en Espa├▒a', true, NULL, true, '2025-10-25 09:21:15.499', '2025-10-25 09:21:15.499', NULL);
-INSERT INTO public.companies VALUES ('6da4a9fb-38a7-4661-a98c-ddc997bb94d7', 'Restaurantes Europa', 'RESTAURANT', 'EUROPE', 'admin.europe.restaurants@festival.com', '+33 600 333 444', 'Avenue des Champs-├ëlys├®es 1, Paris', 'Compa├▒├¡a de restaurantes para eventos en Europa', true, NULL, true, '2025-10-25 09:21:15.583', '2025-10-25 09:21:15.583', NULL);
-INSERT INTO public.companies VALUES ('5ad1c86c-870f-496e-a1b9-9f6aedabbc62', 'Viajes Espa├▒a', 'TRAVEL', 'SPAIN', 'admin.spain.travel@festival.com', '+34 600 555 666', 'Paseo de la Castellana 100, Madrid', 'Compa├▒├¡a de transporte para eventos en Espa├▒a', true, NULL, true, '2025-10-25 09:21:15.651', '2025-10-25 09:21:15.651', NULL);
-INSERT INTO public.companies VALUES ('111fad1e-93f7-4f25-9f5a-818872bce84c', 'Viajes Europa', 'TRAVEL', 'EUROPE', 'admin.europe.travel@festival.com', '+49 600 777 888', 'Unter den Linden 1, Berlin', 'Compa├▒├¡a de transporte para eventos en Europa', true, NULL, true, '2025-10-25 09:21:15.718', '2025-10-25 09:21:15.718', NULL);
-INSERT INTO public.companies VALUES ('9fb63a42-518c-466e-8d90-d90576caeaf3', 'Merchandising Espa├▒a', 'MERCHANDISING', 'SPAIN', 'admin.spain.merch@festival.com', '+34 600 999 000', 'Calle Serrano 50, Madrid', 'Compa├▒├¡a de merchandising para eventos en Espa├▒a', true, NULL, true, '2025-10-25 09:21:15.786', '2025-10-25 09:21:15.786', NULL);
-INSERT INTO public.companies VALUES ('feea0fc8-8aaf-46cc-b124-64347f090509', 'Merchandising Europa', 'MERCHANDISING', 'EUROPE', 'admin.europe.merch@festival.com', '+39 600 111 333', 'Via del Corso 1, Roma', 'Compa├▒├¡a de merchandising para eventos en Europa', true, NULL, true, '2025-10-25 09:21:15.852', '2025-10-25 09:21:15.852', NULL);
+INSERT INTO public.companies VALUES ('e4431741-8685-4b0d-8363-afde158f14a3', 'Restaurantes Espa├▒a', 'RESTAURANT', 'SPAIN', 'admin.spain.restaurants@festival.com', '+34 600 111 222', 'Calle Gran V├¡a 1, Madrid', 'Compa├▒├¡a de restaurantes para eventos en Espa├▒a', true, NULL, true, '2025-10-25 17:42:38.982', '2025-10-25 17:42:38.982', NULL);
+INSERT INTO public.companies VALUES ('f26b646d-d38c-4ee4-a43f-bb8882448bb6', 'Restaurantes Europa', 'RESTAURANT', 'EUROPE', 'admin.europe.restaurants@festival.com', '+33 600 333 444', 'Avenue des Champs-├ëlys├®es 1, Paris', 'Compa├▒├¡a de restaurantes para eventos en Europa', true, NULL, true, '2025-10-25 17:42:39.127', '2025-10-25 17:42:39.127', NULL);
+INSERT INTO public.companies VALUES ('2e58e5e8-e565-40a0-ba46-c5ea7fd830bd', 'Viajes Espa├▒a', 'TRAVEL', 'SPAIN', 'admin.spain.travel@festival.com', '+34 600 555 666', 'Paseo de la Castellana 100, Madrid', 'Compa├▒├¡a de transporte para eventos en Espa├▒a', true, NULL, true, '2025-10-25 17:42:39.239', '2025-10-25 17:42:39.239', NULL);
+INSERT INTO public.companies VALUES ('2d14e024-2f7a-4b22-96a9-e7e5ecd8406b', 'Viajes Europa', 'TRAVEL', 'EUROPE', 'admin.europe.travel@festival.com', '+49 600 777 888', 'Unter den Linden 1, Berlin', 'Compa├▒├¡a de transporte para eventos en Europa', true, NULL, true, '2025-10-25 17:42:39.351', '2025-10-25 17:42:39.351', NULL);
+INSERT INTO public.companies VALUES ('a1caef6a-8cb0-4c04-b95c-fd2900a20045', 'Merchandising Espa├▒a', 'MERCHANDISING', 'SPAIN', 'admin.spain.merch@festival.com', '+34 600 999 000', 'Calle Serrano 50, Madrid', 'Compa├▒├¡a de merchandising para eventos en Espa├▒a', true, NULL, true, '2025-10-25 17:42:39.46', '2025-10-25 17:42:39.46', NULL);
+INSERT INTO public.companies VALUES ('1f663db9-f05c-4c1c-b46c-54de1588d5b8', 'Merchandising Europa', 'MERCHANDISING', 'EUROPE', 'admin.europe.merch@festival.com', '+39 600 111 333', 'Via del Corso 1, Roma', 'Compa├▒├¡a de merchandising para eventos en Europa', true, NULL, true, '2025-10-25 17:42:39.6', '2025-10-25 17:42:39.6', NULL);
 
 
 --
 -- Data for Name: company_admins; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.company_admins VALUES ('5f3f842e-45d4-45eb-804b-802ff58d04b6', 'd60baaa2-ddea-423e-a504-d52b8533bba5', 'admin.spain.restaurants@festival.com', '$2b$10$Lr1xKvXgTVBPef1.ggxE6eVibvY28x/tUFv4tHujQzwrhDMt.O51e', 'RESTAURANT', 'SPAIN', true, true, true, true, true, true, '2025-10-25 10:33:06.644', '2025-10-25 09:21:15.577', '2025-10-25 09:21:15.577', NULL);
-INSERT INTO public.company_admins VALUES ('f64dc691-158b-4822-beb4-17a500b65376', '5ad1c86c-870f-496e-a1b9-9f6aedabbc62', 'admin.spain.travel@festival.com', '$2b$10$TyHdqFLho1Wr/AkFLPbkpOw0Jpeb2pC7ke7KPpsfPKl9JrJ5i6j6m', 'TRAVEL', 'SPAIN', true, true, true, true, true, true, '2025-10-25 10:33:36.5', '2025-10-25 09:21:15.712', '2025-10-25 09:21:15.712', NULL);
-INSERT INTO public.company_admins VALUES ('4bc245c1-d7ba-4d4d-b6fe-5f124ca8eddf', '9fb63a42-518c-466e-8d90-d90576caeaf3', 'admin.spain.merch@festival.com', '$2b$10$8uH5yKabjHh2BBK7eHG7Qeag/hIMqb16qbNEPM37pYKw6/cvcczBa', 'MERCHANDISING', 'SPAIN', true, true, true, true, true, true, '2025-10-25 10:38:53.58', '2025-10-25 09:21:15.848', '2025-10-25 09:21:15.848', NULL);
-INSERT INTO public.company_admins VALUES ('fd023c7c-7227-40dc-9cdd-715c212ea5f3', '6da4a9fb-38a7-4661-a98c-ddc997bb94d7', 'admin.europe.restaurants@festival.com', '$2b$10$VNdbVbciF/UE8vqKNKExsOgbQwC1Lb2ih0iIe.tHke7KtJQ6NM3au', 'RESTAURANT', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 09:21:15.647', '2025-10-25 09:21:15.647', NULL);
-INSERT INTO public.company_admins VALUES ('3c87a3f1-a657-413f-a551-1fcad3268d21', '111fad1e-93f7-4f25-9f5a-818872bce84c', 'admin.europe.travel@festival.com', '$2b$10$gYbwr.Xwa0S7AKPBuxmoCOcjVUJ856gPAmBG3M.iBNW3JZfBcl6.6', 'TRAVEL', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 09:21:15.782', '2025-10-25 09:21:15.782', NULL);
-INSERT INTO public.company_admins VALUES ('9e83793b-8284-4962-8d7f-92d3befa2ce7', 'feea0fc8-8aaf-46cc-b124-64347f090509', 'admin.europe.merch@festival.com', '$2b$10$kWOL/58MYVO2x0BIvIhsg.1KxiSKsC/WgHyRHjsaNUvMFMb1K3X8K', 'MERCHANDISING', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 09:21:15.913', '2025-10-25 09:21:15.913', NULL);
+INSERT INTO public.company_admins VALUES ('d4c5f5b2-da38-4554-81cc-3965899a300c', '1f663db9-f05c-4c1c-b46c-54de1588d5b8', 'admin.europe.merch@festival.com', '$2b$10$6o7SZLcaW3pAZImlhjcZzu5o5/vJxlrJKVKVLzcFRZyCMN2A2.oYK', 'MERCHANDISING', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.747', '2025-10-25 17:42:39.747', NULL);
+INSERT INTO public.company_admins VALUES ('703d203b-7475-4cb2-a961-4823e3a68ee4', 'a1caef6a-8cb0-4c04-b95c-fd2900a20045', 'admin.spain.merch@festival.com', '$2b$10$M/w6wopk4kNJQnNCM.0iQe/t6UZD1f6o9wq2nc6FuKqADcP3JDOy2', 'MERCHANDISING', 'SPAIN', true, true, true, true, true, true, '2025-10-25 17:59:05.127', '2025-10-25 17:42:39.592', '2025-10-25 17:42:39.592', NULL);
+INSERT INTO public.company_admins VALUES ('312c1dc8-6223-4e6c-a230-de186438b012', 'e4431741-8685-4b0d-8363-afde158f14a3', 'admin.spain.restaurants@festival.com', '$2b$10$3aERWzYpWE7JiqkVbQDva.QOuIlajDFgbA.5CMtFFastbLrKzRc8a', 'RESTAURANT', 'SPAIN', true, true, true, true, true, true, '2025-10-25 17:59:25.29', '2025-10-25 17:42:39.118', '2025-10-25 17:42:39.118', NULL);
+INSERT INTO public.company_admins VALUES ('fd166e2f-551a-415c-8cb8-e477113a404f', 'e4431741-8685-4b0d-8363-afde158f14a3', 'prueba2@prueba.com', '$2b$10$EwgWqKo4s5xU8uEjH.rI6OeuzwhuEpUUC6qeTh/gkq1eEdpeow.HG', 'uno que pasaba 2', '', true, true, false, true, false, true, '2025-10-25 18:40:02.973', '2025-10-25 18:18:58.629', '2025-10-25 18:18:58.629', NULL);
+INSERT INTO public.company_admins VALUES ('89164ee2-b29f-49b8-a63e-c94d06aaba80', 'f26b646d-d38c-4ee4-a43f-bb8882448bb6', 'admin.europe.restaurants@festival.com', '$2b$10$yJFr961JPzsmhj1ZECI5l.Mf/s1Hkwc1xympeoosZOoPZCA.xFwue', 'RESTAURANT', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.23', '2025-10-25 17:42:39.23', NULL);
+INSERT INTO public.company_admins VALUES ('68a4ccc0-4f26-4936-ab8b-76b3f9bc1f87', '2e58e5e8-e565-40a0-ba46-c5ea7fd830bd', 'admin.spain.travel@festival.com', '$2b$10$6uCNChYLOBYGbxp1zPyEvuV6JtiEAIdA/iIcuu96M6y9UJLW.Zkci', 'TRAVEL', 'SPAIN', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.346', '2025-10-25 17:42:39.346', NULL);
+INSERT INTO public.company_admins VALUES ('c8ec9ed4-272c-4e92-a976-9542c4cb00b1', '2d14e024-2f7a-4b22-96a9-e7e5ecd8406b', 'admin.europe.travel@festival.com', '$2b$10$YCsRHQPD2msCGXXg1AT7JuClrk.0Ci1B7neRUW3q/cYrnuNS7/m5C', 'TRAVEL', 'EUROPE', true, true, true, true, true, true, NULL, '2025-10-25 17:42:39.455', '2025-10-25 17:42:39.455', NULL);
 
 
 --
@@ -2927,5 +2928,5 @@ ALTER TABLE ONLY public."Event"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Sv9dLwrcTjmtutBVpxE66v4BMjkQSNULskfGb3pLbKj6uIR99jU6dPDpGaiGnRn
+\unrestrict tsGUKxmTnfY9Z2F0cAf9a0l2sgv1DxZ14wBE6DuLze2Z6maXnXG2uy3thV0MfoJ
 

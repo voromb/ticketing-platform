@@ -60,6 +60,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return this.user !== null && ['super_admin', 'SUPER_ADMIN'].includes(this.user.role);
   }
 
+  get isCompanyAdmin(): boolean {
+    return this.user !== null && this.user.role === 'COMPANY_ADMIN';
+  }
+
   toggleDropdown(event?: Event) {
     if (event) {
       event.preventDefault();
@@ -119,6 +123,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/admin-dashboard']);
   }
 
+  goToCompanyAdminPanel(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.closeDropdown();
+    
+    // Redirigir según el tipo de compañía del usuario
+    // Por ahora redirigimos al panel de restaurantes
+    // TODO: Obtener el tipo de compañía del usuario y redirigir al panel correcto
+    this.router.navigate(['/restaurant-admin/dashboard']);
+  }
+
   goToUserPanel(event?: Event) {
     if (event) {
       event.preventDefault();
@@ -134,6 +151,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       case 'ADMIN': return 'Administrador';
       case 'super_admin':
       case 'SUPER_ADMIN': return 'Super Admin';
+      case 'COMPANY_ADMIN': return 'Gestor de Servicios';
       case 'vip': return 'Usuario VIP';
       case 'user': return 'Usuario';
       case 'company': return 'Empresa';
@@ -147,6 +165,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       case 'ADMIN': return 'badge bg-danger';
       case 'super_admin':
       case 'SUPER_ADMIN': return 'badge bg-dark';
+      case 'COMPANY_ADMIN': return 'badge bg-success';
       case 'vip': return 'badge bg-warning text-dark';
       case 'user': return 'badge bg-primary';
       case 'company': return 'badge bg-info';
