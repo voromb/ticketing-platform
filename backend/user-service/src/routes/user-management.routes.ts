@@ -17,6 +17,9 @@ router.get('/profile', authMiddleware, controller.getProfile);
 // PUT /api/users/profile - Actualizar perfil del usuario autenticado
 router.put('/profile', authMiddleware, controller.updateProfile);
 
+// GET /api/users/:id/with-password - Obtener usuario CON contraseña (solo para promoción)
+router.get('/:id/with-password', controller.getUserWithPassword);
+
 // GET /api/users/:id - Obtener usuario por ID
 router.get('/:id', controller.getUserById);
 

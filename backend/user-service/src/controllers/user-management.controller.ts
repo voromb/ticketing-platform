@@ -63,6 +63,46 @@ class UserManagementController {
   };
 
   /**
+   * Obtener un usuario CON contraseña (solo para promoción a COMPANY_ADMIN)
+   */
+  getUserWithPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      console.log(`[User Service] Admin solicitando usuario ${id} CON contraseña para promoción`);
+
+      const user = await User.findById(id); // Incluir contraseña
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          error: 'Usuario no encontrado'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          password: user.password, // INCLUIR contraseña hasheada
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      });
+    } catch (error: any) {
+      console.error(`[User Service] Error obteniendo usuario con contraseña ${req.params.id}:`, error.message);
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo usuario',
+        details: error.message
+      });
+    }
+  };
+
+  /**
    * Promocionar usuario a VIP (desde admin-service)
    */
   promoteUserToVip = async (req: Request, res: Response): Promise<void> => {
