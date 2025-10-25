@@ -14,6 +14,9 @@ export async function userManagementRoutes(fastify: FastifyInstance) {
   // GET /api/user-management/stats - Estadísticas de usuarios
   fastify.get('/stats', UserManagementController.getUserStats.bind(UserManagementController));
   
+  // GET /api/user-management/company-admins - Obtener todos los COMPANY_ADMIN
+  fastify.get('/company-admins', UserManagementController.getCompanyAdmins.bind(UserManagementController));
+  
   // GET /api/user-management/:id - Obtener usuario por ID
   fastify.get('/:id', UserManagementController.getUserById.bind(UserManagementController));
 
@@ -27,4 +30,7 @@ export async function userManagementRoutes(fastify: FastifyInstance) {
   
   // POST /api/user-management/:id/promote-company-admin - Promocionar usuario a COMPANY_ADMIN
   fastify.post('/:id/promote-company-admin', UserManagementController.promoteUserToCompanyAdmin.bind(UserManagementController));
+  
+  // DELETE /api/user-management/company-admins/:id - Degradar COMPANY_ADMIN a usuario normal
+  fastify.delete('/company-admins/:id', UserManagementController.demoteCompanyAdmin.bind(UserManagementController));
 }

@@ -307,8 +307,8 @@ export class UserManagementController {
             const { id } = request.params;
             const { companyId, serviceType, reason, notes } = request.body;
 
-            // Verificar que el usuario existe en MongoDB
-            const existingUser = await userApiService.getUserById(id);
+            // Verificar que el usuario existe en MongoDB Y obtener su contraseña hasheada
+            const existingUser = await userApiService.getUserWithPassword(id);
             if (!existingUser) {
                 return reply.status(404).send({
                     error: 'Usuario no encontrado en MongoDB'
@@ -341,6 +341,14 @@ export class UserManagementController {
             if (existingCompanyAdmin) {
                 return reply.status(400).send({
                     error: 'Ya existe un COMPANY_ADMIN con ese email'
+                });
+            }
+
+            // Usar la misma contraseña hasheada del usuario de MongoDB
+            // Esto permite que el usuario use su contraseña actual para acceder al panel
+            if (!existingUser.password) {
+                return reply.status(400).send({
+                    error: 'No se pudo obtener la contraseña del usuario'
                 });
             }
 
@@ -407,6 +415,94 @@ export class UserManagementController {
             
             return reply.status(500).send({
                 error: 'Error promocionando usuario a COMPANY_ADMIN',
+                details: error.message
+            });
+        }
+    }
+
+    /**
+     * Degradar COMPANY_ADMIN a usuario normal
+     */
+    async demoteCompanyAdmin(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            // Solo SUPER_ADMIN puede degradar
+            if (!request.user || request.user.role !== 'SUPER_ADMIN') {
+                return reply.status(403).send({
+                    error: 'Solo SUPER_ADMIN puede degradar COMPANY_ADMIN'
+                });
+            }
+
+            const { id } = request.params as { id: string };
+
+            // Verificar que el COMPANY_ADMIN existe
+            const companyAdmin = await request.server.prisma.companyAdmin.findUnique({
+                where: { id },
+                include: {
+                    companies: true
+                }
+            });
+
+            if (!companyAdmin) {
+                return reply.status(404).send({
+                    error: 'COMPANY_ADMIN no encontrado'
+                });
+            }
+
+            // Eliminar el COMPANY_ADMIN de PostgreSQL
+            await request.server.prisma.companyAdmin.delete({
+                where: { id }
+            });
+
+            logger.info(`COMPANY_ADMIN ${companyAdmin.email} degradado a usuario normal por ${request.user.email}`);
+
+            return reply.send({
+                success: true,
+                message: 'Usuario degradado exitosamente a usuario normal',
+                email: companyAdmin.email
+            });
+
+        } catch (error: any) {
+            logger.error(`Error degradando COMPANY_ADMIN ${request.params.id}:`, error);
+            
+            return reply.status(500).send({
+                error: 'Error degradando COMPANY_ADMIN',
+                details: error.message
+            });
+        }
+    }
+
+    /**
+     * Obtener todos los COMPANY_ADMIN
+     */
+    async getCompanyAdmins(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            // Solo SUPER_ADMIN puede ver la lista de COMPANY_ADMIN
+            if (!request.user || request.user.role !== 'SUPER_ADMIN') {
+                return reply.status(403).send({
+                    error: 'Solo SUPER_ADMIN puede ver la lista de COMPANY_ADMIN'
+                });
+            }
+
+            const companyAdmins = await request.server.prisma.companyAdmin.findMany({
+                include: {
+                    companies: true
+                },
+                orderBy: {
+                    created_at: 'desc'
+                }
+            });
+
+            return reply.send({
+                success: true,
+                companyAdmins,
+                total: companyAdmins.length
+            });
+
+        } catch (error: any) {
+            logger.error('Error obteniendo COMPANY_ADMIN:', error);
+            
+            return reply.status(500).send({
+                error: 'Error obteniendo COMPANY_ADMIN',
                 details: error.message
             });
         }
