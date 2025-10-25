@@ -23,7 +23,7 @@ export class ListCard implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('🚀 ListCard ngOnInit called');
+  
     this.loadVenues();
   }
 
@@ -39,17 +39,17 @@ export class ListCard implements OnInit {
         this.venues = [...this.venues, ...res.venues];
         this.page++;
         this.loading = false;
-        this.cdr.detectChanges(); // Forzar detección de cambios
+        this.cdr.detectChanges(); 
       },
       error: (err: any) => {
         console.error('❌ Error cargando venues:', err);
         this.loading = false;
-        this.cdr.detectChanges(); // Forzar detección de cambios
+        this.cdr.detectChanges(); 
       },
     });
   }
 
-  // Función que se llama al hacer scroll
+ 
   onScroll() {
     console.log('📜 Scroll detected, loading more venues...');
     this.loadVenues();

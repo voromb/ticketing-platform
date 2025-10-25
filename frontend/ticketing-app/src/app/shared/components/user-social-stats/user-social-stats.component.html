@@ -35,7 +35,7 @@
   <!-- Login Prompt -->
   @if (!isAuthenticated && showFollowButton && !isOwnProfile) {
     <div class="login-prompt">
-      <p>Inicia sesión para seguir usuarios</p>
+      <p>Inicia sesión para seguir usuarios</p> 
       <button class="btn-primary" (click)="onLoginRequired.emit()">Iniciar Sesión</button>
     </div>
   }

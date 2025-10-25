@@ -146,7 +146,7 @@ class SocialController {
           };
         } catch (e) {
           console.error(`❌ Evento ${like.eventId} no encontrado (${e.response?.status || 'error'})`);
-          // Si el evento no existe, devolver datos indicando que fue eliminado
+         
           return {
             id: like.eventId,
             name: 'Evento Eliminado',

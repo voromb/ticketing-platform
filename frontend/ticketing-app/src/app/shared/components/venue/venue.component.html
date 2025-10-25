@@ -5,7 +5,7 @@
    [routerLink]="['/shop']"
    [queryParams]="{ venueSlug: venue.slug }">
 
-  <!-- 🔵 Cabecera azul / imagen -->
+
   <div class="venue-header">
     <ng-container *ngIf="venue.images && venue.images.length > 0; else noImage">
       <img
@@ -22,7 +22,6 @@
     </ng-template>
   </div>
 
-  <!-- 📝 Cuerpo del texto -->
   <div class="flex-grow-1 overflow-auto p-3">
     <h5 class="card-title">{{ venue.name }}</h5>
     <p class="card-text">

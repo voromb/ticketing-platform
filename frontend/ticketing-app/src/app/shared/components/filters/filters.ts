@@ -3,9 +3,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 export interface FiltersPayload {
-  categoryId?: number | string | null;
+  categoryId?: number | null;
   minPrice?: number | null;
   maxPrice?: number | null;
+  venueSlug?: string | null; 
 }
 
 @Component({
@@ -36,6 +37,11 @@ export class FiltersComponent {
       minPrice: values.minPrice ?? null,
       maxPrice: values.maxPrice ?? null,
     });
+  }
+
+  resetFilters(): void {
+    this.form.reset();
+    this.filtersChanged.emit({});
   }
 
   reset(): void {

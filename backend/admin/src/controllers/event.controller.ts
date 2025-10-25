@@ -167,7 +167,9 @@ class EventController {
     const pageSize = Number(limit) || 1000;
 
     const where: any = {};
-
+    if (request.query.venueSlug && request.query.venueSlug !== 'null' && request.query.venueSlug !== '') {
+    where.venue = { slug: request.query.venueSlug };
+    }
     if (venueId && venueId !== 'null' && venueId !== '') where.venueId = Number(venueId);
     if (categoryId && categoryId !== 'null' && categoryId !== '') where.categoryId = Number(categoryId);
     if (subcategoryId && subcategoryId !== 'null' && subcategoryId !== '') where.subcategoryId = Number(subcategoryId);

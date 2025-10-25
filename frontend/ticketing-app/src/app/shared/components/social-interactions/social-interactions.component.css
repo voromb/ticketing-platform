@@ -66,6 +66,18 @@
       font-size: 0.875rem;
     }
 
+    .delete-comment-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+  }
+
+    .delete-comment-btn:hover {
+      text-decoration: underline;
+    }
     .add-comment textarea:focus {
       outline: none;
       border-color: #3b82f6;
