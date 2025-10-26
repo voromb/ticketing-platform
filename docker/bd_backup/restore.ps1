@@ -5,14 +5,56 @@
 # ========================================
 
 param(
-    [Parameter(Mandatory=$true)]
-    [string]$BackupDate,
+    [Parameter(Mandatory=$false)]
+    [string]$BackupDate = "",
     
     [switch]$SkipConfirmation = $false,
     [switch]$DryRun = $false
 )
 
 $ErrorActionPreference = "Stop"
+
+# Si no se especifica fecha, mostrar backups disponibles y preguntar
+if ([string]::IsNullOrEmpty($BackupDate)) {
+    Write-Host "`n========================================" -ForegroundColor Cyan
+    Write-Host "BACKUPS DISPONIBLES" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+    
+    $backupsDir = Join-Path $PSScriptRoot "backups"
+    $availableBackups = Get-ChildItem -Path $backupsDir -Directory | Sort-Object Name -Descending
+    
+    if ($availableBackups.Count -eq 0) {
+        Write-Host "No hay backups disponibles" -ForegroundColor Red
+        exit 1
+    }
+    
+    $index = 1
+    foreach ($backup in $availableBackups) {
+        $files = Get-ChildItem $backup.FullName -File
+        $totalSize = ($files | Measure-Object -Property Length -Sum).Sum / 1MB
+        Write-Host "$index. $($backup.Name) - $([math]::Round($totalSize, 2)) MB - $($files.Count) archivos" -ForegroundColor Yellow
+        $index++
+    }
+    
+    Write-Host "`n0. Cancelar" -ForegroundColor Red
+    Write-Host ""
+    
+    $selection = Read-Host "Selecciona el número del backup a restaurar"
+    
+    if ($selection -eq "0" -or [string]::IsNullOrEmpty($selection)) {
+        Write-Host "Operación cancelada" -ForegroundColor Red
+        exit 0
+    }
+    
+    $selectedIndex = [int]$selection - 1
+    if ($selectedIndex -lt 0 -or $selectedIndex -ge $availableBackups.Count) {
+        Write-Host "Selección inválida" -ForegroundColor Red
+        exit 1
+    }
+    
+    $BackupDate = $availableBackups[$selectedIndex].Name
+    Write-Host "`nBackup seleccionado: $BackupDate" -ForegroundColor Green
+}
 
 # ===== FUNCIONES DE UTILIDAD =====
 
@@ -242,17 +284,18 @@ function Restore-MongoDBSafe {
     docker cp "$mongoBackup" ticketing-mongodb:/tmp/mongodb_backup.archive 2>&1 | Out-Null
     
     # Restaurar con --drop (elimina colecciones existentes antes de restaurar)
+    # Intentar con gzip primero (silenciosamente)
     docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip 2>&1 | Out-Null
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput "[MongoDB] Restaurada con gzip ✓" "Green"
+        Write-ColorOutput "[MongoDB] Restaurada ✓" "Green"
         return $true
     } else {
         # Intentar sin gzip
         docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop 2>&1 | Out-Null
         
         if ($LASTEXITCODE -eq 0) {
-            Write-ColorOutput "[MongoDB] Restaurada sin gzip ✓" "Green"
+            Write-ColorOutput "[MongoDB] Restaurada ✓" "Green"
             return $true
         } else {
             Write-ColorOutput "[MongoDB] Error en restauración ✗" "Red"
