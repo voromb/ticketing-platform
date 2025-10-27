@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MerchandisingService, Product } from '../../../services/merchandising.service';
+import { MerchandisingService, Product } from '../../../core/services_enterprise/merchandising.service';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 @Component({

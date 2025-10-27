@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MerchandisingService, ProductStats } from '../../../services/merchandising.service';
+import { MerchandisingService, ProductStats } from '../../../core/services_enterprise/merchandising.service';
 
 @Component({
   selector: 'app-merchandising-dashboard',

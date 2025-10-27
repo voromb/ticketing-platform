@@ -6,10 +6,10 @@ import { TicketService } from '../../../core/services/ticket.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { EventService } from '~/app/core/services/event.service';
 import { IEvent } from '../../../core/models/Event.model';
-import { TravelService, Trip } from '../../../services/travel.service';
-import { RestaurantService, Restaurant } from '../../../services/restaurant.service';
-import { MerchandisingService, Product } from '../../../services/merchandising.service';
-import { OrderService, CreateOrderDto } from '../../../services/order.service';
+import { TravelService, Trip } from '../../../core/services_enterprise/travel.service';
+import { RestaurantService, Restaurant } from '../../../core/services_enterprise/restaurant.service';
+import { MerchandisingService, Product } from '../../../core/services_enterprise/merchandising.service';
+import { OrderService, CreateOrderDto } from '../../../core/services_enterprise/order.service';
 import Swal from 'sweetalert2';
 
 // @Component({
