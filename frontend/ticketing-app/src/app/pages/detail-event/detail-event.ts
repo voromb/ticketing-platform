@@ -11,11 +11,12 @@ import { CarouselComponent } from '~/app/shared/components/list-carousel/carouse
 import { EventDetailComponent } from '~/app/shared/components/event-detail/event-details';
 import { SocialInteractionsComponent } from '~/app/shared/components/social-interactions/social-interactions.component';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MerchaListComponent } from '~/app/shared/Servicios-Merch/MerchaListComponent/mercha-list';
 
 @Component({
   selector: 'app-detail-event',
   standalone: true,
-  imports: [CarouselComponent, EventDetailComponent, SocialInteractionsComponent],
+  imports: [CarouselComponent, EventDetailComponent, SocialInteractionsComponent, MerchaListComponent],
   templateUrl: './detail-event.html',
 })
 export class DetailEvent implements OnInit, OnChanges {
@@ -53,6 +54,7 @@ export class DetailEvent implements OnInit, OnChanges {
       if (res.success && res.data) {
         this.events = [res.data];
         this.currentEventId = res.data.id || '';
+        this.eventId = this.currentEventId;
         console.log('✅ Evento cargado:', res.data);
       } else {
         this.error = 'No se pudo cargar el evento';

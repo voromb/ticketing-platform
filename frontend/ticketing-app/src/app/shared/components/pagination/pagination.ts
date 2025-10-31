@@ -11,12 +11,27 @@ export class PaginationComponent {
   @Input() currentPage: number = 1;
   @Output() pageChange = new EventEmitter<number>();
 
-  // cantidad de botones visibles a la vez
-  visibleCount = 3;
+  /** Número máximo de páginas visibles en la barra */
+  visibleCount = 5;
+
 
   get pages(): number[] {
-    const start = Math.floor((this.currentPage - 1) / this.visibleCount) * this.visibleCount + 1;
-    const end = Math.min(start + this.visibleCount - 1, this.totalPages);
+    const half = Math.floor(this.visibleCount / 2);
+    let start = this.currentPage - half;
+    let end = this.currentPage + half;
+
+
+    if (start < 1) {
+      start = 1;
+      end = Math.min(this.visibleCount, this.totalPages);
+    }
+
+
+    if (end > this.totalPages) {
+      end = this.totalPages;
+      start = Math.max(1, end - this.visibleCount + 1);
+    }
+
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
@@ -25,11 +40,19 @@ export class PaginationComponent {
     this.pageChange.emit(page);
   }
 
+  first() {
+    this.goToPage(1);
+  }
+
   previous() {
     this.goToPage(this.currentPage - 1);
   }
 
   next() {
     this.goToPage(this.currentPage + 1);
+  }
+
+  last() {
+    this.goToPage(this.totalPages);
   }
 }

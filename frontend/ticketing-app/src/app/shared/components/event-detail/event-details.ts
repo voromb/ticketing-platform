@@ -12,62 +12,7 @@ import { MerchandisingService, Product } from '../../../core/services_enterprise
 import { OrderService, CreateOrderDto } from '../../../core/services_enterprise/order.service';
 import Swal from 'sweetalert2';
 
-// @Component({
-//   selector: 'app-event-details',
-//   standalone: true,
-//   imports: [CommonModule, RouterModule],
-//   templateUrl: './event-details.html',
-//   styleUrls: ['./event-details.css']
-// })
-// export class EventDetailsComponent implements OnInit {
-//   event: IEvent | null = null;
 
-//   constructor(
-//     private route: ActivatedRoute,
-//     private router: Router,
-//     private eventService: EventService,
-//     private authService: AuthService,
-//     private reservationService: ReservationService,
-//     private orderService: OrderService,
-//     private paymentService: PaymentService
-//   ) {}
-
-//   ngOnInit(): void {
-//     const id = this.route.snapshot.paramMap.get('id');
-//     if (id) {
-//       this.eventService.getEventById(id).subscribe({
-//         next: (res) => {
-//           if (res.success) {
-//             this.event = res.data;
-//           }
-//         },
-//         error: (err) => console.error(err)
-//       });
-//     }
-//   }
-
-//   // ✅ Getters que expone al template
-//   get isLoggedIn(): boolean {
-//     return this.authService.isAuthenticated();
-//   }
-
-//   get canReserve(): boolean {
-//     const user = this.authService.getCurrentUser();
-//     return this.isLoggedIn && user?.role?.toLowerCase() === 'vip';
-//   }
-
-//   get canBuy(): boolean {
-//     return this.isLoggedIn;
-//   }
-
-//   onBuy(event: IEvent): void {
-//     console.log('Comprar evento:', event);
-//   }
-
-//   onReserve(event: IEvent): void {
-//     console.log('Reservar evento:', event);
-//   }
-// }
 @Component({
   selector: 'app-event-details',
   standalone: true,
@@ -150,7 +95,7 @@ export class EventDetailComponent implements OnInit {
     if (!this.event || !this.event.id) return;
 
     const festivalId = this.event.id;
-
+    console.log('%c🎟️ Cargando servicios disponibles para festival ID: ' + festivalId, 'color: #22c55e; font-weight: bold;');
     // Cargar viajes
     this.travelService.getByFestival(festivalId).subscribe({
       next: (trips) => {
