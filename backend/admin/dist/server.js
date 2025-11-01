@@ -62,6 +62,7 @@ const payment_routes_1 = require("./routes/payment.routes");
 const image_upload_routes_1 = require("./routes/image-upload.routes");
 const company_routes_1 = require("./routes/company.routes");
 const company_admin_routes_1 = require("./routes/company-admin.routes");
+const approval_routes_1 = require("./routes/approval.routes");
 const image_upload_service_1 = require("./services/image-upload.service");
 // Jobs
 const reservation_cron_1 = require("./jobs/reservation.cron");
@@ -237,6 +238,9 @@ async function buildServer() {
         console.log('[REGISTER] Registrando companyAdminRoutes...');
         await server.register(company_admin_routes_1.companyAdminRoutes, { prefix: '/api' });
         console.log('[OK] companyAdminRoutes OK');
+        console.log('[REGISTER] Registrando approvalRoutes...');
+        await server.register(approval_routes_1.approvalRoutes, { prefix: '/api/approvals' });
+        console.log('[OK] approvalRoutes OK');
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     }
     catch (error) {

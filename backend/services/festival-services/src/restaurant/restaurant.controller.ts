@@ -70,10 +70,19 @@ export class RestaurantController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un restaurante' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canUpdate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar un restaurante (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 200, description: 'Restaurante actualizado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Restaurante no encontrado' })
-  update(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateRestaurantDto: UpdateRestaurantDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.restaurantService.update(id, updateRestaurantDto);
   }
 
@@ -95,11 +104,19 @@ export class RestaurantController {
   }
 
   @Delete(':id')
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canDelete')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un restaurante (soft delete)' })
+  @ApiOperation({ summary: 'Eliminar un restaurante (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 204, description: 'Restaurante eliminado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Restaurante no encontrado' })
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.restaurantService.remove(id);
   }
 

@@ -72,10 +72,19 @@ export class TravelController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un viaje' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canUpdate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar un viaje (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 200, description: 'Viaje actualizado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Viaje no encontrado' })
-  update(@Param('id') id: string, @Body() updateTripDto: UpdateTripDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateTripDto: UpdateTripDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.travelService.update(id, updateTripDto);
   }
 
@@ -90,11 +99,19 @@ export class TravelController {
   }
 
   @Delete(':id')
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canDelete')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un viaje (soft delete)' })
+  @ApiOperation({ summary: 'Eliminar un viaje (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 204, description: 'Viaje eliminado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Viaje no encontrado' })
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.travelService.remove(id);
   }
 
