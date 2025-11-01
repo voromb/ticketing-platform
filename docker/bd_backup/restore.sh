@@ -96,6 +96,15 @@ get_current_state() {
     echo -e "  - Viajes: ${YELLOW}$MONGO_TRIPS${NC}"
     echo -e "  - Productos: ${YELLOW}$MONGO_PRODUCTS${NC}"
     echo -e "  - Órdenes: ${YELLOW}$MONGO_ORDERS${NC}"
+    
+    echo -e "${CYAN}MongoDB ticketing_messaging:${NC}"
+    MONGO_MESSAGES=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').messages.countDocuments()" 2>/dev/null | tr -d ' ')
+    MONGO_CONVERSATIONS=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').conversations.countDocuments()" 2>/dev/null | tr -d ' ')
+    MONGO_NOTIFICATIONS=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').notifications.countDocuments()" 2>/dev/null | tr -d ' ')
+    
+    echo -e "  - Mensajes: ${YELLOW}$MONGO_MESSAGES${NC}"
+    echo -e "  - Conversaciones: ${YELLOW}$MONGO_CONVERSATIONS${NC}"
+    echo -e "  - Notificaciones: ${YELLOW}$MONGO_NOTIFICATIONS${NC}"
 }
 
 analyze_backup() {
