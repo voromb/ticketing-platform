@@ -1,0 +1,5 @@
+# Ignorar errores de carriage return (CRLF vs LF)
+disable=SC1017
+
+# Ignorar warnings de variables no usadas que son para debugging
+disable=SC2034
