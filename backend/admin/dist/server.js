@@ -45,6 +45,7 @@ const multipart_1 = __importDefault(require("@fastify/multipart"));
 const static_1 = __importDefault(require("@fastify/static"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
+const compress_1 = __importDefault(require("@fastify/compress"));
 const client_1 = require("@prisma/client");
 const path_1 = __importDefault(require("path"));
 const pino_1 = __importDefault(require("pino"));
@@ -104,6 +105,12 @@ async function buildServer() {
             files: 15, // Máximo 15 archivos
             headerPairs: 2000,
         },
+    });
+    // Registrar compresión Brotli/Gzip
+    await server.register(compress_1.default, {
+        global: true,
+        encodings: ['br', 'gzip', 'deflate'], // Brotli primero
+        threshold: 1024, // Solo comprimir respuestas > 1KB
     });
     // Registrar CORS
     await server.register(cors_1.default, {
@@ -249,9 +256,13 @@ async function buildServer() {
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     }
     catch (error) {
-        logger.error('[ERROR] Error registrando rutas:', error);
-        console.error('[ERROR] Error completo:', error);
-        console.error('[ERROR] Stack:', error.stack);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        logger.error({ err: error }, '[ERROR] Error registrando rutas');
+        console.error('[ERROR] Error completo:', errorMessage);
+        if (errorStack) {
+            console.error('[ERROR] Stack:', errorStack);
+        }
     }
     // Health check
     server.get('/health', async (request, reply) => {

@@ -22,7 +22,12 @@ let ApprovalMessageListener = class ApprovalMessageListener {
         this.messageService = messageService;
         console.log('✅ ApprovalMessageListener iniciado');
     }
-    async handleApprovalRequested(data) {
+    async handleApprovalRequested(data, context) {
+        console.log('📨 [ApprovalMessageListener] Evento recibido: approval.requested');
+        console.log('📋 Datos del evento:', JSON.stringify(data, null, 2));
+        const channel = context.getChannelRef();
+        const originalMsg = context.getMessage();
+        channel.ack(originalMsg);
         console.log('🔔 Enviando mensaje de solicitud de aprobación al SUPER_ADMIN');
         const { resourceType, resourceName, requestedBy, requestedByName, approvalId, metadata } = data;
         const superAdminId = await this.getSuperAdminId();
@@ -188,8 +193,9 @@ exports.ApprovalMessageListener = ApprovalMessageListener;
 __decorate([
     (0, microservices_1.EventPattern)('approval.requested'),
     __param(0, (0, microservices_1.Payload)()),
+    __param(1, (0, microservices_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, microservices_1.RmqContext]),
     __metadata("design:returntype", Promise)
 ], ApprovalMessageListener.prototype, "handleApprovalRequested", null);
 __decorate([

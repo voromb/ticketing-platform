@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { EventPattern, Payload, Ctx, RmqContext } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 
 @Controller()
@@ -12,7 +12,15 @@ export class ApprovalMessageListener {
    * Cuando se solicita una aprobación, enviar mensaje al SUPER_ADMIN
    */
   @EventPattern('approval.requested')
-  async handleApprovalRequested(@Payload() data: any) {
+  async handleApprovalRequested(@Payload() data: any, @Ctx() context: RmqContext) {
+    console.log('📨 [ApprovalMessageListener] Evento recibido: approval.requested');
+    console.log('📋 Datos del evento:', JSON.stringify(data, null, 2));
+    
+    // Acknowledge del mensaje
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    channel.ack(originalMsg);
+    
     console.log('🔔 Enviando mensaje de solicitud de aprobación al SUPER_ADMIN');
 
     const { resourceType, resourceName, requestedBy, requestedByName, approvalId, metadata } = data;

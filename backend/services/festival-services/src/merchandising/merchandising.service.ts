@@ -34,6 +34,10 @@ export class MerchandisingService implements OnModuleInit {
    * Crear producto con datos de compañía (para COMPANY_ADMIN)
    */
   async createWithCompany(createProductDto: CreateProductDto, admin: any): Promise<Product> {
+    console.log('[MERCHANDISING] 🔵 createWithCompany llamado');
+    console.log('[MERCHANDISING] Admin:', JSON.stringify(admin, null, 2));
+    console.log('[MERCHANDISING] Product DTO:', JSON.stringify(createProductDto, null, 2));
+    
     // Determinar el stock total (puede venir como totalStock o como objeto stock)
     const totalStock = createProductDto.totalStock || (createProductDto as any).stock?.total || 0;
     
@@ -77,15 +81,17 @@ export class MerchandisingService implements OnModuleInit {
     }
 
     // Enviar evento de aprobación requerida
-    this.client.emit('approval.requested', {
+    const approvalEvent = {
       service: 'MERCHANDISING',
       entityId: (saved as any)._id.toString(),
       entityType: 'Product',
       resourceType: 'PRODUCT',
       resourceName: saved.name,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
       requestedBy: admin.email,
       requestedByName: admin.companyName,
-      approvalId: null, // Se creará después
+      approvalId: null,
       metadata: {
         productName: saved.name,
         companyName: admin.companyName,
@@ -94,7 +100,11 @@ export class MerchandisingService implements OnModuleInit {
         stock: saved.stock,
       },
       priority: 'MEDIUM',
-    });
+    };
+    
+    console.log('[MERCHANDISING] 🔴 Publicando evento approval.requested:', JSON.stringify(approvalEvent, null, 2));
+    this.client.emit('approval.requested', approvalEvent);
+    console.log('[MERCHANDISING] 🟢 Evento publicado exitosamente');
 
     console.log(`[MERCHANDISING] Nuevo producto creado por ${admin.email}, requiere aprobación`);
     return saved;

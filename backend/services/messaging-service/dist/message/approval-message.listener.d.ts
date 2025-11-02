@@ -1,8 +1,9 @@
+import { RmqContext } from '@nestjs/microservices';
 import { MessageService } from './message.service';
 export declare class ApprovalMessageListener {
     private readonly messageService;
     constructor(messageService: MessageService);
-    handleApprovalRequested(data: any): Promise<void>;
+    handleApprovalRequested(data: any, context: RmqContext): Promise<void>;
     handleApprovalGranted(data: any): Promise<void>;
     handleApprovalRejected(data: any): Promise<void>;
     private buildApprovalRequestMessage;

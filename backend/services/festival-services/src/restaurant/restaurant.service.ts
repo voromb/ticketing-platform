@@ -63,12 +63,14 @@ export class RestaurantService {
     }
 
     // Enviar evento de aprobación requerida
-    this.client.emit('approval.requested', {
+    const approvalEvent = {
       service: 'RESTAURANT',
       entityId: (saved as any)._id.toString(),
       entityType: 'Restaurant',
       resourceType: 'RESTAURANT',
       resourceName: saved.name,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
       requestedBy: admin.email,
       requestedByName: admin.companyName,
       approvalId: null,
@@ -80,7 +82,11 @@ export class RestaurantService {
         capacity: saved.capacity,
       },
       priority: 'MEDIUM',
-    });
+    };
+    
+    console.log('[RESTAURANT] 🔴 Publicando evento approval.requested:', JSON.stringify(approvalEvent, null, 2));
+    this.client.emit('approval.requested', approvalEvent);
+    console.log('[RESTAURANT] 🟢 Evento publicado exitosamente');
 
     console.log(`[RESTAURANT] Nuevo restaurante creado por ${admin.email}, requiere aprobación`);
     return saved;

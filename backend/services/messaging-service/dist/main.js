@@ -25,11 +25,13 @@ async function bootstrap() {
         options: {
             urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
             queue: 'approval_requests',
+            noAck: false,
             queueOptions: {
                 durable: true,
             },
         },
     });
+    console.log('🔧 Configurando microservicio RabbitMQ...');
     app.enableCors({
         origin: process.env.FRONTEND_URL || 'http://localhost:4200',
         credentials: true,
