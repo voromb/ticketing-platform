@@ -43,6 +43,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/payment-checkout/payment-checkout.component').then((m) => m.PaymentCheckoutComponent),
   },
+  {
+    path: 'messages',
+    loadComponent: () =>
+      import('./shared/components/messages/messages').then((m) => m.MessagesComponent),
+  },
   // Admin Dashboard Routes
   {
     path: 'admin-dashboard',

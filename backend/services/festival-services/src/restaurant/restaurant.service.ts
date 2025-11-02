@@ -62,6 +62,26 @@ export class RestaurantService {
       // No fallar la creación del restaurante si falla la aprobación
     }
 
+    // Enviar evento de aprobación requerida
+    this.client.emit('approval.requested', {
+      service: 'RESTAURANT',
+      entityId: (saved as any)._id.toString(),
+      entityType: 'Restaurant',
+      resourceType: 'RESTAURANT',
+      resourceName: saved.name,
+      requestedBy: admin.email,
+      requestedByName: admin.companyName,
+      approvalId: null,
+      metadata: {
+        restaurantName: saved.name,
+        companyName: admin.companyName,
+        region: admin.companyRegion,
+        cuisine: saved.cuisine,
+        capacity: saved.capacity,
+      },
+      priority: 'MEDIUM',
+    });
+
     console.log(`[RESTAURANT] Nuevo restaurante creado por ${admin.email}, requiere aprobación`);
     return saved;
   }

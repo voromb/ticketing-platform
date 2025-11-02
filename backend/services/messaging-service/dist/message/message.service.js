@@ -29,36 +29,52 @@ let MessageService = class MessageService {
         this.rabbitMQService = rabbitMQService;
     }
     async sendMessage(createMessageDto, senderId, senderType, senderName) {
-        const { recipientId, recipientType, recipientName, content, subject, messageType, metadata } = createMessageDto;
-        let conversation = await this.findOrCreateConversation(senderId, senderType, senderName, recipientId, recipientType, recipientName || 'Usuario', subject);
-        const message = new this.messageModel({
-            conversationId: conversation._id,
-            senderId,
-            senderType,
-            senderName,
-            content,
-            messageType: messageType || message_schema_1.MessageType.TEXT,
-            metadata,
-            isRead: false,
-        });
-        await message.save();
-        conversation.lastMessageAt = new Date();
-        conversation.lastMessagePreview = content.substring(0, 100);
-        const currentUnread = conversation.unreadCount.get(recipientId) || 0;
-        conversation.unreadCount.set(recipientId, currentUnread + 1);
-        await conversation.save();
-        await this.rabbitMQService.publishEvent('message.sent', {
-            messageId: message._id.toString(),
-            conversationId: conversation._id.toString(),
-            recipientId,
-            recipientType,
-            sentAt: new Date(),
-        });
-        return {
-            success: true,
-            message: 'Mensaje enviado correctamente',
-            data: message,
-        };
+        try {
+            const { recipientId, recipientType, recipientName, content, subject, messageType, metadata } = createMessageDto;
+            console.log('🔍 Buscando o creando conversación...');
+            let conversation = await this.findOrCreateConversation(senderId, senderType, senderName, recipientId, recipientType, recipientName || 'Usuario', subject);
+            console.log('✅ Conversación encontrada/creada:', conversation._id);
+            const message = new this.messageModel({
+                conversationId: conversation._id,
+                senderId,
+                senderType,
+                senderName,
+                content,
+                messageType: messageType || message_schema_1.MessageType.TEXT,
+                metadata,
+                isRead: false,
+            });
+            await message.save();
+            console.log('✅ Mensaje guardado:', message._id);
+            conversation.lastMessageAt = new Date();
+            conversation.lastMessagePreview = content.substring(0, 100);
+            const currentUnread = conversation.unreadCount.get(recipientId) || 0;
+            conversation.unreadCount.set(recipientId, currentUnread + 1);
+            await conversation.save();
+            console.log('✅ Conversación actualizada');
+            try {
+                await this.rabbitMQService.publishEvent('message.sent', {
+                    messageId: message._id.toString(),
+                    conversationId: conversation._id.toString(),
+                    recipientId,
+                    recipientType,
+                    sentAt: new Date(),
+                });
+                console.log('✅ Evento publicado en RabbitMQ');
+            }
+            catch (rabbitError) {
+                console.warn('⚠️ Error publicando evento en RabbitMQ (no crítico):', rabbitError);
+            }
+            return {
+                success: true,
+                message: 'Mensaje enviado correctamente',
+                data: message,
+            };
+        }
+        catch (error) {
+            console.error('❌ Error en sendMessage:', error);
+            throw error;
+        }
     }
     async getConversations(userId) {
         const conversations = await this.conversationModel
@@ -183,9 +199,9 @@ let MessageService = class MessageService {
         const conversation = new this.conversationModel({
             participants,
             conversationType,
-            subject,
+            subject: subject || 'Nueva conversación',
             lastMessageAt: new Date(),
-            lastMessagePreview: '',
+            lastMessagePreview: 'Conversación iniciada',
             unreadCount: new Map(),
             isActive: true,
         });
@@ -200,6 +216,18 @@ let MessageService = class MessageService {
             messageType: message_schema_1.MessageType.SYSTEM_ALERT,
             metadata,
         }, 'SYSTEM', message_schema_1.SenderType.SYSTEM, 'Sistema Ticketing Master');
+    }
+    async sendDetailedSystemMessage(data) {
+        console.log('📨 Enviando mensaje del sistema:', data);
+        return this.sendMessage({
+            recipientId: data.recipientId,
+            recipientType: data.recipientType,
+            recipientName: data.recipientName,
+            content: data.content,
+            subject: data.subject,
+            messageType: data.messageType,
+            metadata: data.metadata,
+        }, data.senderId, data.senderType, data.senderName);
     }
 };
 exports.MessageService = MessageService;

@@ -63,6 +63,7 @@ const image_upload_routes_1 = require("./routes/image-upload.routes");
 const company_routes_1 = require("./routes/company.routes");
 const company_admin_routes_1 = require("./routes/company-admin.routes");
 const approval_routes_1 = require("./routes/approval.routes");
+const messaging_users_routes_1 = require("./routes/messaging-users.routes");
 const image_upload_service_1 = require("./services/image-upload.service");
 // Jobs
 const reservation_cron_1 = require("./jobs/reservation.cron");
@@ -109,7 +110,8 @@ async function buildServer() {
         origin: true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Name', 'X-User-Type'],
+        exposedHeaders: ['X-User-Id', 'X-User-Name', 'X-User-Type'],
     });
     // Registrar JWT
     await server.register(jwt_1.default, {
@@ -241,6 +243,9 @@ async function buildServer() {
         console.log('[REGISTER] Registrando approvalRoutes...');
         await server.register(approval_routes_1.approvalRoutes, { prefix: '/api/approvals' });
         console.log('[OK] approvalRoutes OK');
+        console.log('[REGISTER] Registrando messagingUsersRoutes...');
+        await server.register(messaging_users_routes_1.messagingUsersRoutes, { prefix: '/api/messaging-users' });
+        console.log('[OK] messagingUsersRoutes OK');
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     }
     catch (error) {

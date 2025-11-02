@@ -25,57 +25,74 @@ export class MessageService {
    * Enviar un mensaje manual
    */
   async sendMessage(createMessageDto: CreateMessageDto, senderId: string, senderType: SenderType, senderName: string) {
-    const { recipientId, recipientType, recipientName, content, subject, messageType, metadata } = createMessageDto;
+    try {
+      const { recipientId, recipientType, recipientName, content, subject, messageType, metadata } = createMessageDto;
 
-    // Buscar o crear conversación
-    let conversation = await this.findOrCreateConversation(
-      senderId,
-      senderType,
-      senderName,
-      recipientId,
-      recipientType,
-      recipientName || 'Usuario',
-      subject,
-    );
+      console.log('🔍 Buscando o creando conversación...');
+      
+      // Buscar o crear conversación
+      let conversation = await this.findOrCreateConversation(
+        senderId,
+        senderType,
+        senderName,
+        recipientId,
+        recipientType,
+        recipientName || 'Usuario',
+        subject,
+      );
 
-    // Crear mensaje
-    const message = new this.messageModel({
-      conversationId: conversation._id,
-      senderId,
-      senderType,
-      senderName,
-      content,
-      messageType: messageType || MessageType.TEXT,
-      metadata,
-      isRead: false,
-    });
+      console.log('✅ Conversación encontrada/creada:', conversation._id);
 
-    await message.save();
+      // Crear mensaje
+      const message = new this.messageModel({
+        conversationId: conversation._id,
+        senderId,
+        senderType,
+        senderName,
+        content,
+        messageType: messageType || MessageType.TEXT,
+        metadata,
+        isRead: false,
+      });
 
-    // Actualizar conversación
-    conversation.lastMessageAt = new Date();
-    conversation.lastMessagePreview = content.substring(0, 100);
-    
-    // Incrementar contador de no leídos para el destinatario
-    const currentUnread = conversation.unreadCount.get(recipientId) || 0;
-    conversation.unreadCount.set(recipientId, currentUnread + 1);
-    
-    await conversation.save();
+      await message.save();
+      console.log('✅ Mensaje guardado:', message._id);
 
-    // Publicar evento
-    await this.rabbitMQService.publishEvent('message.sent', {
-      messageId: (message._id as any).toString(),
-      conversationId: (conversation._id as any).toString(),
-      recipientId,
-      recipientType,
-      sentAt: new Date(),
-    });
+      // Actualizar conversación
+      conversation.lastMessageAt = new Date();
+      conversation.lastMessagePreview = content.substring(0, 100);
+      
+      // Incrementar contador de no leídos para el destinatario
+      const currentUnread = conversation.unreadCount.get(recipientId) || 0;
+      conversation.unreadCount.set(recipientId, currentUnread + 1);
+      
+      await conversation.save();
+      console.log('✅ Conversación actualizada');
 
-    return {
-      success: true,
-      message: 'Mensaje enviado correctamente',
-      data: message,
-    };
+      // Publicar evento
+      try {
+        await this.rabbitMQService.publishEvent('message.sent', {
+          messageId: (message._id as any).toString(),
+          conversationId: (conversation._id as any).toString(),
+          recipientId,
+          recipientType,
+          sentAt: new Date(),
+        });
+        console.log('✅ Evento publicado en RabbitMQ');
+      } catch (rabbitError) {
+        console.warn('⚠️ Error publicando evento en RabbitMQ (no crítico):', rabbitError);
+        // No lanzar error, el mensaje ya se guardó
+      }
+
+      return {
+        success: true,
+        message: 'Mensaje enviado correctamente',
+        data: message,
+      };
+    } catch (error) {
+      console.error('❌ Error en sendMessage:', error);
+      throw error;
+    }
   }
 
   /**
@@ -265,9 +282,9 @@ export class MessageService {
     const conversation = new this.conversationModel({
       participants,
       conversationType,
-      subject,
+      subject: subject || 'Nueva conversación',
       lastMessageAt: new Date(),
-      lastMessagePreview: '',
+      lastMessagePreview: 'Conversación iniciada',
       unreadCount: new Map(),
       isActive: true,
     });
@@ -291,6 +308,39 @@ export class MessageService {
       'SYSTEM',
       SenderType.SYSTEM,
       'Sistema Ticketing Master',
+    );
+  }
+
+  /**
+   * Enviar mensaje del sistema con detalles completos (para aprobaciones automáticas)
+   */
+  async sendDetailedSystemMessage(data: {
+    recipientId: string;
+    recipientType: string;
+    recipientName: string;
+    senderId: string;
+    senderType: string;
+    senderName: string;
+    content: string;
+    subject?: string;
+    messageType?: string;
+    metadata?: any;
+  }) {
+    console.log('📨 Enviando mensaje del sistema:', data);
+
+    return this.sendMessage(
+      {
+        recipientId: data.recipientId,
+        recipientType: data.recipientType as any,
+        recipientName: data.recipientName,
+        content: data.content,
+        subject: data.subject,
+        messageType: data.messageType as MessageType,
+        metadata: data.metadata,
+      },
+      data.senderId,
+      data.senderType as SenderType,
+      data.senderName,
     );
   }
 }

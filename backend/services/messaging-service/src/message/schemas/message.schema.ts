@@ -14,6 +14,9 @@ export enum MessageType {
   TEXT = 'TEXT',
   NOTIFICATION = 'NOTIFICATION',
   SYSTEM_ALERT = 'SYSTEM_ALERT',
+  APPROVAL_REQUEST = 'APPROVAL_REQUEST',
+  APPROVAL_GRANTED = 'APPROVAL_GRANTED',
+  APPROVAL_REJECTED = 'APPROVAL_REJECTED',
 }
 
 export enum ActionType {
@@ -25,6 +28,7 @@ export enum ActionType {
 
 export enum ResourceType {
   RESTAURANT = 'RESTAURANT',
+  TRIP = 'TRIP',
   TRAVEL = 'TRAVEL',
   PRODUCT = 'PRODUCT',
 }

@@ -24,6 +24,9 @@ var MessageType;
     MessageType["TEXT"] = "TEXT";
     MessageType["NOTIFICATION"] = "NOTIFICATION";
     MessageType["SYSTEM_ALERT"] = "SYSTEM_ALERT";
+    MessageType["APPROVAL_REQUEST"] = "APPROVAL_REQUEST";
+    MessageType["APPROVAL_GRANTED"] = "APPROVAL_GRANTED";
+    MessageType["APPROVAL_REJECTED"] = "APPROVAL_REJECTED";
 })(MessageType || (exports.MessageType = MessageType = {}));
 var ActionType;
 (function (ActionType) {
@@ -35,6 +38,7 @@ var ActionType;
 var ResourceType;
 (function (ResourceType) {
     ResourceType["RESTAURANT"] = "RESTAURANT";
+    ResourceType["TRIP"] = "TRIP";
     ResourceType["TRAVEL"] = "TRAVEL";
     ResourceType["PRODUCT"] = "PRODUCT";
 })(ResourceType || (exports.ResourceType = ResourceType = {}));

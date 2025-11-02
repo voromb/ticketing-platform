@@ -13,6 +13,7 @@ export enum UserType {
   USER = 'USER',
   COMPANY_ADMIN = 'COMPANY_ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
+  SYSTEM = 'SYSTEM',
 }
 
 @Schema({ _id: false })

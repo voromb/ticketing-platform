@@ -43,6 +43,30 @@ export class TravelController {
     return this.travelService.createWithCompany(createTripDto, admin);
   }
 
+  @Get('stats')
+  @Public()
+  @ApiOperation({ summary: 'Obtener estadísticas de viajes' })
+  @ApiResponse({ status: 200, description: 'Estadísticas de viajes' })
+  async getStats() {
+    const trips = await this.travelService.findAll();
+    const totalTrips = trips.length;
+    const totalSeats = trips.reduce((sum, t) => sum + (t.capacity || 0), 0);
+    const bookedSeats = trips.reduce((sum, t) => sum + (t.bookedSeats || 0), 0);
+    const totalRevenue = trips.reduce((sum, t) => sum + ((t.bookedSeats || 0) * (t.price || 0)), 0);
+    const activeTrips = trips.filter(t => t.isActive && t.status === 'SCHEDULED').length;
+    const pendingApproval = trips.filter(t => t.approvalStatus === 'PENDING').length;
+
+    return {
+      totalTrips,
+      activeTrips,
+      totalSeats,
+      bookedSeats,
+      availableSeats: totalSeats - bookedSeats,
+      totalRevenue,
+      pendingApproval,
+    };
+  }
+
   @Get()
   @Public() // Cualquiera puede ver viajes disponibles
   @ApiOperation({ summary: 'Obtener todos los viajes activos' })

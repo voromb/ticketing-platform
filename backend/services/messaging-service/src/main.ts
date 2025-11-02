@@ -1,15 +1,42 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
+import compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Habilitar compresión Brotli/Gzip
+  app.use(compression({
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+    threshold: 1024, // Solo comprimir respuestas > 1KB
+  }));
+
+  // Conectar microservicio RabbitMQ
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+      queue: 'approval_requests',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
 
   // CORS Configuration
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:4200',
     credentials: true,
+    exposedHeaders: ['X-User-Id', 'X-User-Name', 'X-User-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Name', 'X-User-Type'],
   });
 
   // Global Validation Pipe
@@ -38,6 +65,10 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  // Iniciar microservicio
+  await app.startAllMicroservices();
+  console.log('🐰 RabbitMQ Microservice started');
 
   const port = process.env.PORT || 3005;
   await app.listen(port);

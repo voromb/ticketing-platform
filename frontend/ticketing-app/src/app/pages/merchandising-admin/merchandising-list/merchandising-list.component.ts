@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MerchandisingService, Product } from '../../../services/merchandising.service';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-merchandising-list',
@@ -192,7 +193,14 @@ export class MerchandisingListComponent implements OnInit {
       next: (product) => {
         this.loadProducts();
         this.closeModals();
-        alert('Producto creado exitosamente. Estado: PENDING (pendiente de aprobación)');
+        Swal.fire({
+          icon: 'info',
+          title: '¡Producto enviado!',
+          text: 'Tu producto ha sido enviado para aprobación. Recibirás una notificación cuando sea revisado.',
+          confirmButtonColor: '#8b5cf6',
+          timer: 2000,
+          showConfirmButton: false
+        });
       },
       error: (error) => {
         console.error('Error creando producto:', error);

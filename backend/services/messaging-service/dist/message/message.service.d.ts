@@ -67,4 +67,24 @@ export declare class MessageService {
             __v: number;
         };
     }>;
+    sendDetailedSystemMessage(data: {
+        recipientId: string;
+        recipientType: string;
+        recipientName: string;
+        senderId: string;
+        senderType: string;
+        senderName: string;
+        content: string;
+        subject?: string;
+        messageType?: string;
+        metadata?: any;
+    }): Promise<{
+        success: boolean;
+        message: string;
+        data: import("mongoose").Document<unknown, {}, MessageDocument, {}, {}> & Message & import("mongoose").Document<unknown, any, any, Record<string, any>, {}> & Required<{
+            _id: unknown;
+        }> & {
+            __v: number;
+        };
+    }>;
 }

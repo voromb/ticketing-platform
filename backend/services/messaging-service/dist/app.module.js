@@ -15,7 +15,6 @@ const app_service_1 = require("./app.service");
 const rabbitmq_module_1 = require("./rabbitmq/rabbitmq.module");
 const message_module_1 = require("./message/message.module");
 const notification_module_1 = require("./notification/notification.module");
-const listeners_module_1 = require("./rabbitmq/listeners/listeners.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -41,7 +40,6 @@ exports.AppModule = AppModule = __decorate([
             rabbitmq_module_1.RabbitMQModule,
             message_module_1.MessageModule,
             notification_module_1.NotificationModule,
-            listeners_module_1.ListenersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

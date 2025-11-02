@@ -9,7 +9,10 @@ export declare enum SenderType {
 export declare enum MessageType {
     TEXT = "TEXT",
     NOTIFICATION = "NOTIFICATION",
-    SYSTEM_ALERT = "SYSTEM_ALERT"
+    SYSTEM_ALERT = "SYSTEM_ALERT",
+    APPROVAL_REQUEST = "APPROVAL_REQUEST",
+    APPROVAL_GRANTED = "APPROVAL_GRANTED",
+    APPROVAL_REJECTED = "APPROVAL_REJECTED"
 }
 export declare enum ActionType {
     PURCHASE = "PURCHASE",
@@ -19,6 +22,7 @@ export declare enum ActionType {
 }
 export declare enum ResourceType {
     RESTAURANT = "RESTAURANT",
+    TRIP = "TRIP",
     TRAVEL = "TRAVEL",
     PRODUCT = "PRODUCT"
 }

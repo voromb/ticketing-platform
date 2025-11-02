@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient } from '@prisma/client';
+import { rabbitmqService } from '../services/rabbitmq.service';
 
 const prisma = new PrismaClient();
 
@@ -202,6 +203,39 @@ export class ApprovalController {
         },
       });
 
+      // Enviar mensaje directo al COMPANY_ADMIN a través del servicio de mensajería
+      try {
+        const axios = require('axios');
+        
+        // Buscar el ID del COMPANY_ADMIN por email
+        const companyAdmin = await prisma.companyAdmin.findUnique({
+          where: { email: updatedApproval.requestedBy }
+        });
+
+        if (companyAdmin) {
+          const messageData = {
+            recipientId: companyAdmin.id,
+            recipientType: 'COMPANY_ADMIN',
+            recipientName: updatedApproval.companyName,
+            content: `✅ SOLICITUD APROBADA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 Tipo: ${updatedApproval.resourceType}\n🏷️ Nombre: ${updatedApproval.resourceName}\n👤 Aprobado por: Super Admin\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎉 ¡Felicidades! Tu recurso ya está disponible y activo en el sistema.`,
+            subject: `Solicitud aprobada: ${updatedApproval.resourceType}`,
+            messageType: 'APPROVAL_GRANTED',
+          };
+          const headers = {
+            'X-User-Id': 'SYSTEM',
+            'X-User-Type': 'SYSTEM',
+            'X-User-Name': 'Sistema de Aprobaciones',
+          };
+          console.log('[APPROVAL] Enviando mensaje de aprobación:', JSON.stringify(messageData, null, 2));
+          await axios.post('http://localhost:3005/api/messages/send', messageData, { headers });
+          console.log(`[APPROVAL] Mensaje de aprobación enviado al COMPANY_ADMIN: ${companyAdmin.email}`);
+        } else {
+          console.warn(`[APPROVAL] No se encontró COMPANY_ADMIN con email: ${updatedApproval.requestedBy}`);
+        }
+      } catch (error: any) {
+        console.error('[APPROVAL] Error enviando mensaje de aprobación:', error.message);
+      }
+
       // Actualizar el recurso en MongoDB a través de Festival Services
       try {
         const axios = require('axios');
@@ -288,6 +322,38 @@ export class ApprovalController {
           notes: reason,
         },
       });
+
+      // Enviar mensaje directo al COMPANY_ADMIN a través del servicio de mensajería
+      try {
+        const axios = require('axios');
+        
+        // Buscar el ID del COMPANY_ADMIN por email
+        const companyAdmin = await prisma.companyAdmin.findUnique({
+          where: { email: updatedApproval.requestedBy }
+        });
+
+        if (companyAdmin) {
+          const messageData = {
+            recipientId: companyAdmin.id,
+            recipientType: 'COMPANY_ADMIN',
+            recipientName: updatedApproval.companyName,
+            content: `❌ SOLICITUD RECHAZADA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 Tipo: ${updatedApproval.resourceType}\n🏷️ Nombre: ${updatedApproval.resourceName}\n👤 Rechazado por: Super Admin\n💬 Motivo: ${reason}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📝 Por favor, revisa los detalles y vuelve a intentarlo.`,
+            subject: `Solicitud rechazada: ${updatedApproval.resourceType}`,
+            messageType: 'APPROVAL_REJECTED',
+          };
+          const headers = {
+            'X-User-Id': 'SYSTEM',
+            'X-User-Type': 'SYSTEM',
+            'X-User-Name': 'Sistema de Aprobaciones',
+          };
+          await axios.post('http://localhost:3005/api/messages/send', messageData, { headers });
+          console.log(`[APPROVAL] Mensaje de rechazo enviado al COMPANY_ADMIN: ${companyAdmin.email}`);
+        } else {
+          console.warn(`[APPROVAL] No se encontró COMPANY_ADMIN con email: ${updatedApproval.requestedBy}`);
+        }
+      } catch (error: any) {
+        console.error('[APPROVAL] Error enviando mensaje de rechazo:', error.message);
+      }
 
       // Actualizar el recurso en MongoDB a través de Festival Services
       try {

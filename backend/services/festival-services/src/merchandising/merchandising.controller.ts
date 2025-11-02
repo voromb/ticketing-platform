@@ -68,17 +68,21 @@ export class MerchandisingController {
     const totalProducts = products.length;
     const totalStock = products.reduce((sum, p) => sum + (p.stock?.available || 0), 0);
     const totalSold = products.reduce((sum, p) => sum + (p.soldUnits || 0), 0);
+    const totalRevenue = products.reduce((sum, p) => sum + ((p.soldUnits || 0) * (p.price || 0)), 0);
     const activeProducts = products.filter(p => p.isActive).length;
     const lowStock = products.filter(p => (p.stock?.available || 0) < 10).length;
     const outOfStock = products.filter(p => (p.stock?.available || 0) === 0).length;
+    const pendingApproval = products.filter(p => p.approvalStatus === 'PENDING').length;
 
     return {
       totalProducts,
       activeProducts,
       totalStock,
       totalSold,
+      totalRevenue,
       lowStock,
       outOfStock,
+      pendingApproval,
     };
   }
 

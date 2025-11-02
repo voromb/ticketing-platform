@@ -1,0 +1,217 @@
+<div class="messages-page">
+  <!-- Sidebar: Lista de conversaciones -->
+  <div class="conversations-sidebar">
+    <div class="sidebar-header">
+      <h2>Mensajes</h2>
+      <div class="header-actions">
+        <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        <button class="btn-new-message" (click)="showNewMessageModal = true" title="Nuevo mensaje">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-conversations" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+
+    <!-- Lista de conversaciones -->
+    <div class="conversations-list" *ngIf="!loading">
+      <div *ngIf="conversations.length === 0" class="empty-conversations">
+        <i class="fas fa-comments"></i>
+        <p>No tienes conversaciones</p>
+        <button class="btn-start-conversation" (click)="showNewMessageModal = true">
+          <i class="fas fa-plus me-2"></i>Iniciar conversación
+        </button>
+      </div>
+
+      <div 
+        *ngFor="let conversation of conversations"
+        class="conversation-item"
+        [class.active]="selectedConversation?._id === conversation._id"
+        [class.unread]="conversation.unreadCount > 0"
+        (click)="selectConversation(conversation)"
+      >
+        <div class="conversation-avatar">
+          <i class="fas fa-user-circle"></i>
+        </div>
+
+        <div class="conversation-info">
+          <div class="conversation-header">
+            <h4>{{ getOtherParticipantName(conversation) }}</h4>
+            <span class="conversation-time">{{ getTimeAgo(conversation.lastMessage?.createdAt) }}</span>
+          </div>
+          <p class="last-message">{{ conversation.lastMessage?.content || 'Sin mensajes' }}</p>
+        </div>
+
+        <div class="conversation-actions">
+          <span class="unread-count" *ngIf="conversation.unreadCount > 0">
+            {{ conversation.unreadCount }}
+          </span>
+          <button class="delete-conversation-btn" (click)="deleteConversation(conversation, $event)" title="Eliminar">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main: Vista de chat -->
+  <div class="chat-area">
+    <!-- Sin conversación seleccionada -->
+    <div class="no-conversation-selected" *ngIf="!selectedConversation">
+      <i class="fas fa-comments"></i>
+      <h3>Selecciona una conversación</h3>
+      <p>Elige una conversación de la lista para ver los mensajes</p>
+    </div>
+
+    <!-- Conversación seleccionada -->
+    <div class="chat-container" *ngIf="selectedConversation">
+      <!-- Header del chat -->
+      <div class="chat-header">
+        <div class="chat-user-info">
+          <i class="fas fa-user-circle"></i>
+          <h3>{{ getOtherParticipantName(selectedConversation) }}</h3>
+        </div>
+        <button class="close-chat-btn" (click)="selectedConversation = null; messages = []">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Loading mensajes -->
+      <div class="loading-messages" *ngIf="loadingMessages">
+        <i class="fas fa-spinner fa-spin"></i> Cargando mensajes...
+      </div>
+
+      <!-- Mensajes -->
+      <div class="messages-container" *ngIf="!loadingMessages">
+        <div *ngIf="messages.length === 0" class="no-messages">
+          <p>No hay mensajes en esta conversación</p>
+        </div>
+
+        <div 
+          *ngFor="let message of messages"
+          class="message"
+          [class.my-message]="isMyMessage(message)"
+          [class.other-message]="!isMyMessage(message)"
+        >
+          <div class="message-bubble">
+            <div class="message-sender" *ngIf="!isMyMessage(message)">
+              {{ cleanSenderName(message.senderName) }}
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+            <div class="message-time">{{ formatMessageTime(message.createdAt) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input de mensaje -->
+      <div class="message-input-container">
+        <textarea 
+          [(ngModel)]="newMessage"
+          (keypress)="onKeyPress($event)"
+          placeholder="Escribe un mensaje..."
+          rows="1"
+          class="message-input"
+        ></textarea>
+        <button 
+          class="send-button"
+          (click)="sendMessage()"
+          [disabled]="!newMessage.trim()"
+        >
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para nuevo mensaje -->
+  <div class="modal-overlay" *ngIf="showNewMessageModal" (click)="showNewMessageModal = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Nuevo Mensaje</h3>
+        <button class="close-modal" (click)="showNewMessageModal = false">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <!-- Tipo de destinatario -->
+          <div class="form-group">
+            <label for="recipientType">Tipo de destinatario</label>
+            <select 
+              id="recipientType" 
+              class="form-control" 
+              [(ngModel)]="newMessageForm.recipientType"
+              name="recipientType"
+              (change)="onRecipientTypeChange()"
+            >
+              <option value="">Selecciona un tipo</option>
+              <option value="USER">Usuario / VIP</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="COMPANY_ADMIN">Gestor de Servicios</option>
+            </select>
+            <small class="form-text">
+              <i class="fas fa-info-circle"></i> 
+              Puedes enviar mensajes a cualquier tipo de usuario
+            </small>
+          </div>
+
+          <!-- Selector de usuario -->
+          <div class="form-group" *ngIf="newMessageForm.recipientType">
+            <label for="userSelect">Selecciona el destinatario</label>
+            
+            <div *ngIf="loadingUsers" class="loading-users">
+              <i class="fas fa-spinner fa-spin"></i> Cargando usuarios...
+            </div>
+
+            <select 
+              *ngIf="!loadingUsers"
+              id="userSelect" 
+              class="form-control" 
+              (change)="onUserSelect($event)"
+              [disabled]="availableUsers.length === 0"
+            >
+              <option value="">Selecciona un usuario</option>
+              <option 
+                *ngFor="let user of availableUsers" 
+                [value]="user._id || user.id"
+              >
+                {{ user.firstName || user.name || user.email }} 
+                <span *ngIf="user.email">({{ user.email }})</span>
+              </option>
+            </select>
+
+            <small class="form-text" *ngIf="availableUsers.length === 0 && !loadingUsers">
+              No hay usuarios disponibles de este tipo
+            </small>
+          </div>
+
+          <!-- Mensaje -->
+          <div class="form-group">
+            <label for="messageContent">Mensaje</label>
+            <textarea 
+              id="messageContent" 
+              class="form-control" 
+              [(ngModel)]="newMessageForm.content"
+              name="content"
+              rows="4"
+              placeholder="Escribe tu mensaje aquí..."
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeNewMessageModal()">Cancelar</button>
+        <button 
+          class="btn btn-primary" 
+          (click)="sendNewMessage()"
+          [disabled]="!isNewMessageFormValid()"
+        >
+          <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

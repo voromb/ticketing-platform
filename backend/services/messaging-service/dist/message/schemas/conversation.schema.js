@@ -22,6 +22,7 @@ var UserType;
     UserType["USER"] = "USER";
     UserType["COMPANY_ADMIN"] = "COMPANY_ADMIN";
     UserType["SUPER_ADMIN"] = "SUPER_ADMIN";
+    UserType["SYSTEM"] = "SYSTEM";
 })(UserType || (exports.UserType = UserType = {}));
 let Participant = class Participant {
     userId;

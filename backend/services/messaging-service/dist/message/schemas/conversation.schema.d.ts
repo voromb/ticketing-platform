@@ -8,7 +8,8 @@ export declare enum ConversationType {
 export declare enum UserType {
     USER = "USER",
     COMPANY_ADMIN = "COMPANY_ADMIN",
-    SUPER_ADMIN = "SUPER_ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN",
+    SYSTEM = "SYSTEM"
 }
 export declare class Participant {
     userId: string;

@@ -343,8 +343,13 @@ export class EventDetailComponent implements OnInit {
       // Enviar orden al backend
       this.orderService.createOrder(orderData).subscribe({
         next: (response) => {
+          console.log('📦 Respuesta del servidor:', response);
+          
           if (response.success) {
             const orderId = response.data._id || response.data.id;
+            
+            // Cerrar el loading
+            Swal.close();
             
             // Redirigir a checkout de pago (Stripe o interno)
             this.router.navigate(['/payment/checkout'], {

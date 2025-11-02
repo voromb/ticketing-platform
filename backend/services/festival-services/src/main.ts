@@ -8,9 +8,21 @@ import { AuditInterceptor } from './auth/interceptors/audit.interceptor';
 import { PerformanceInterceptor } from './auth/interceptors/performance.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Habilitar compresión Brotli/Gzip
+  app.use(compression({
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+    threshold: 1024, // Solo comprimir respuestas > 1KB
+  }));
 
   // Configuración global
   app.enableCors();

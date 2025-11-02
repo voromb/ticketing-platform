@@ -42,6 +42,27 @@ export class RestaurantController {
     return this.restaurantService.createWithCompany(createRestaurantDto, admin);
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Obtener estadísticas de restaurantes' })
+  @ApiResponse({ status: 200, description: 'Estadísticas de restaurantes' })
+  async getStats() {
+    const restaurants = await this.restaurantService.findAll();
+    const totalRestaurants = restaurants.length;
+    const totalCapacity = restaurants.reduce((sum, r) => sum + (r.capacity || 0), 0);
+    const currentOccupancy = restaurants.reduce((sum, r) => sum + (r.currentOccupancy || 0), 0);
+    const activeRestaurants = restaurants.filter(r => r.isActive && r.status === 'OPEN').length;
+    const pendingApproval = restaurants.filter(r => r.approvalStatus === 'PENDING').length;
+
+    return {
+      totalRestaurants,
+      activeRestaurants,
+      totalCapacity,
+      currentOccupancy,
+      availableCapacity: totalCapacity - currentOccupancy,
+      pendingApproval,
+    };
+  }
+
   @Get()
   @ApiOperation({ summary: 'Obtener todos los restaurantes' })
   @ApiQuery({ name: 'festivalId', required: false })

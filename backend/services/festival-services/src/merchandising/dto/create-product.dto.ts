@@ -11,14 +11,17 @@ enum ProductType {
 }
 
 export class CreateProductDto {
+  @IsOptional()
   @IsString()
-  festivalId: string;
+  festivalId?: string;
 
+  @IsOptional()
   @IsString()
-  bandId: string;
+  bandId?: string;
 
+  @IsOptional()
   @IsString()
-  bandName: string;
+  bandName?: string;
 
   @IsString()
   name: string;
@@ -38,9 +41,10 @@ export class CreateProductDto {
   @IsString({ each: true })
   sizes?: string[];
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  totalStock: number;
+  totalStock?: number;
 
   @IsOptional()
   @IsArray()

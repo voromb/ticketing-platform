@@ -43,7 +43,7 @@ import type { Connection } from 'mongoose';
     NotificationModule,
 
     // RabbitMQ Listeners
-    ListenersModule,
+    // ListenersModule, // Desactivado - usando ApprovalMessageListener en su lugar
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -24,29 +24,49 @@ let MessageController = class MessageController {
         this.messageService = messageService;
     }
     async sendMessage(createMessageDto, req) {
-        const senderId = req.user?.userId || 'test-user-id';
-        const senderType = req.user?.userType || 'USER';
-        const senderName = req.user?.userName || 'Usuario Test';
-        return this.messageService.sendMessage(createMessageDto, senderId, senderType, senderName);
+        try {
+            console.log('🔍 Headers recibidos:', req.headers);
+            const senderId = req.headers['x-user-id'] || req.headers['xuserid'] || req.user?.userId || 'test-user-id';
+            const senderType = req.headers['x-user-type'] || req.headers['xusertype'] || req.user?.userType || 'USER';
+            const senderName = req.headers['x-user-name'] || req.headers['xusername'] || req.user?.userName || 'Usuario Test';
+            console.log('🔍 Datos extraídos:', { senderId, senderType, senderName });
+            console.log('📨 Enviando mensaje:', {
+                senderId,
+                senderType,
+                senderName,
+                recipientId: createMessageDto.recipientId,
+                recipientType: createMessageDto.recipientType,
+                content: createMessageDto.content.substring(0, 50) + '...'
+            });
+            const result = await this.messageService.sendMessage(createMessageDto, senderId, senderType, senderName);
+            console.log('✅ Mensaje enviado exitosamente');
+            return result;
+        }
+        catch (error) {
+            console.error('❌ Error enviando mensaje:', error);
+            throw error;
+        }
     }
     async getConversations(req) {
-        const userId = req.user?.userId || 'test-user-id';
+        const userId = req.headers['x-user-id'] || req.user?.userId || 'test-user-id';
+        console.log('📋 Obteniendo conversaciones para userId:', userId);
         return this.messageService.getConversations(userId);
     }
     async getMessages(conversationId, query, req) {
-        const userId = req.user?.userId || 'test-user-id';
+        const userId = req.headers['x-user-id'] || req.user?.userId || 'test-user-id';
+        console.log('💬 Obteniendo mensajes de conversación:', conversationId, 'para userId:', userId);
         return this.messageService.getMessages(conversationId, userId, query);
     }
     async markAsRead(messageId, req) {
-        const userId = req.user?.userId || 'test-user-id';
+        const userId = req.headers['x-user-id'] || req.user?.userId || 'test-user-id';
         return this.messageService.markAsRead(messageId, userId);
     }
     async markConversationAsRead(conversationId, req) {
-        const userId = req.user?.userId || 'test-user-id';
+        const userId = req.headers['x-user-id'] || req.user?.userId || 'test-user-id';
         return this.messageService.markConversationAsRead(conversationId, userId);
     }
     async deleteConversation(conversationId, req) {
-        const userId = req.user?.userId || 'test-user-id';
+        const userId = req.headers['x-user-id'] || req.user?.userId || 'test-user-id';
         return this.messageService.deleteConversation(conversationId, userId);
     }
 };

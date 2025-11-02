@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { MessagingService } from '../../../services/messaging.service';
 import { SocialLoginComponent } from '../social-login/social-login.component';
 import Swal from 'sweetalert2';
 
@@ -21,6 +22,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private messagingService: MessagingService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -66,6 +68,9 @@ export class LoginComponent implements OnInit {
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
+          // Verificar mensajes no leídos después del login
+          this.checkUnreadMessages();
+          
           if (user) {
             this.redirectByRole(user.role);
           }
@@ -120,5 +125,46 @@ export class LoginComponent implements OnInit {
 
   togglePassword() {
     this.showPassword = !this.showPassword;
+  }
+
+  private checkUnreadMessages() {
+    console.log('🔔 Verificando mensajes no leídos después del login...');
+    
+    // Primero refrescar los contadores desde el backend
+    this.messagingService.refreshUnreadCounts();
+    
+    // Esperar 2 segundos después del login para verificar mensajes
+    setTimeout(() => {
+      console.log('🔔 Llamando a getUnreadMessagesCount...');
+      this.messagingService.getUnreadMessagesCount().subscribe({
+        next: (count) => {
+          console.log('🔔 Mensajes no leídos:', count);
+          if (count > 0) {
+            console.log('🔔 Mostrando alerta de mensajes no leídos');
+            Swal.fire({
+              title: '¡Tienes mensajes nuevos!',
+              html: `Tienes <strong>${count}</strong> mensaje${count > 1 ? 's' : ''} sin leer`,
+              icon: 'info',
+              iconColor: '#007bff',
+              confirmButtonText: 'Ver mensajes',
+              confirmButtonColor: '#007bff',
+              showCancelButton: true,
+              cancelButtonText: 'Ahora no',
+              cancelButtonColor: '#6c757d',
+              backdrop: true,
+              allowOutsideClick: true
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Redirigir a la página de mensajes
+                this.router.navigate(['/messages']);
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.warn('⚠️ No se pudo verificar mensajes no leídos:', error);
+        }
+      });
+    }, 2000);
   }
 }
