@@ -62,6 +62,26 @@ export class TravelService {
       // No fallar la creación del viaje si falla la aprobación
     }
 
+    // Enviar evento de aprobación requerida
+    this.client.emit('approval.requested', {
+      service: 'TRAVEL',
+      entityId: (saved as any)._id.toString(),
+      entityType: 'Trip',
+      resourceType: 'TRIP',
+      resourceName: saved.name,
+      requestedBy: admin.email,
+      requestedByName: admin.companyName,
+      approvalId: null,
+      metadata: {
+        tripName: saved.name,
+        companyName: admin.companyName,
+        region: admin.companyRegion,
+        capacity: saved.capacity,
+        vehicleType: saved.vehicleType,
+      },
+      priority: 'MEDIUM',
+    });
+
     console.log(`[TRAVEL] Nuevo viaje creado por ${admin.email}, requiere aprobación`);
     return saved;
   }

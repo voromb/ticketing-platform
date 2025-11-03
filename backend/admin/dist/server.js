@@ -45,6 +45,7 @@ const multipart_1 = __importDefault(require("@fastify/multipart"));
 const static_1 = __importDefault(require("@fastify/static"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
+const compress_1 = __importDefault(require("@fastify/compress"));
 const client_1 = require("@prisma/client");
 const path_1 = __importDefault(require("path"));
 const pino_1 = __importDefault(require("pino"));
@@ -62,6 +63,8 @@ const payment_routes_1 = require("./routes/payment.routes");
 const image_upload_routes_1 = require("./routes/image-upload.routes");
 const company_routes_1 = require("./routes/company.routes");
 const company_admin_routes_1 = require("./routes/company-admin.routes");
+const approval_routes_1 = require("./routes/approval.routes");
+const messaging_users_routes_1 = require("./routes/messaging-users.routes");
 const image_upload_service_1 = require("./services/image-upload.service");
 // Jobs
 const reservation_cron_1 = require("./jobs/reservation.cron");
@@ -103,12 +106,19 @@ async function buildServer() {
             headerPairs: 2000,
         },
     });
+    // Registrar compresión Brotli/Gzip
+    await server.register(compress_1.default, {
+        global: true,
+        encodings: ['br', 'gzip', 'deflate'], // Brotli primero
+        threshold: 1024, // Solo comprimir respuestas > 1KB
+    });
     // Registrar CORS
     await server.register(cors_1.default, {
         origin: true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Name', 'X-User-Type'],
+        exposedHeaders: ['X-User-Id', 'X-User-Name', 'X-User-Type'],
     });
     // Registrar JWT
     await server.register(jwt_1.default, {
@@ -237,12 +247,22 @@ async function buildServer() {
         console.log('[REGISTER] Registrando companyAdminRoutes...');
         await server.register(company_admin_routes_1.companyAdminRoutes, { prefix: '/api' });
         console.log('[OK] companyAdminRoutes OK');
+        console.log('[REGISTER] Registrando approvalRoutes...');
+        await server.register(approval_routes_1.approvalRoutes, { prefix: '/api/approvals' });
+        console.log('[OK] approvalRoutes OK');
+        console.log('[REGISTER] Registrando messagingUsersRoutes...');
+        await server.register(messaging_users_routes_1.messagingUsersRoutes, { prefix: '/api/messaging-users' });
+        console.log('[OK] messagingUsersRoutes OK');
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
     }
     catch (error) {
-        logger.error('[ERROR] Error registrando rutas:', error);
-        console.error('[ERROR] Error completo:', error);
-        console.error('[ERROR] Stack:', error.stack);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        logger.error({ err: error }, '[ERROR] Error registrando rutas');
+        console.error('[ERROR] Error completo:', errorMessage);
+        if (errorStack) {
+            console.error('[ERROR] Stack:', errorStack);
+        }
     }
     // Health check
     server.get('/health', async (request, reply) => {

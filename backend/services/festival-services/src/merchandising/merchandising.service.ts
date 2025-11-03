@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
 import { Model } from 'mongoose';
@@ -12,7 +12,7 @@ import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
 import { ApprovalService } from '../approval/approval.service';
 
 @Injectable()
-export class MerchandisingService {
+export class MerchandisingService implements OnModuleInit {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
@@ -20,6 +20,10 @@ export class MerchandisingService {
     @Inject('RABBITMQ_SERVICE') private readonly client: ClientProxy,
     private readonly approvalService: ApprovalService,
   ) {}
+
+  async onModuleInit() {
+    await this.client.connect();
+  }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const createdProduct = new this.productModel(createProductDto);
@@ -30,6 +34,13 @@ export class MerchandisingService {
    * Crear producto con datos de compañía (para COMPANY_ADMIN)
    */
   async createWithCompany(createProductDto: CreateProductDto, admin: any): Promise<Product> {
+    console.log('[MERCHANDISING] 🔵 createWithCompany llamado');
+    console.log('[MERCHANDISING] Admin:', JSON.stringify(admin, null, 2));
+    console.log('[MERCHANDISING] Product DTO:', JSON.stringify(createProductDto, null, 2));
+    
+    // Determinar el stock total (puede venir como totalStock o como objeto stock)
+    const totalStock = createProductDto.totalStock || (createProductDto as any).stock?.total || 0;
+    
     const productData = {
       ...createProductDto,
       companyId: admin.companyId,
@@ -39,8 +50,8 @@ export class MerchandisingService {
       approvalStatus: 'PENDING',
       lastModifiedBy: admin.email,
       stock: {
-        total: createProductDto.totalStock,
-        available: createProductDto.totalStock,
+        total: totalStock,
+        available: totalStock,
         reserved: 0
       }
     };
@@ -70,19 +81,30 @@ export class MerchandisingService {
     }
 
     // Enviar evento de aprobación requerida
-    this.client.emit('approval.requested', {
+    const approvalEvent = {
       service: 'MERCHANDISING',
       entityId: (saved as any)._id.toString(),
       entityType: 'Product',
+      resourceType: 'PRODUCT',
+      resourceName: saved.name,
+      companyId: admin.companyId,
+      companyName: admin.companyName,
       requestedBy: admin.email,
+      requestedByName: admin.companyName,
+      approvalId: null,
       metadata: {
         productName: saved.name,
         companyName: admin.companyName,
         region: admin.companyRegion,
         price: saved.price,
+        stock: saved.stock,
       },
       priority: 'MEDIUM',
-    });
+    };
+    
+    console.log('[MERCHANDISING] 🔴 Publicando evento approval.requested:', JSON.stringify(approvalEvent, null, 2));
+    this.client.emit('approval.requested', approvalEvent);
+    console.log('[MERCHANDISING] 🟢 Evento publicado exitosamente');
 
     console.log(`[MERCHANDISING] Nuevo producto creado por ${admin.email}, requiere aprobación`);
     return saved;

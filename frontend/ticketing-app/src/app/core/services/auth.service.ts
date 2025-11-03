@@ -122,7 +122,7 @@ export class AuthService {
       
       if (userData) {
         const user: any = {
-          id: userData.id,
+          id: userData.id || userData._id,
           email: userData.email,
           firstName: userData.firstName || userData.first_name,
           lastName: userData.lastName || userData.last_name,
@@ -136,6 +136,18 @@ export class AuthService {
         
         console.log('🔐 Usuario logueado:', user);
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // Guardar datos individuales para el servicio de mensajería
+        localStorage.setItem('userId', user.id);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userType', user.role.toUpperCase());
+        
+        console.log('💾 Datos guardados en localStorage:', {
+          userId: user.id,
+          userName: `${user.firstName} ${user.lastName}`,
+          userType: user.role.toUpperCase()
+        });
+        
         this.currentUserSubject.next(user);
       }
     }
@@ -143,6 +155,10 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userType');
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }

@@ -230,11 +230,12 @@ export class RestaurantListComponent implements OnInit {
           this.closeModal();
           // SweetAlert de éxito
           Swal.fire({
-            icon: 'success',
-            title: '¡Restaurante creado!',
-            text: 'El restaurante ha sido creado exitosamente y está pendiente de aprobación.',
+            icon: 'info',
+            title: '¡Restaurante enviado!',
+            text: 'Tu restaurante ha sido enviado para aprobación. Recibirás una notificación cuando sea revisado.',
             confirmButtonColor: '#10b981',
-            timer: 3000
+            timer: 2000,
+            showConfirmButton: false
           });
         },
         error: (error) => {

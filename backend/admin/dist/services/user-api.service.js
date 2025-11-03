@@ -64,6 +64,22 @@ class UserApiService {
         }
     }
     /**
+     * Obtener un usuario CON su contraseña hasheada (solo para uso interno de admin-service)
+     */
+    async getUserWithPassword(userId) {
+        try {
+            const response = await this.client.get(`/api/users/${userId}/with-password`);
+            return response.data.user || null;
+        }
+        catch (error) {
+            if (error.response?.status === 404) {
+                return null;
+            }
+            console.error(`Error fetching user with password ${userId}:`, error.message);
+            throw new Error(`Failed to fetch user with password: ${error.message}`);
+        }
+    }
+    /**
      * Promocionar un usuario a VIP
      */
     async promoteUserToVip(userId, adminId) {

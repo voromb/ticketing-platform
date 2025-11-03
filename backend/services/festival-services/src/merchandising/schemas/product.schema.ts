@@ -49,13 +49,13 @@ export class Product {
     shippingTime: number;
   };
 
-  @Prop({ required: true })
+  @Prop()
   festivalId: string;
 
-  @Prop({ required: true })
+  @Prop()
   bandId: string;
 
-  @Prop({ required: true })
+  @Prop()
   bandName: string;
 
   @Prop({ required: true })

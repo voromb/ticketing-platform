@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Order, OrderDocument } from './schemas/order.schema';
+import { PackageOrder, PackageOrderDocument } from './schemas/order.schema';
 import { Trip, TripDocument } from '../travel/schemas/trip.schema';
 import { Restaurant, RestaurantDocument } from '../restaurant/schemas/restaurant.schema';
 import { Product, ProductDocument } from '../merchandising/schemas/product.schema';
@@ -9,13 +9,13 @@ import { Product, ProductDocument } from '../merchandising/schemas/product.schem
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(PackageOrder.name) private orderModel: Model<PackageOrderDocument>,
     @InjectModel(Trip.name) private tripModel: Model<TripDocument>,
     @InjectModel(Restaurant.name) private restaurantModel: Model<RestaurantDocument>,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {}
 
-  async createPackageOrder(orderData: any): Promise<Order> {
+  async createPackageOrder(orderData: any): Promise<PackageOrder> {
     // Crear la orden
     const order = new this.orderModel(orderData);
     await order.save();
@@ -56,19 +56,19 @@ export class OrderService {
     return order;
   }
 
-  async findAll(): Promise<Order[]> {
+  async findAll(): Promise<PackageOrder[]> {
     return this.orderModel.find().sort({ createdAt: -1 }).exec();
   }
 
-  async findByUser(userId: string): Promise<Order[]> {
+  async findByUser(userId: string): Promise<PackageOrder[]> {
     return this.orderModel.find({ userId }).sort({ createdAt: -1 }).exec();
   }
 
-  async findById(id: string): Promise<Order | null> {
+  async findById(id: string): Promise<PackageOrder | null> {
     return this.orderModel.findById(id).exec();
   }
 
-  async updateStatus(id: string, status: string): Promise<Order | null> {
+  async updateStatus(id: string, status: string): Promise<PackageOrder | null> {
     return this.orderModel.findByIdAndUpdate(
       id,
       { status },
@@ -76,11 +76,26 @@ export class OrderService {
     ).exec();
   }
 
-  async updatePaymentStatus(id: string, paymentStatus: string, transactionId?: string): Promise<Order | null> {
+  async updatePaymentStatus(id: string, paymentStatus: string, transactionId?: string): Promise<PackageOrder | null> {
     return this.orderModel.findByIdAndUpdate(
       id,
       { paymentStatus, transactionId },
       { new: true }
     ).exec();
+  }
+
+  async completePayment(orderId: string): Promise<PackageOrder | null> {
+    // Actualizar orden a PAID
+    const order = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      { 
+        paymentStatus: 'PAID',
+        status: 'CONFIRMED',
+        transactionId: `demo_${Date.now()}`
+      },
+      { new: true }
+    ).exec();
+
+    return order;
   }
 }

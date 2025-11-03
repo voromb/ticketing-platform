@@ -8,13 +8,17 @@ export class OrderController {
   @Post()
   async create(@Body() orderData: any) {
     try {
+      console.log('📦 Creando orden con datos:', JSON.stringify(orderData, null, 2));
       const order = await this.orderService.createPackageOrder(orderData);
+      console.log('✅ Orden creada exitosamente:', (order as any)._id);
       return {
         success: true,
         message: 'Orden creada exitosamente',
         data: order,
       };
     } catch (error) {
+      console.error('❌ Error creando orden:', error);
+      console.error('Stack:', error.stack);
       return {
         success: false,
         message: 'Error creando orden',
@@ -112,6 +116,39 @@ export class OrderController {
       return {
         success: false,
         message: 'Error actualizando pago',
+        error: error.message,
+      };
+    }
+  }
+
+  @Post('complete-payment')
+  async completePayment(@Body() body: { orderId: string }) {
+    try {
+      console.log('💳 Procesando pago para orden:', body.orderId);
+      const order = await this.orderService.completePayment(body.orderId);
+      
+      if (!order) {
+        console.error('❌ Orden no encontrada:', body.orderId);
+        return {
+          success: false,
+          message: 'Orden no encontrada',
+        };
+      }
+
+      console.log('✅ Pago completado exitosamente para orden:', body.orderId);
+      return {
+        success: true,
+        message: 'Pago completado exitosamente',
+        data: {
+          order,
+          message: 'Tu compra ha sido procesada correctamente'
+        },
+      };
+    } catch (error) {
+      console.error('❌ Error procesando pago:', error);
+      return {
+        success: false,
+        message: 'Error procesando pago',
         error: error.message,
       };
     }

@@ -120,6 +120,11 @@ try {
     $MerchOrdersCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orderitems.countDocuments()"
     $PackageOrdersCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('festival_services').orders.countDocuments()"
     
+    # Base de datos ticketing_messaging (NUEVO)
+    $MessagesCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').messages.countDocuments()"
+    $ConversationsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').conversations.countDocuments()"
+    $NotificationsCount = docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').notifications.countDocuments()"
+    
     Write-Host "`n  [ticketing]" -ForegroundColor Cyan
     Write-Host "    - Usuarios: $UsersCount" -ForegroundColor Yellow
     
@@ -132,6 +137,11 @@ try {
     Write-Host "    - Carritos: $CartsCount" -ForegroundColor Yellow
     Write-Host "    - Ordenes Merchandising: $MerchOrdersCount" -ForegroundColor Yellow
     Write-Host "    - Ordenes Paquetes: $PackageOrdersCount" -ForegroundColor Magenta
+    
+    Write-Host "`n  [ticketing_messaging] " -ForegroundColor Green
+    Write-Host "    - Mensajes: $MessagesCount" -ForegroundColor Yellow
+    Write-Host "    - Conversaciones: $ConversationsCount" -ForegroundColor Yellow
+    Write-Host "    - Notificaciones: $NotificationsCount" -ForegroundColor Yellow
 } catch {
     Write-Host "  - No se pudo verificar conteo de MongoDB (backup completo realizado)" -ForegroundColor Gray
 }

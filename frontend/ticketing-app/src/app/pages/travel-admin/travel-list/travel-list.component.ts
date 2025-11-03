@@ -233,11 +233,12 @@ export class TravelListComponent implements OnInit {
           this.closeModal();
           // SweetAlert de éxito
           Swal.fire({
-            icon: 'success',
-            title: '¡Viaje creado!',
-            text: 'El viaje ha sido creado exitosamente y está pendiente de aprobación.',
+            icon: 'info',
+            title: '¡Viaje enviado!',
+            text: 'Tu viaje ha sido enviado para aprobación. Recibirás una notificación cuando sea revisado.',
             confirmButtonColor: '#3b82f6',
-            timer: 3000
+            timer: 2000,
+            showConfirmButton: false
           });
         },
         error: (error) => {

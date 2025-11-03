@@ -138,30 +138,62 @@ export class PaymentCheckoutComponent implements OnInit {
   }
 
   loadOrderInfo() {
-    this.http.get<any>(`http://localhost:3003/api/orders/${this.orderId}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }).subscribe({
-      next: (response) => {
-        if (response.success) {
-          const order = response.data;
+    // Detectar si es orden de Admin Service (UUID con guiones) o Festival Services (MongoDB ObjectId)
+    const isAdminOrder = this.orderId.includes('-'); // UUIDs tienen guiones
+    
+    if (isAdminOrder) {
+      // Orden de Admin Service (solo tickets)
+      this.http.get<any>(`http://localhost:3003/api/orders/${this.orderId}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      }).subscribe({
+        next: (response) => {
+          if (response.success) {
+            const order = response.data;
+            this.orderInfo = {
+              eventName: order.event?.name || 'Evento',
+              localityName: order.locality?.name || 'General',
+              quantity: order.quantity,
+              total: Number(order.finalAmount).toFixed(2)
+            };
+          }
+        },
+        error: (error) => {
+          console.error('Error loading order from Admin Service:', error);
           this.orderInfo = {
-            eventName: order.event?.name || 'Evento',
-            localityName: order.locality?.name || 'General',
-            quantity: order.quantity,
-            total: Number(order.finalAmount).toFixed(2)
+            eventName: 'Evento',
+            localityName: 'General',
+            quantity: 1,
+            total: '0.00'
           };
         }
-      },
-      error: (error) => {
-        console.error('Error loading order:', error);
-        this.orderInfo = {
-          eventName: 'Evento',
-          localityName: 'General',
-          quantity: 1,
-          total: '0.00'
-        };
-      }
-    });
+      });
+    } else {
+      // Orden de Festival Services (packs)
+      this.http.get<any>(`http://localhost:3004/api/order/${this.orderId}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      }).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            const order = response.data;
+            this.orderInfo = {
+              eventName: order.eventName || order.event?.name || 'Evento',
+              localityName: order.tripName || order.restaurantName || order.locality?.name || 'Paquete',
+              quantity: order.ticketQuantity || order.quantity || 1,
+              total: Number(order.total || order.finalAmount || 0).toFixed(2)
+            };
+          }
+        },
+        error: (error) => {
+          console.error('Error loading order from Festival Services:', error);
+          this.orderInfo = {
+            eventName: 'Evento',
+            localityName: 'Paquete',
+            quantity: 1,
+            total: '0.00'
+          };
+        }
+      });
+    }
   }
 
   processPayment() {
@@ -185,45 +217,86 @@ export class PaymentCheckoutComponent implements OnInit {
 
     setTimeout(() => {
       console.log('💳 Enviando petición de pago para orden:', this.orderId);
-      this.http.post<any>('http://localhost:3003/api/payments/complete-payment', 
-        { orderId: this.orderId },
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
-      ).subscribe({
-        next: (response) => {
-          console.log('✅ Respuesta del pago:', response);
-          this.processing = false;
-          if (response.success) {
-            console.log('🎫 Tickets generados:', response.data?.tickets?.length || 0);
+      
+      // Detectar tipo de orden por formato del ID
+      const isAdminOrder = this.orderId.includes('-'); // UUIDs tienen guiones
+      
+      if (isAdminOrder) {
+        // Orden de Admin Service (solo tickets)
+        this.http.post<any>('http://localhost:3003/api/payments/complete-payment', 
+          { orderId: this.orderId },
+          { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+        ).subscribe({
+          next: (response) => {
+            console.log('✅ Respuesta del pago (Admin Service):', response);
+            this.processing = false;
+            if (response.success) {
+              console.log('🎫 Tickets generados:', response.data?.tickets?.length || 0);
+              Swal.fire({
+                icon: 'success',
+                title: '¡Pago Exitoso!',
+                html: `
+                  <div class="text-start">
+                    <p class="mb-2">✅ Pago procesado correctamente</p>
+                    <p class="mb-2">✅ Tus entradas han sido generadas</p>
+                    <p class="text-muted small">Puedes verlas en tu perfil</p>
+                  </div>
+                `,
+                confirmButtonText: 'Ver mis entradas'
+              }).then(() => {
+                this.router.navigate(['/profile']);
+              });
+            }
+          },
+          error: (error) => {
+            this.processing = false;
+            console.error('❌ Error procesando pago:', error);
             Swal.fire({
-              icon: 'success',
-              title: '¡Pago Exitoso!',
-              html: `
-                <div class="text-start">
-                  <p class="mb-2">✅ Pago procesado correctamente</p>
-                  <p class="mb-2">✅ Tus entradas han sido generadas</p>
-                  <p class="text-muted small">Puedes verlas en tu perfil</p>
-                </div>
-              `,
-              confirmButtonText: 'Ver mis entradas'
-            }).then(() => {
-              this.router.navigate(['/profile']);
+              icon: 'error',
+              title: 'Error en el pago',
+              text: error.error?.details || error.error?.error || 'No se pudo procesar el pago',
+              confirmButtonText: 'Reintentar'
             });
           }
-        },
-        error: (error) => {
-          this.processing = false;
-          console.error('❌ Error procesando pago:', error);
-          console.error('Status:', error.status);
-          console.error('Message:', error.message);
-          console.error('Details:', error.error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error en el pago',
-            text: error.error?.details || error.error?.error || 'No se pudo procesar el pago',
-            confirmButtonText: 'Reintentar'
-          });
-        }
-      });
+        });
+      } else {
+        // Orden de Festival Services (packs)
+        this.http.post<any>('http://localhost:3004/api/order/complete-payment', 
+          { orderId: this.orderId },
+          { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+        ).subscribe({
+          next: (response) => {
+            console.log('✅ Respuesta del pago (Festival Services):', response);
+            this.processing = false;
+            if (response.success) {
+              Swal.fire({
+                icon: 'success',
+                title: '¡Pago Exitoso!',
+                html: `
+                  <div class="text-start">
+                    <p class="mb-2">✅ Pago procesado correctamente</p>
+                    <p class="mb-2">✅ Tu compra ha sido confirmada</p>
+                    <p class="text-muted small">Puedes ver los detalles en tu perfil</p>
+                  </div>
+                `,
+                confirmButtonText: 'Ir a mi perfil'
+              }).then(() => {
+                this.router.navigate(['/profile']);
+              });
+            }
+          },
+          error: (error) => {
+            this.processing = false;
+            console.error('❌ Error procesando pago:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error en el pago',
+              text: error.error?.details || error.error?.error || 'No se pudo procesar el pago',
+              confirmButtonText: 'Reintentar'
+            });
+          }
+        });
+      }
     }, 2000);
   }
 

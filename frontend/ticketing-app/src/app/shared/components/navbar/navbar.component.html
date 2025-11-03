@@ -33,6 +33,21 @@
 
     <!-- Menú de usuario -->
     <div class="navbar-nav ms-auto" *ngIf="isLoggedIn && user">
+      <!-- Notificaciones -->
+      <div class="nav-item me-3">
+        <app-notifications></app-notifications>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="nav-item me-3">
+        <a class="nav-link position-relative" href="#" (click)="goToMessages($event)" title="Mensajes">
+          <i class="fas fa-envelope" style="font-size: 1.5rem;"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" *ngIf="unreadMessagesCount > 0">
+            {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+          </span>
+        </a>
+      </div>
+
       <div class="nav-item dropdown" [class.show]="showDropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center user-menu" 
            href="#" 
