@@ -251,14 +251,14 @@ restore_postgresql() {
     fi
     
     # Terminar conexiones
-    docker exec ticketing-postgres psql -U admin -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DB_NAME' AND pid <> pg_backend_pid();" > /dev/null 2>&1
+    docker exec ticketing-postgres psql -U admin -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DB_NAME' AND pid <> pg_backend_pid();" >/dev/null 2>&1
     
     # Drop y Create
-    docker exec ticketing-postgres psql -U admin -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;" > /dev/null 2>&1
-    docker exec ticketing-postgres psql -U admin -d postgres -c "CREATE DATABASE $DB_NAME;" > /dev/null 2>&1
+    docker exec ticketing-postgres psql -U admin -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;" >/dev/null 2>&1
+    docker exec ticketing-postgres psql -U admin -d postgres -c "CREATE DATABASE $DB_NAME;" >/dev/null 2>&1
     
     # Restaurar
-    cat "$BACKUP_PATH/$BACKUP_FILE" | docker exec -i ticketing-postgres psql -U admin -d $DB_NAME > /dev/null 2>&1
+    cat "$BACKUP_PATH/$BACKUP_FILE" | docker exec -i ticketing-postgres psql -U admin -d $DB_NAME >/dev/null 2>&1
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}[PostgreSQL] $DB_NAME restaurada ✓${NC}"
@@ -278,26 +278,24 @@ restore_mongodb() {
     fi
     
     # Copiar al contenedor
-    docker cp "$BACKUP_PATH/mongodb_backup.archive" ticketing-mongodb:/tmp/mongodb_backup.archive 2>&1 > /dev/null
+    docker cp "$BACKUP_PATH/mongodb_backup.archive" ticketing-mongodb:/tmp/mongodb_backup.archive >/dev/null 2>&1
     
-    # Restaurar con --drop
-    docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip 2>&1 > /dev/null
-    
+    # Restaurar con --drop y sin índices (evita fallos por permisos de createIndex)
+    docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --gzip --noIndexRestore >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}[MongoDB] Restaurada con gzip ✓${NC}"
+        echo -e "${GREEN}[MongoDB] Restaurada (sin índices) ✓${NC}"
         return 0
-    else
-        # Intentar sin gzip
-        docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop 2>&1 > /dev/null
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}[MongoDB] Restaurada sin gzip ✓${NC}"
-            return 0
-        else
-            echo -e "${RED}[MongoDB] Error en restauración ✗${NC}"
-            return 1
-        fi
     fi
+
+    # Fallback: intentar sin gzip, también sin índices
+    docker exec ticketing-mongodb mongorestore --username admin --password admin123 --authenticationDatabase admin --archive=/tmp/mongodb_backup.archive --drop --noIndexRestore >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}[MongoDB] Restaurada (sin gzip, sin índices) ✓${NC}"
+        return 0
+    fi
+
+    echo -e "${RED}[MongoDB] Error en restauración ✗${NC}"
+    return 1
 }
 
 # ===== INICIO DEL SCRIPT =====
@@ -350,7 +348,8 @@ if ! test_container_running "ticketing-mongodb"; then
 fi
 echo -e "  ${GREEN}✓${NC} Todos los contenedores están corriendo"
 
-# Obtener estado actual
+# Obtener estado actual (ANTES)
+get_current_state
 PG_EVENTS_BEFORE=$PG_EVENTS
 PG_VENUES_BEFORE=$PG_VENUES
 PG_COMPANIES_BEFORE=$PG_COMPANIES
@@ -362,8 +361,6 @@ MONGO_RESTAURANTS_BEFORE=$MONGO_RESTAURANTS
 MONGO_TRIPS_BEFORE=$MONGO_TRIPS
 MONGO_PRODUCTS_BEFORE=$MONGO_PRODUCTS
 MONGO_ORDERS_BEFORE=$MONGO_ORDERS
-
-get_current_state
 
 # Analizar backup
 analyze_backup
@@ -403,7 +400,8 @@ if [ "$DRY_RUN" = false ]; then
     sleep 5
 fi
 
-# Obtener estado después
+# Obtener estado después (DESPUÉS)
+get_current_state
 PG_EVENTS_AFTER=$PG_EVENTS
 PG_VENUES_AFTER=$PG_VENUES
 PG_COMPANIES_AFTER=$PG_COMPANIES
@@ -412,8 +410,6 @@ PG_APPROVALS_AFTER=$PG_APPROVALS
 MONGO_RESTAURANTS_AFTER=$MONGO_RESTAURANTS
 MONGO_TRIPS_AFTER=$MONGO_TRIPS
 MONGO_PRODUCTS_AFTER=$MONGO_PRODUCTS
-
-get_current_state
 
 # Comparar estados
 COMPARISON_SUCCESS=true
