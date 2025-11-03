@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type OrderDocument = Order & Document;
+export type PackageOrderDocument = PackageOrder & Document;
 
-@Schema({ timestamps: true })
-export class Order {
+@Schema({ timestamps: true, collection: 'package_orders' })
+export class PackageOrder {
   @Prop({ required: true })
   userId: string; // ID del usuario que compra
 
@@ -121,4 +121,4 @@ export class Order {
   notes?: string;
 }
 
-export const OrderSchema = SchemaFactory.createForClass(Order);
+export const PackageOrderSchema = SchemaFactory.createForClass(PackageOrder);

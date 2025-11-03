@@ -68,17 +68,21 @@ export class MerchandisingController {
     const totalProducts = products.length;
     const totalStock = products.reduce((sum, p) => sum + (p.stock?.available || 0), 0);
     const totalSold = products.reduce((sum, p) => sum + (p.soldUnits || 0), 0);
+    const totalRevenue = products.reduce((sum, p) => sum + ((p.soldUnits || 0) * (p.price || 0)), 0);
     const activeProducts = products.filter(p => p.isActive).length;
     const lowStock = products.filter(p => (p.stock?.available || 0) < 10).length;
     const outOfStock = products.filter(p => (p.stock?.available || 0) === 0).length;
+    const pendingApproval = products.filter(p => p.approvalStatus === 'PENDING').length;
 
     return {
       totalProducts,
       activeProducts,
       totalStock,
       totalSold,
+      totalRevenue,
       lowStock,
       outOfStock,
+      pendingApproval,
     };
   }
 
@@ -91,10 +95,19 @@ export class MerchandisingController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un producto' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canUpdate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar un producto (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 200, description: 'Producto actualizado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.merchandisingService.update(id, updateProductDto);
   }
 
@@ -130,11 +143,19 @@ export class MerchandisingController {
   }
 
   @Delete(':id')
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canDelete')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un producto (soft delete)' })
+  @ApiOperation({ summary: 'Eliminar un producto (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 204, description: 'Producto eliminado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.merchandisingService.remove(id);
   }
 

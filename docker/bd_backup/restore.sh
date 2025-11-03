@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=all
 
 # ========================================
 # SCRIPT DE RESTAURACIÓN SEGURA V3.0
@@ -96,6 +97,15 @@ get_current_state() {
     echo -e "  - Viajes: ${YELLOW}$MONGO_TRIPS${NC}"
     echo -e "  - Productos: ${YELLOW}$MONGO_PRODUCTS${NC}"
     echo -e "  - Órdenes: ${YELLOW}$MONGO_ORDERS${NC}"
+    
+    echo -e "${CYAN}MongoDB ticketing_messaging:${NC}"
+    MONGO_MESSAGES=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').messages.countDocuments()" 2>/dev/null | tr -d ' ')
+    MONGO_CONVERSATIONS=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').conversations.countDocuments()" 2>/dev/null | tr -d ' ')
+    MONGO_NOTIFICATIONS=$(docker exec ticketing-mongodb mongosh --username admin --password admin123 --authenticationDatabase admin --quiet --eval "db.getSiblingDB('ticketing_messaging').notifications.countDocuments()" 2>/dev/null | tr -d ' ')
+    
+    echo -e "  - Mensajes: ${YELLOW}$MONGO_MESSAGES${NC}"
+    echo -e "  - Conversaciones: ${YELLOW}$MONGO_CONVERSATIONS${NC}"
+    echo -e "  - Notificaciones: ${YELLOW}$MONGO_NOTIFICATIONS${NC}"
 }
 
 analyze_backup() {
@@ -198,6 +208,28 @@ compare_states() {
     else
         echo -e "  ${RED}✗${NC} products: $MONGO_PRODUCTS_BEFORE → $MONGO_PRODUCTS_AFTER (esperado: 2532)"
         ALL_GOOD=false
+    fi
+    
+    # Comparar Messaging Service (valores esperados: 0 para nueva instalación)
+    echo ""
+    echo -e "${CYAN}MongoDB Messaging Service:${NC}"
+    
+    if [ -n "$MONGO_MESSAGES_AFTER" ]; then
+        echo -e "  ${GREEN}✓${NC} messages: $MONGO_MESSAGES_BEFORE → $MONGO_MESSAGES_AFTER"
+    else
+        echo -e "  ${YELLOW}⚠${NC} messages: No se pudo verificar"
+    fi
+    
+    if [ -n "$MONGO_CONVERSATIONS_AFTER" ]; then
+        echo -e "  ${GREEN}✓${NC} conversations: $MONGO_CONVERSATIONS_BEFORE → $MONGO_CONVERSATIONS_AFTER"
+    else
+        echo -e "  ${YELLOW}⚠${NC} conversations: No se pudo verificar"
+    fi
+    
+    if [ -n "$MONGO_NOTIFICATIONS_AFTER" ]; then
+        echo -e "  ${GREEN}✓${NC} notifications: $MONGO_NOTIFICATIONS_BEFORE → $MONGO_NOTIFICATIONS_AFTER"
+    else
+        echo -e "  ${YELLOW}⚠${NC} notifications: No se pudo verificar"
     fi
     
     if [ "$ALL_GOOD" = true ]; then

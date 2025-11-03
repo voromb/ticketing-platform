@@ -9,12 +9,10 @@ class CompanyService {
      */
     async createCompany(data) {
         // Verificar que no exista ya una compañía con el mismo tipo y región
-        const existing = await prisma.company.findUnique({
+        const existing = await prisma.company.findFirst({
             where: {
-                type_region: {
-                    type: data.type,
-                    region: data.region
-                }
+                type: data.type,
+                region: data.region
             }
         });
         if (existing) {
@@ -26,12 +24,9 @@ class CompanyService {
                 type: data.type,
                 region: data.region,
                 description: data.description,
-                contactEmail: data.contactEmail,
-                contactPhone: data.contactPhone,
-                address: data.address,
-                taxId: data.taxId,
-                requiresApprovalForCreate: data.requiresApprovalForCreate ?? true,
-                requiresApprovalForDelete: data.requiresApprovalForDelete ?? true
+                contact_email: data.contactEmail,
+                contact_phone: data.contactPhone,
+                address: data.address
             }
         });
     }
@@ -47,7 +42,7 @@ class CompanyService {
             where.region = filters.region;
         }
         if (filters?.isActive !== undefined) {
-            where.isActive = filters.isActive;
+            where.is_active = filters.isActive;
         }
         if (filters?.search) {
             where.OR = [
@@ -58,13 +53,13 @@ class CompanyService {
         return await prisma.company.findMany({
             where,
             include: {
-                companyAdmins: {
+                company_admins: {
                     select: {
                         id: true,
                         email: true,
-                        firstName: true,
-                        lastName: true,
-                        isActive: true
+                        first_name: true,
+                        last_name: true,
+                        is_active: true
                     }
                 }
             },
@@ -81,16 +76,15 @@ class CompanyService {
         return await prisma.company.findUnique({
             where: { id },
             include: {
-                companyAdmins: {
+                company_admins: {
                     select: {
                         id: true,
                         email: true,
-                        firstName: true,
-                        lastName: true,
-                        phone: true,
-                        isActive: true,
-                        lastLogin: true,
-                        createdAt: true
+                        first_name: true,
+                        last_name: true,
+                        is_active: true,
+                        last_login: true,
+                        created_at: true
                     }
                 }
             }
@@ -109,13 +103,10 @@ class CompanyService {
             data: {
                 name: data.name,
                 description: data.description,
-                contactEmail: data.contactEmail,
-                contactPhone: data.contactPhone,
+                contact_email: data.contactEmail,
+                contact_phone: data.contactPhone,
                 address: data.address,
-                taxId: data.taxId,
-                requiresApprovalForCreate: data.requiresApprovalForCreate,
-                requiresApprovalForDelete: data.requiresApprovalForDelete,
-                isActive: data.isActive
+                is_active: data.isActive
             }
         });
     }
@@ -130,8 +121,8 @@ class CompanyService {
         // Verificar si tiene admins activos
         const activeAdmins = await prisma.companyAdmin.count({
             where: {
-                companyId: id,
-                isActive: true
+                company_id: id,
+                is_active: true
             }
         });
         if (activeAdmins > 0) {
@@ -139,7 +130,7 @@ class CompanyService {
         }
         return await prisma.company.update({
             where: { id },
-            data: { isActive: false }
+            data: { is_active: false }
         });
     }
     /**
@@ -151,12 +142,12 @@ class CompanyService {
             throw new Error('Compañía no encontrada');
         }
         const totalAdmins = await prisma.companyAdmin.count({
-            where: { companyId: id }
+            where: { company_id: id }
         });
         const activeAdmins = await prisma.companyAdmin.count({
             where: {
-                companyId: id,
-                isActive: true
+                company_id: id,
+                is_active: true
             }
         });
         return {
@@ -179,17 +170,17 @@ class CompanyService {
     async getGlobalStats() {
         const totalCompanies = await prisma.company.count();
         const activeCompanies = await prisma.company.count({
-            where: { isActive: true }
+            where: { is_active: true }
         });
         const byType = await prisma.company.groupBy({
             by: ['type'],
             _count: true,
-            where: { isActive: true }
+            where: { is_active: true }
         });
         const byRegion = await prisma.company.groupBy({
             by: ['region'],
             _count: true,
-            where: { isActive: true }
+            where: { is_active: true }
         });
         return {
             total: totalCompanies,

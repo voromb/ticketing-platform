@@ -14,6 +14,8 @@ async function userManagementRoutes(fastify) {
     fastify.get('/', user_management_controller_1.default.getAllUsers.bind(user_management_controller_1.default));
     // GET /api/user-management/stats - Estadísticas de usuarios
     fastify.get('/stats', user_management_controller_1.default.getUserStats.bind(user_management_controller_1.default));
+    // GET /api/user-management/company-admins - Obtener todos los COMPANY_ADMIN
+    fastify.get('/company-admins', user_management_controller_1.default.getCompanyAdmins.bind(user_management_controller_1.default));
     // GET /api/user-management/:id - Obtener usuario por ID
     fastify.get('/:id', user_management_controller_1.default.getUserById.bind(user_management_controller_1.default));
     // ==================== RUTAS DE GESTIÓN ====================
@@ -21,4 +23,8 @@ async function userManagementRoutes(fastify) {
     fastify.post('/:id/promote', user_management_controller_1.default.promoteUserToVip.bind(user_management_controller_1.default));
     // POST /api/user-management/:id/demote - Degradar usuario VIP a normal
     fastify.post('/:id/demote', user_management_controller_1.default.demoteVipToUser.bind(user_management_controller_1.default));
+    // POST /api/user-management/:id/promote-company-admin - Promocionar usuario a COMPANY_ADMIN
+    fastify.post('/:id/promote-company-admin', user_management_controller_1.default.promoteUserToCompanyAdmin.bind(user_management_controller_1.default));
+    // DELETE /api/user-management/company-admins/:id - Degradar COMPANY_ADMIN a usuario normal
+    fastify.delete('/company-admins/:id', user_management_controller_1.default.demoteCompanyAdmin.bind(user_management_controller_1.default));
 }

@@ -43,6 +43,30 @@ export class TravelController {
     return this.travelService.createWithCompany(createTripDto, admin);
   }
 
+  @Get('stats')
+  @Public()
+  @ApiOperation({ summary: 'Obtener estadísticas de viajes' })
+  @ApiResponse({ status: 200, description: 'Estadísticas de viajes' })
+  async getStats() {
+    const trips = await this.travelService.findAll();
+    const totalTrips = trips.length;
+    const totalSeats = trips.reduce((sum, t) => sum + (t.capacity || 0), 0);
+    const bookedSeats = trips.reduce((sum, t) => sum + (t.bookedSeats || 0), 0);
+    const totalRevenue = trips.reduce((sum, t) => sum + ((t.bookedSeats || 0) * (t.price || 0)), 0);
+    const activeTrips = trips.filter(t => t.isActive && t.status === 'SCHEDULED').length;
+    const pendingApproval = trips.filter(t => t.approvalStatus === 'PENDING').length;
+
+    return {
+      totalTrips,
+      activeTrips,
+      totalSeats,
+      bookedSeats,
+      availableSeats: totalSeats - bookedSeats,
+      totalRevenue,
+      pendingApproval,
+    };
+  }
+
   @Get()
   @Public() // Cualquiera puede ver viajes disponibles
   @ApiOperation({ summary: 'Obtener todos los viajes activos' })
@@ -72,10 +96,19 @@ export class TravelController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un viaje' })
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canUpdate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar un viaje (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 200, description: 'Viaje actualizado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Viaje no encontrado' })
-  update(@Param('id') id: string, @Body() updateTripDto: UpdateTripDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateTripDto: UpdateTripDto,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.travelService.update(id, updateTripDto);
   }
 
@@ -90,11 +123,19 @@ export class TravelController {
   }
 
   @Delete(':id')
+  @UseGuards(CompanyAdminGuard, CompanyPermissionGuard)
+  @RequirePermissions('canDelete')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un viaje (soft delete)' })
+  @ApiOperation({ summary: 'Eliminar un viaje (requiere autenticación COMPANY_ADMIN)' })
   @ApiResponse({ status: 204, description: 'Viaje eliminado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   @ApiResponse({ status: 404, description: 'Viaje no encontrado' })
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @CurrentCompanyAdmin() admin: any,
+  ) {
     return this.travelService.remove(id);
   }
 

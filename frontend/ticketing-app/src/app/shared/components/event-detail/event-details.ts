@@ -324,27 +324,36 @@ export class EventDetailComponent implements OnInit {
         paymentMethod: 'PENDING'
       };
 
+      // Mostrar loading
+      Swal.fire({
+        title: 'Procesando compra...',
+        html: `
+          <div class="text-left">
+            ${items.map(item => `<p><strong>•</strong> ${item}</p>`).join('')}
+            <hr style="margin: 1rem 0; border-color: #475569;">
+            <p style="font-size: 1.2rem;"><strong>Total:</strong> €${totalPrice.toFixed(2)}</p>
+          </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       // Enviar orden al backend
       this.orderService.createOrder(orderData).subscribe({
         next: (response) => {
+          console.log('📦 Respuesta del servidor:', response);
+          
           if (response.success) {
-            Swal.fire({
-              icon: 'success',
-              title: '¡Compra realizada!',
-              html: `
-                <div class="text-left">
-                  ${items.map(item => `<p><strong>•</strong> ${item}</p>`).join('')}
-                  <hr style="margin: 1rem 0; border-color: #475569;">
-                  <p style="font-size: 1.2rem;"><strong>Total:</strong> €${totalPrice.toFixed(2)}</p>
-                  <p style="margin-top: 1rem; color: #10b981;">
-                    <strong>✓</strong> Stock actualizado<br>
-                    <strong>✓</strong> Reservas confirmadas<br>
-                    <strong>✓</strong> Orden registrada
-                  </p>
-                </div>
-              `,
-              confirmButtonColor: '#3b82f6',
-              timer: 5000
+            const orderId = response.data._id || response.data.id;
+            
+            // Cerrar el loading
+            Swal.close();
+            
+            // Redirigir a checkout de pago (Stripe o interno)
+            this.router.navigate(['/payment/checkout'], {
+              queryParams: { orderId: orderId }
             });
             
             this.closeModal();

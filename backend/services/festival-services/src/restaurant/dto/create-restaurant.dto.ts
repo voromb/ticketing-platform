@@ -64,13 +64,14 @@ export class CreateRestaurantDto {
   location: string;
 
   @IsNumber()
-  @Min(1)
+  @Min(0)
   capacity: number;
 
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ScheduleDto)
-  schedule: ScheduleDto[];
+  schedule?: ScheduleDto[];
 
   @IsOptional()
   @IsArray()

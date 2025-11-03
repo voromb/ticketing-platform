@@ -5,29 +5,42 @@ import { AuthService, User } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 import { SearchBarComponent } from '../search-bar/search-bar';
+import { NotificationsComponent } from '../notifications/notifications';
+import { MessagingService } from '../../../services/messaging.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, SearchBarComponent],
+  imports: [CommonModule, RouterModule, SearchBarComponent, NotificationsComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   user: User | null = null;
   showDropdown = false;
+  unreadMessagesCount = 0;
   private userSubscription?: Subscription;
+  private messagesCountSubscription?: Subscription;
 
   constructor(
     private router: Router,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private messagingService: MessagingService
   ) {}
 
   ngOnInit() {
     this.userSubscription = this.authService.currentUser$.subscribe(user => {
       this.user = user;
       this.cdr.markForCheck();
+    });
+    
+    // Suscribirse al contador de mensajes no leídos
+    this.messagesCountSubscription = this.messagingService.getUnreadMessagesCount().subscribe({
+      next: (count) => {
+        this.unreadMessagesCount = count;
+        this.cdr.markForCheck();
+      }
     });
     
     if (this.router.url.includes('/admin-dashboard') && !this.user) {
@@ -173,9 +186,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  goToMessages(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.router.navigate(['/messages']);
+  }
+
   ngOnDestroy() {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
+    }
+    if (this.messagesCountSubscription) {
+      this.messagesCountSubscription.unsubscribe();
     }
   }
 }

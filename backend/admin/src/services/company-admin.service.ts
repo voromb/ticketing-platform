@@ -33,7 +33,7 @@ export class CompanyAdminService {
       throw new Error('Compañía no encontrada');
     }
 
-    if (!company.isActive) {
+    if (!company.is_active) {
       throw new Error('No se puede crear un administrador para una compañía inactiva');
     }
 
@@ -44,25 +44,14 @@ export class CompanyAdminService {
       data: {
         email: data.email,
         password: hashedPassword,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        companyId: data.companyId,
-        canCreate: data.canCreate ?? true,
-        canUpdate: data.canUpdate ?? true,
-        canDelete: data.canDelete ?? false,
-        canViewStats: data.canViewStats ?? true,
-        canManageStock: data.canManageStock ?? true
-      },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true
-          }
-        }
+        first_name: data.firstName,
+        last_name: data.lastName,
+        company_id: data.companyId,
+        can_create: data.canCreate ?? true,
+        can_update: data.canUpdate ?? true,
+        can_delete: data.canDelete ?? false,
+        can_view_stats: data.canViewStats ?? true,
+        can_manage_stock: data.canManageStock ?? true
       }
     });
 
@@ -78,37 +67,25 @@ export class CompanyAdminService {
     const where: any = {};
 
     if (filters?.companyId) {
-      where.companyId = filters.companyId;
+      where.company_id = filters.companyId;
     }
 
     if (filters?.isActive !== undefined) {
-      where.isActive = filters.isActive;
+      where.is_active = filters.isActive;
     }
 
     if (filters?.search) {
       where.OR = [
         { email: { contains: filters.search, mode: 'insensitive' } },
-        { firstName: { contains: filters.search, mode: 'insensitive' } },
-        { lastName: { contains: filters.search, mode: 'insensitive' } }
+        { first_name: { contains: filters.search, mode: 'insensitive' } },
+        { last_name: { contains: filters.search, mode: 'insensitive' } }
       ];
     }
 
     const admins = await prisma.companyAdmin.findMany({
       where,
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true,
-            isActive: true
-          }
-        }
-      },
       orderBy: [
-        { company: { name: 'asc' } },
-        { firstName: 'asc' }
+        { first_name: 'asc' }
       ]
     });
 
@@ -122,19 +99,6 @@ export class CompanyAdminService {
   async getCompanyAdminById(id: string) {
     const admin = await prisma.companyAdmin.findUnique({
       where: { id },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true,
-            isActive: true,
-            contactEmail: true,
-            contactPhone: true
-          }
-        }
-      }
     });
 
     if (!admin) {
@@ -158,25 +122,14 @@ export class CompanyAdminService {
     const updated = await prisma.companyAdmin.update({
       where: { id },
       data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        canCreate: data.canCreate,
-        canUpdate: data.canUpdate,
-        canDelete: data.canDelete,
-        canViewStats: data.canViewStats,
-        canManageStock: data.canManageStock,
-        isActive: data.isActive
-      },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            region: true
-          }
-        }
+        first_name: data.firstName,
+        last_name: data.lastName,
+        can_create: data.canCreate,
+        can_update: data.canUpdate,
+        can_delete: data.canDelete,
+        can_view_stats: data.canViewStats,
+        can_manage_stock: data.canManageStock,
+        is_active: data.isActive
       }
     });
 
@@ -197,11 +150,11 @@ export class CompanyAdminService {
     const updated = await prisma.companyAdmin.update({
       where: { id },
       data: {
-        canCreate: data.canCreate,
-        canUpdate: data.canUpdate,
-        canDelete: data.canDelete,
-        canViewStats: data.canViewStats,
-        canManageStock: data.canManageStock
+        can_create: data.canCreate,
+        can_update: data.canUpdate,
+        can_delete: data.canDelete,
+        can_view_stats: data.canViewStats,
+        can_manage_stock: data.canManageStock
       }
     });
 
@@ -241,7 +194,7 @@ export class CompanyAdminService {
 
     const updated = await prisma.companyAdmin.update({
       where: { id },
-      data: { isActive: false }
+      data: { is_active: false }
     });
 
     const { password, ...adminWithoutPassword } = updated;
@@ -261,10 +214,10 @@ export class CompanyAdminService {
     }
 
     const admins = await prisma.companyAdmin.findMany({
-      where: { companyId },
+      where: { company_id: companyId },
       orderBy: [
-        { isActive: 'desc' },
-        { firstName: 'asc' }
+        { is_active: 'desc' },
+        { first_name: 'asc' }
       ]
     });
 

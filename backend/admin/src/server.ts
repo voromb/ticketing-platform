@@ -5,6 +5,7 @@ import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import compress from '@fastify/compress';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import pino from 'pino';
@@ -24,6 +25,7 @@ import { imageUploadRoutes } from './routes/image-upload.routes';
 import { companyRoutes } from './routes/company.routes';
 import { companyAdminRoutes } from './routes/company-admin.routes';
 import { approvalRoutes } from './routes/approval.routes';
+import { messagingUsersRoutes } from './routes/messaging-users.routes';
 
 // Services
 import { RabbitMQService } from './services/rabbitmq.service';
@@ -77,12 +79,20 @@ export async function buildServer(): Promise<FastifyInstance> {
         },
     });
 
+    // Registrar compresión Brotli/Gzip
+    await server.register(compress, {
+        global: true,
+        encodings: ['br', 'gzip', 'deflate'], // Brotli primero
+        threshold: 1024, // Solo comprimir respuestas > 1KB
+    });
+
     // Registrar CORS
     await server.register(cors, {
         origin: true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Name', 'X-User-Type'],
+        exposedHeaders: ['X-User-Id', 'X-User-Name', 'X-User-Type'],
     });
 
     // Registrar JWT
@@ -239,11 +249,20 @@ export async function buildServer(): Promise<FastifyInstance> {
         await server.register(approvalRoutes, { prefix: '/api/approvals' });
         console.log('[OK] approvalRoutes OK');
 
+        console.log('[REGISTER] Registrando messagingUsersRoutes...');
+        await server.register(messagingUsersRoutes, { prefix: '/api/messaging-users' });
+        console.log('[OK] messagingUsersRoutes OK');
+
         console.log('[SUCCESS] Todas las rutas registradas exitosamente');
-    } catch (error: any) {
-        logger.error('[ERROR] Error registrando rutas:', error);
-        console.error('[ERROR] Error completo:', error);
-        console.error('[ERROR] Stack:', error.stack);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        
+        logger.error({ err: error }, '[ERROR] Error registrando rutas');
+        console.error('[ERROR] Error completo:', errorMessage);
+        if (errorStack) {
+            console.error('[ERROR] Stack:', errorStack);
+        }
     }
 
     // Health check
