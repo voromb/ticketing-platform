@@ -26,7 +26,7 @@ Implementar un microservicio de mensajería interna que permita la comunicación
 ### 4. **Mensajes Automáticos - Aprobaciones (Merchandising)**
 - ✅ COMPANY_ADMIN crea nuevo producto → Mensaje a SUPER_ADMIN: "Nuevo producto pendiente de aprobación"
 - ✅ SUPER_ADMIN aprueba → Mensaje a COMPANY_ADMIN: "Tu producto ha sido aprobado"
-- ✅ SUPER_ADMIN rechaza → Mensaje a COMPANY_ADMIN: "Tu producto ha sido rechazado - Razón: [...]"
+- ✅ SUPER_ADMIN rechaza → Mensaje a COMPANY_ADMIN: "Tu producto ha sido rechazado - Razón: [..]"
 
 ### 5. **Mensajes Manuales**
 - ✅ SUPER_ADMIN puede enviar mensajes a cualquier usuario
