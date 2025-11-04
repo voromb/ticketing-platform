@@ -11,11 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApprovalMessageListener = void 0;
 const common_1 = require("@nestjs/common");
 const microservices_1 = require("@nestjs/microservices");
 const message_service_1 = require("./message.service");
+const axios_1 = __importDefault(require("axios"));
 let ApprovalMessageListener = class ApprovalMessageListener {
     messageService;
     constructor(messageService) {
@@ -186,7 +190,29 @@ let ApprovalMessageListener = class ApprovalMessageListener {
         return labels[resourceType] || resourceType;
     }
     async getSuperAdminId() {
-        return '26fa8809-a1a4-4242-9d09-42e65e5ee368';
+        try {
+            const loginResponse = await axios_1.default.post('http://localhost:3003/api/auth/login', {
+                email: 'voro.super@ticketing.com',
+                password: 'Voro123!'
+            });
+            const token = loginResponse.data.token;
+            const profileResponse = await axios_1.default.get('http://localhost:3003/api/admins/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const superAdminId = profileResponse.data.admin?.id;
+            if (superAdminId) {
+                console.log(`✅ SUPER_ADMIN ID obtenido: ${superAdminId}`);
+                return superAdminId;
+            }
+            console.warn('⚠️ No se pudo obtener el ID del SUPER_ADMIN del perfil');
+            return null;
+        }
+        catch (error) {
+            console.error('❌ Error obteniendo ID del SUPER_ADMIN:', error.message);
+            return '26fa8809-a1a4-4242-9d09-42e65e5ee368';
+        }
     }
 };
 exports.ApprovalMessageListener = ApprovalMessageListener;

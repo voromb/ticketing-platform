@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload, Ctx, RmqContext } from '@nestjs/microservices';
 import { MessageService } from './message.service';
+import axios from 'axios';
 
 @Controller()
 export class ApprovalMessageListener {
@@ -222,13 +223,38 @@ export class ApprovalMessageListener {
   }
 
   /**
-   * Obtener ID del SUPER_ADMIN
-   * TODO: Implementar búsqueda real en la base de datos
+   * Obtener ID del SUPER_ADMIN desde el servicio de admin
    */
   private async getSuperAdminId(): Promise<string | null> {
-    // Por ahora retornamos un ID fijo
-    // En producción, deberías buscar en la base de datos de usuarios
-    // o tener una configuración con el ID del SUPER_ADMIN principal
-    return '26fa8809-a1a4-4242-9d09-42e65e5ee368'; // ID del SUPER_ADMIN de ejemplo
+    try {
+      // Primero intentamos hacer login como SUPER_ADMIN para obtener el token
+      const loginResponse = await axios.post('http://localhost:3003/api/auth/login', {
+        email: 'voro.super@ticketing.com',
+        password: 'Voro123!'
+      });
+
+      const token = loginResponse.data.token;
+      
+      // Luego obtenemos el perfil del usuario autenticado
+      const profileResponse = await axios.get('http://localhost:3003/api/admins/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const superAdminId = profileResponse.data.admin?.id;
+      
+      if (superAdminId) {
+        console.log(`✅ SUPER_ADMIN ID obtenido: ${superAdminId}`);
+        return superAdminId;
+      }
+      
+      console.warn('⚠️ No se pudo obtener el ID del SUPER_ADMIN del perfil');
+      return null;
+    } catch (error: any) {
+      console.error('❌ Error obteniendo ID del SUPER_ADMIN:', error.message);
+      // Fallback al ID hardcodeado si falla la búsqueda
+      return '26fa8809-a1a4-4242-9d09-42e65e5ee368';
+    }
   }
 }

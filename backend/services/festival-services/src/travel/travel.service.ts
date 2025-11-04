@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
 import { Model } from 'mongoose';
@@ -11,13 +11,17 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import { ApprovalService } from '../approval/approval.service';
 
 @Injectable()
-export class TravelService {
+export class TravelService implements OnModuleInit {
   constructor(
     @InjectModel(Trip.name) private tripModel: Model<TripDocument>,
     @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
     @Inject('RABBITMQ_SERVICE') private readonly client: ClientProxy,
     private readonly approvalService: ApprovalService,
   ) {}
+
+  async onModuleInit() {
+    await this.client.connect();
+  }
 
   async create(createTripDto: CreateTripDto): Promise<Trip> {
     const createdTrip = new this.tripModel(createTripDto);
