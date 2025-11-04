@@ -7,6 +7,11 @@
   </div>
   <div class="card-body"> 
     <h5 class="card-title">{{product.name}}</h5>
+<img 
+    [src]="`./assets/merch/${product.type}.jpg`" 
+    alt="{{product.type}}" 
+    class="product-image-style" 
+/>
     <p class="card-text">{{product.description}}</p>
     <p class="card-price">{{product.price | currency}}</p>
     <a href="#!" class="btn btn-primary">Agregar</a>
