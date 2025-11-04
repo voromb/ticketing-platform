@@ -9,9 +9,7 @@
   text-shadow: 
     2px 2px 0 #000,
     4px 4px 8px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(to right, #ff0000, #660000);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(to right, #876565, #660000);
   padding: 10px 0;
   transition: transform 0.3s ease, text-shadow 0.3s ease;
 }
@@ -40,7 +38,7 @@
     background-image: inherit;
     background-size: cover;
     background-position: center;
-    filter: blur(3px) brightness(0.8);
+    filter: blur(3px) brightness(0.3);
     transform: scale(1.1); 
     z-index: 0;
   }
@@ -61,22 +59,37 @@
   }
 
   .card-title {
-    color: #fff !important;
+    font-family: 'Metal Mania', cursive;
+    color:#1a456e #d55656 !important;
   }
 
   .text-muted,
   .text-secondary {
+    font-family: 'Metal Mania', cursive;
     color: rgba(255, 255, 255, 0.75) !important; 
   }
 
   .badge {
+    font-family: 'Metal Mania', cursive;
     background-color: #dc3545 !important; 
-    color: #fff !important;
+    color: #180606 !important;
   }
 
   .btn {
+    font-family: 'Metal Mania', cursive;
+    color: #000000;
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   }
+
+  .container {
+    padding: 20px;
+  	background: 
+		radial-gradient(circle at 50% 0%, #6cafc3, #fff0), 
+		radial-gradient(circle at 50% 100%, #6cafc3, #1a456e);
+	* {
+		box-sizing: border-box;
+	}
+}
 }
 

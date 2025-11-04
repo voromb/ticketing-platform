@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { RestaurantService, Restaurant, RestaurantStats } from '../../../services/restaurant.service';
+import { RestaurantService, Restaurant, RestaurantStats } from '../../../core/services_enterprise/restaurant.service';
 
 @Component({
   selector: 'app-restaurant-dashboard',

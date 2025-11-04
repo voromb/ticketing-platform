@@ -6,7 +6,8 @@ import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { NotificationsComponent } from '../notifications/notifications';
-import { MessagingService } from '../../../services/messaging.service';
+import { MessagingService, Notification } from '../../../core/services_enterprise/messaging.service';
+
 
 @Component({
   selector: 'app-navbar',

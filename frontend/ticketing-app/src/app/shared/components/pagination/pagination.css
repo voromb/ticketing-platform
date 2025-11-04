@@ -1,23 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rock+Salt&display=swap');
+
 .pagination {
+  font-family: 'Metal Mania', cursive;
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
-  gap: 5px;
+  margin: 30px auto 10px;
+  background: #fff2;
+  border-radius: 10px;
+  padding: 8px 12px;
+  text-align: center;
+  width: fit-content;
 }
 
+/* Botones */
 .pagination button {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  background: white;
+  background: rgba(149, 133, 195, 0.867);
+  border: none;
+  color: var(--c2);
+  font-size: 15px;
+  margin: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover y activa */
+.pagination button:hover:not(:disabled) {
+  background: #ff0000;
+  color: #020201;
+  transform: translateY(-1px);
+  text-shadow: 
+    3px 3px 15px #ff0000,
+    0 0 20px #ff6600;
 }
 
 .pagination button.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
+  background: #ff0000;
+  font-weight: bold;
 }
 
+/* Deshabilitados */
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;

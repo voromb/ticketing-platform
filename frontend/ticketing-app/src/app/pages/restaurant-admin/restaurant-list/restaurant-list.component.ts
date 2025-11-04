@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RestaurantService, Restaurant } from '../../../services/restaurant.service';
+import { RestaurantService, Restaurant } from '../../../core/services_enterprise/restaurant.service';
 import Swal from 'sweetalert2';
 
 @Component({

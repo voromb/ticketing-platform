@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TravelService, Trip, TripStats } from '../../../services/travel.service';
+import { TravelService, Trip, TripStats } from '../../../core/services_enterprise/travel.service';
 
 @Component({
   selector: 'app-travel-dashboard',

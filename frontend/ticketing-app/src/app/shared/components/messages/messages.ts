@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { MessagingService, Conversation, Message, SendMessageDto } from '../../../services/messaging.service';
+import {MessagingService, Conversation, Message, SendMessageDto} from '../../../core/services_enterprise/messaging.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -58,7 +58,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
         // NO mostrar alerta aquí, solo actualizar el contador
         // La alerta se muestra en login.component.ts
       },
-      error: (error) => {
+      error: (_error: unknown) => {
         console.warn('⚠️ No se pudo obtener el contador de mensajes no leídos');
         this.unreadCount = 0;
       }
@@ -168,7 +168,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     console.log('🔄 Cargando mensajes de conversación:', conversationId);
     
     this.messagingService.getConversationMessages(conversationId).subscribe({
-      next: (response) => {
+      next: (response: { data?: any[]; messages?: any[] }) => {
         console.log('✅ Mensajes cargados:', response);
         console.log('📦 Estructura de response:', {
           hasData: !!response.data,

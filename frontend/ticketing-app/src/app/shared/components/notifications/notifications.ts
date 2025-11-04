@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { MessagingService, Notification } from '../../../services/messaging.service';
+import {MessagingService, Notification} from '../../../core/services_enterprise/messaging.service';
 
 @Component({
   selector: 'app-notifications',

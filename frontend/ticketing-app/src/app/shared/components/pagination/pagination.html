@@ -1,17 +1,17 @@
+@if (totalPages > 1) {
+  <nav class="pagination">
+    <button (click)="first()" [disabled]="currentPage === 1"><<</button>
+    <button (click)="previous()" [disabled]="currentPage === 1">« Prev</button>
 
-@if(totalPages>1){
-<nav class="pagination">
-  <button (click)="previous()" [disabled]="currentPage === 1">« Prev</button>
+    @for (page of pages; track page) {
+      <button
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage">
+        {{ page }}
+      </button>
+    }
 
-
-   @for (page of pages; track page) {
-  <button
-    (click)="goToPage(page)"
-    [class.active]="page === currentPage">
-    {{ page }}
-  </button>
+    <button (click)="next()" [disabled]="currentPage === totalPages">Next »</button>
+    <button (click)="last()" [disabled]="currentPage === totalPages">>></button>
+  </nav>
 }
- 
-
-  <button (click)="next()" [disabled]="currentPage === totalPages">Next »</button>
-</nav>}

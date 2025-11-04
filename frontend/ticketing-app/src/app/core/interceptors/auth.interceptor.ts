@@ -52,14 +52,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     console.log('⚠️ No hay token JWT para:', req.url);
   }
 
-  console.log('🌐 Enviando petición HTTP:', authReq.url);
+  //console.log('🌐 Enviando petición HTTP:', authReq.url);
 
   return next(authReq).pipe(
     tap((response) => {
-      console.log('✅ Respuesta HTTP recibida para:', authReq.url, response);
+     // console.log('✅ Respuesta HTTP recibida para:', authReq.url, response);
     }),
     catchError((error) => {
-      console.error('❌ Error HTTP en:', authReq.url, error);
+     // console.error('❌ Error HTTP en:', authReq.url, error);
       return throwError(() => error);
     })
   );
