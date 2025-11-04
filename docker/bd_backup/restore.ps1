@@ -211,9 +211,9 @@ function Compare-States {
         $expectedVal = $Expected.PostgreSQL[$key]
 
         if ($afterVal -eq $expectedVal.ToString()) {
-            Write-ColorOutput "  ✓ $key: $beforeVal → $afterVal (esperado: $expectedVal)" "Green"
+            Write-ColorOutput "  [OK] ${key}: $beforeVal -> $afterVal (esperado: $expectedVal)" "Green"
         } else {
-            Write-ColorOutput "  ✗ $key: $beforeVal → $afterVal (esperado: $expectedVal)" "Red"
+            Write-ColorOutput "  [X] ${key}: $beforeVal -> $afterVal (esperado: $expectedVal)" "Red"
             $allGood = $false
         }
     }
@@ -226,9 +226,9 @@ function Compare-States {
         $expectedVal = $Expected.MongoDB[$key]
 
         if ($afterVal -eq $expectedVal) {
-            Write-ColorOutput "  ✓ $key: $beforeVal → $afterVal (esperado: $expectedVal)" "Green"
+            Write-ColorOutput "  [OK] ${key}: $beforeVal -> $afterVal (esperado: $expectedVal)" "Green"
         } else {
-            Write-ColorOutput "  ✗ $key: $beforeVal → $afterVal (esperado: $expectedVal)" "Red"
+            Write-ColorOutput "  [X] ${key}: $beforeVal -> $afterVal (esperado: $expectedVal)" "Red"
             $allGood = $false
         }
     }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { MessagingService } from '../../../services/messaging.service';
+import { MessagingService } from '../../../core/services_enterprise/messaging.service';
 import { SocialLoginComponent } from '../social-login/social-login.component';
 import Swal from 'sweetalert2';
 
