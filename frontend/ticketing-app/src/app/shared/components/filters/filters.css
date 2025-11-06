@@ -1,4 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
+
 .filters-row {
+  font-family: 'Metal Mania', cursive;
+
   display: flex;
   gap: 1rem;
   align-items: flex-end;
@@ -7,11 +11,13 @@
 
 .filters-row div {
   display: flex;
+  justify-content: center;
   flex-direction: column;
+ 
 }
 
 .filters-row label {
-  font-size: 0.9rem;
+  font-size: 1,2rem;
   margin-bottom: 4px;
   color: #333;
 }

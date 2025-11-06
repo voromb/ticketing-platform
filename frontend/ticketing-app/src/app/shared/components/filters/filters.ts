@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ICategory } from '~/app/core/models/Categories.model';
 
 export interface FiltersPayload {
   categoryId?: number | null;
@@ -16,8 +17,8 @@ export interface FiltersPayload {
   templateUrl: './filters.html',
   styleUrl: './filters.css'
 })
-export class FiltersComponent {
-  @Input() listCategories: { id: number; name: string }[] = [];
+export class FiltersComponent implements OnInit, OnChanges {
+  @Input() listCategories: ICategory[] = [];
   @Output() filtersChanged = new EventEmitter<FiltersPayload>(); 
 
   form: FormGroup;
@@ -28,6 +29,17 @@ export class FiltersComponent {
       minPrice: [null],
       maxPrice: [null],
     });
+  }
+
+  ngOnInit(): void {
+    console.log('🔍 FiltersComponent - Categorías recibidas en ngOnInit:', this.listCategories);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['listCategories']) {
+      console.log('🔍 FiltersComponent - Categorías cambiaron:', this.listCategories);
+      console.log('🔍 Cantidad de categorías:', this.listCategories?.length);
+    }
   }
 
   applyFilters(): void {
