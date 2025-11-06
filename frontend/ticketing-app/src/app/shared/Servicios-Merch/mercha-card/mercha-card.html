@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card" [class.selected]="isSelected">
   <div class="bg-image hover-overlay" mdbRipple rippleColor="light">
     <!-- <img src= {{images}} class="img-fluid"/> -->
     <a href="#!"> 
@@ -6,14 +6,23 @@
     </a>
   </div>
   <div class="card-body"> 
+    @if (isSelected) {
+      <div class="check-mark">✓</div>
+    }
     <h5 class="card-title">{{product.name}}</h5>
-<img 
-    [src]="`./assets/merch/${product.type}.jpg`" 
-    alt="{{product.type}}" 
-    class="product-image-style" 
-/>
+    <img 
+      [src]="`./assets/merch/${product.type}.jpg`" 
+      alt="{{product.type}}" 
+      class="product-image-style" 
+    />
     <p class="card-text">{{product.description}}</p>
     <p class="card-price">{{product.price | currency}}</p>
-    <a href="#!" class="btn btn-primary">Agregar</a>
+    <button 
+      (click)="toggleProduct()" 
+      class="btn"
+      [class.btn-primary]="!isSelected"
+      [class.btn-success]="isSelected">
+      {{ isSelected ? 'Quitar' : 'Agregar' }}
+    </button>
   </div>
 </div>

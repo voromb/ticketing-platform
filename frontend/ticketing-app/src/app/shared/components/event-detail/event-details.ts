@@ -1,15 +1,17 @@
-import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TicketService } from '../../../core/services/ticket.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { EventService } from '~/app/core/services/event.service';
+import { MerchStateService } from '~/app/core/services/merch-state.service';
 import { IEvent } from '../../../core/models/Event.model';
 import { TravelService, Trip } from '../../../core/services_enterprise/travel.service';
 import { RestaurantService, Restaurant } from '../../../core/services_enterprise/restaurant.service';
 import { MerchandisingService, Product } from '../../../core/services_enterprise/merchandising.service';
 import { OrderService, CreateOrderDto } from '../../../core/services_enterprise/order.service';
+import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
 
@@ -20,7 +22,7 @@ import Swal from 'sweetalert2';
   templateUrl: './event-details.html',
   styleUrls: ['./event-details.css'],
 })
-export class EventDetailComponent implements OnInit {
+export class EventDetailComponent implements OnInit, OnDestroy {
   @Input() event!: IEvent;
 
   // Disponibilidad de servicios
@@ -36,6 +38,8 @@ export class EventDetailComponent implements OnInit {
   selectedRestaurant: Restaurant | null = null;
   selectedProducts: Product[] = [];
 
+  private merchSubscription?: Subscription;
+
   constructor(
     private ticketService: TicketService,
     private route: ActivatedRoute,
@@ -46,12 +50,25 @@ export class EventDetailComponent implements OnInit {
     private restaurantService: RestaurantService,
     private merchandisingService: MerchandisingService,
     private orderService: OrderService,
+    private merchStateService: MerchStateService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     console.log('🚀 EventDetailComponent ngOnInit called');
     this.loadEventData();
+    
+    // Suscribirse a los cambios en la selección de productos
+    this.merchSubscription = this.merchStateService.selectedProducts$.subscribe(products => {
+      this.selectedProducts = products;
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.merchSubscription) {
+      this.merchSubscription.unsubscribe();
+    }
   }
 
   private loadEventData(): void {
@@ -183,16 +200,13 @@ export class EventDetailComponent implements OnInit {
   }
 
   toggleProduct(product: Product): void {
-    const index = this.selectedProducts.findIndex(p => p._id === product._id);
-    if (index > -1) {
-      this.selectedProducts.splice(index, 1);
-    } else {
-      this.selectedProducts.push(product);
-    }
+    // Usar el servicio para mantener sincronización con MerchaCard
+    this.merchStateService.toggleProduct(product);
   }
 
   isProductSelected(product: Product): boolean {
-    return this.selectedProducts.some(p => p._id === product._id);
+    // Usar el servicio para mantener sincronización con MerchaCard
+    return this.merchStateService.isProductSelected(product);
   }
 
   async confirmPackage(): Promise<void> {
@@ -328,6 +342,7 @@ export class EventDetailComponent implements OnInit {
     this.showPackageModal = false;
     this.selectedTrip = null;
     this.selectedRestaurant = null;
-    this.selectedProducts = [];
+    // Limpiar la selección de productos usando el servicio
+    this.merchStateService.clearSelection();
   }
 }
