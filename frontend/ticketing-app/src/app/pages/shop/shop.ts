@@ -42,10 +42,14 @@ export class Shop implements OnInit {
     // 🔹 Cargar categorías
     this.categoryService.getAllCategories().subscribe({
       next: (cats) => {
-        this.listCategories = cats;
+        console.log('📦 Shop - Categorías recibidas del servicio:', cats);
+        console.log('📦 Shop - Cantidad de categorías:', cats?.length);
+        this.listCategories = cats || [];
+        console.log('📦 Shop - listCategories después de asignar:', this.listCategories);
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ Shop - Error al cargar categorías:', err);
         this.listCategories = [];
       },
     });
