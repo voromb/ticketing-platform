@@ -1,11 +1,15 @@
-<div class="search-bar d-flex">
+<div class="search-bar d-flex position-relative">
   <input 
     type="text" 
     [formControl]="searchControl" 
     class="form-control" 
-    placeholder="Buscar productos..."
+    placeholder="Buscar eventos..."
+    (keyup.enter)="onSearch(searchControl.value || ''); hideSuggestions()"
+    (blur)="hideSuggestions()"
+    (focus)="searchControl.value && searchControl.value.length >= 3 ? showSuggestions = true : null"
   />
   <button 
+    type="button"
     class="btn btn-primary ms-2"
     (click)="onSearch(searchControl.value || '')"
   >
@@ -13,11 +17,14 @@
   </button>
 
   <!-- Sugerencias -->
-  <ul *ngIf="(suggestions$ | async) as suggestions" class="suggestions list-group position-absolute mt-1 w-100">
+  <ul *ngIf="showSuggestions && (suggestions$ | async) as suggestions" 
+      class="suggestions list-group position-absolute w-100" 
+      style="top: 100%; left: 0; margin-top: 2px; z-index: 1000;">
     <li 
       *ngFor="let suggestion of suggestions" 
       class="list-group-item list-group-item-action"
-      (click)="selectSuggestion(suggestion)"
+      (mousedown)="selectSuggestion(suggestion)"
+      style="cursor: pointer;"
     >
       {{ suggestion }}
     </li>

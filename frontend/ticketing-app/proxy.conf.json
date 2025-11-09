@@ -1,0 +1,11 @@
+{
+  "/api/ollama": {
+    "target": "http://voro-moran.dyndns.org:11434",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/ollama": "/api"
+    },
+    "logLevel": "debug"
+  }
+}

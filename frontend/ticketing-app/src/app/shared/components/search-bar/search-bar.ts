@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { debounceTime, switchMap, Observable, of } from 'rxjs';
 import { SearchService } from '~/app/core/services/search.service';
 
@@ -14,24 +15,67 @@ import { SearchService } from '~/app/core/services/search.service';
 export class SearchBarComponent implements OnInit {
   searchControl = new FormControl('');
   suggestions$: Observable<string[]> = of([]);
+  showSuggestions = false;
 
-  constructor(private searchService: SearchService) {}
+  constructor(
+    private searchService: SearchService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    console.log('🎬 SearchBarComponent inicializado');
+    
+    // Sugerencias automáticas mientras escribe (solo si hay 3+ caracteres)
     this.suggestions$ = this.searchControl.valueChanges.pipe(
       debounceTime(300),
-      switchMap(value => value ? this.searchService.getSuggestions(value) : of([]))
+      switchMap(value => {
+        if (value && value.length >= 3) {
+          this.showSuggestions = true;
+          return this.searchService.getSuggestions(value);
+        } else {
+          this.showSuggestions = false;
+          return of([]);
+        }
+      })
     );
   }
 
+  /**
+   * Buscar usando IA NLP y redirigir a página de resultados
+   */
   onSearch(query: string | null) {
+    console.log('🎯 onSearch ejecutado!', query);
+    
     const q = query || '';
-    console.log('Buscar:', q);
-    // Aquí podrías redirigir a una página de resultados
+    
+    if (!q.trim()) {
+      console.log('⚠️ Query vacío');
+      return;
+    }
+
+    console.log('🔍 Redirigiendo a resultados con query:', q);
+
+    // Redirigir a página de resultados
+    this.router.navigate(['/search'], {
+      queryParams: { q: q }
+    });
   }
 
+  /**
+   * Seleccionar una sugerencia
+   */
   selectSuggestion(suggestion: string) {
+    this.showSuggestions = false;
     this.searchControl.setValue(suggestion);
     this.onSearch(suggestion);
+  }
+
+  /**
+   * Ocultar sugerencias al hacer blur
+   */
+  hideSuggestions() {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
   }
 }

@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rock+Salt&display=swap');
+
+.rock-title {
+  font-family: 'Metal Mania', cursive;
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #ff3333;
+  text-shadow: 
+    2px 2px 0 #000,
+    4px 4px 8px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(to right, #876565, #660000);
+  padding: 10px 0;
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.rock-title:hover {
+  transform: scale(1.05);
+  text-shadow: 
+    3px 3px 15px #ff0000,
+    0 0 20px #ff6600;
+}
+
+.banner-blur {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #222;
+  
+  
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: inherit;
+    background-size: cover;
+    background-position: center;
+    filter: blur(3px) brightness(0.3);
+    transform: scale(1.1); 
+    z-index: 0;
+  }
+
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.3); 
+    z-index: 1;
+  }
+
+
+  > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .card-title {
+    font-family: 'Metal Mania', cursive;
+    color:#1a456e #d55656 !important;
+  }
+
+  .text-muted,
+  .text-secondary {
+    font-family: 'Metal Mania', cursive;
+    color: rgba(255, 255, 255, 0.75) !important; 
+  }
+
+  .badge {
+    font-family: 'Metal Mania', cursive;
+    background-color: #dc3545 !important; 
+    color: #180606 !important;
+  }
+
+  .btn {
+    font-family: 'Metal Mania', cursive;
+    color: #000000;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+}
