@@ -8,8 +8,8 @@
 ## 🎯 Resumen Rápido
 
 ### Modelos en Uso:
-- **Chat:** `metalhead-assistant-v4` (Llama 3.2 8B)
-- **Búsqueda:** `search-nlp-v2` (Llama 3.2 8B)
+- **Chat:** `metalhead-assistant-v4` (Jamba 1.5 Mini fine-tuned)
+- **Búsqueda:** `search-nlp-v2` (Jamba 1.5 Mini fine-tuned)
 
 ### API Pública:
 ```

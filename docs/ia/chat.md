@@ -295,14 +295,8 @@ console.error('❌ Error en chat:', error);
 ### 🔄 Mejoras Futuras:
 - Persistencia de historial (localStorage)
 - Sugerencias de preguntas frecuentes
-- Botones de respuesta rápida
 - Integración con RAG (búsqueda en BD en tiempo real)
 - Modo oscuro
-- Sonidos de notificación
-- Typing indicator más realista
-- Exportar conversación
-- Rating de respuestas
-
 ---
 
 ## 📚 Referencias
@@ -314,7 +308,7 @@ console.error('❌ Error en chat:', error);
 
 ### Modelos Disponibles:
 - `metalhead-assistant-v4` ⭐ (Chat - datos actualizados)
-- `metalhead-assistant-v3` (Chat - legacy)
+- `metalhead-assistant-v3` (Chat - legacy, este el problema fue que si le dimos entrenamiento pero al no tener solo el contexto de la base de datos se inventaba lso datos)
 - `search-nlp-v2` ⭐ (Búsqueda NLP)
 
 ### Tecnologías:
@@ -323,7 +317,7 @@ console.error('❌ Error en chat:', error);
 - Font Awesome (Iconos)
 - Bootstrap 5 (Grid)
 - Ollama API (IA)
-- Llama 3.2 8B (Modelo base)
+- Jamba 1.5 Mini (AI21 Labs - Modelo base fine-tuned)
 
 ---
 

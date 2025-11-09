@@ -300,17 +300,17 @@ for conv in conversations:
             text += f"<|system|>\n{content}\n\n"
         elif role == "user":
             text += f"
-3. [Modelo 1: Chat Assistant](#modelo-1)
-4. [Modelo 2: Buscador NLP](#modelo-2)
-5. [Datos de Entrenamiento](#datos)
-6. [Evolución de Modelos](#evolucion)
-7. [Fine-tuning Real con RTX 5070 Ti](#finetuning)
-8. [Integración con Angular](#integracion)
-9. [Comandos Útiles](#comandos)
+3. [Modelo 1: Chat Assistant](#modelo-1-chat-assistant)
+4. [Modelo 2: Buscador NLP](#modelo-2-buscador-nlp)
+5. [Datos de Entrenamiento](#datos-de-entrenamiento)
+6. [Evolución de Modelos](#-evolución-de-modelos)
+7. [Fine-tuning Real con RTX 5070 Ti](#-fine-tuning-real-con-rtx-5070-ti)
+8. [Integración con Angular](#-integración-con-angular)
+9. [Comandos Útiles](#️-comandos-útiles)
 
 ---
 
-##  Arquitectura del Sistema {#arquitectura}
+##  Arquitectura del Sistema
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -344,7 +344,7 @@ for conv in conversations:
 
 ---
 
-##  Infraestructura {#infraestructura}
+##  Infraestructura
 
 ### Contenedor LXC: openwebui-ollama
 
@@ -386,7 +386,7 @@ curl http://localhost:8080/health
 
 ---
 
-##  Modelo 1: Chat Assistant {#modelo-1}
+##  Modelo 1: Chat Assistant
 
 ### Propósito
 
@@ -489,7 +489,7 @@ ollama run metalhead-assistant-v2 "¿Qué conciertos hay en Valencia?"
 
 ---
 
-##  Modelo 2: Buscador NLP {#modelo-2}
+##  Modelo 2: Buscador NLP
 
 ### Propósito
 
@@ -591,7 +591,7 @@ ollama run search-nlp "death metal este mes"
 
 ---
 
-##  Datos de Entrenamiento {#datos}
+##  Datos de Entrenamiento
 
 ### Fuente de Datos
 
@@ -760,7 +760,7 @@ with open('all_events.json', 'w') as f:
 
 ---
 
-## 🔄 Evolución de Modelos {#evolucion}
+## 🔄 Evolución de Modelos
 
 ### Timeline de Desarrollo
 
@@ -849,7 +849,7 @@ with open('all_events.json', 'w') as f:
 
 ---
 
-## 🔥 Fine-tuning Real con RTX 5070 Ti {#finetuning}
+## 🔥 Fine-tuning Real con RTX 5070 Ti
 
 ### 🎯 El Desafío Inicial
 
@@ -1109,7 +1109,7 @@ Parámetros entrenables: 4,505,600 (0.41%)
 
 ---
 
-## 🔌 Integración con Angular {#integracion}
+## 🔌 Integración con Angular
 
 ### Configuración de Entorno
 
@@ -1216,7 +1216,7 @@ if (needsContext) {
 
 ---
 
-## 🛠️ Comandos Útiles {#comandos}
+## 🛠️ Comandos Útiles
 
 ### Gestión de Ollama
 

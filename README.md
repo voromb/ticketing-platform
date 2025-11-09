@@ -2,6 +2,18 @@
 
 Plataforma completa de venta de tickets especializada en eventos de rock y metal con arquitectura de microservicios.
 
+## 📚 Documentación
+
+**[📖 Ver Documentación Completa →](./DOCS.md)**
+
+Toda la documentación del proyecto está organizada en [`DOCS.md`](./DOCS.md):
+- 🤖 Inteligencia Artificial (Chat + Búsqueda NLP)
+- 🏗️ Arquitectura y Planificación
+- 🚀 Guías de Despliegue
+- 🧪 Testing y Credenciales
+- 📡 API y Swagger
+- ✨ Funcionalidades
+
 ## 🚀 Inicio Rápido
 
 ```bash

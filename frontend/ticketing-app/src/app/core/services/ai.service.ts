@@ -51,9 +51,9 @@ export class AiService {
    * Búsqueda NLP - Convierte lenguaje natural a parámetros estructurados
    */
   extractSearchParams(query: string): Observable<SearchParams> {
-    console.log('🤖 Llamando a IA con URL:', this.ollamaUrl);
-    console.log('🤖 Modelo:', this.searchModel);
-    console.log('🤖 Query:', query);
+    console.log(' Llamando a IA con URL:', this.ollamaUrl);
+    console.log(' Modelo:', this.searchModel);
+    console.log(' Query:', query);
     
     const body = {
       model: this.searchModel,
@@ -61,11 +61,11 @@ export class AiService {
       stream: false
     };
     
-    console.log('🤖 Body:', body);
+    console.log(' Body:', body);
     
     return this.http.post<OllamaResponse>(this.ollamaUrl, body).pipe(
       map(response => {
-        console.log('🤖 Respuesta IA:', response);
+        console.log(' Respuesta IA:', response);
         try {
           // Limpiar respuesta (remover markdown si existe)
           let jsonStr = response.response
@@ -73,9 +73,9 @@ export class AiService {
             .replace(/```\n?/g, '')
             .trim();
           
-          console.log('🤖 JSON limpio:', jsonStr);
+          console.log(' JSON limpio:', jsonStr);
           const params = JSON.parse(jsonStr) as SearchParams;
-          console.log('🤖 Parámetros parseados:', params);
+          console.log(' Parámetros parseados:', params);
           return params;
         } catch (error) {
           console.error('❌ Error parseando JSON:', error, response.response);
