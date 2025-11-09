@@ -33,13 +33,17 @@ export class SearchBarComponent implements OnInit {
         if (value && value.length >= 3) {
           return this.searchService.getSuggestions(value).pipe(
             tap(() => {
-              this.showSuggestions = true;
-              this.cdr.detectChanges();
+              setTimeout(() => {
+                this.showSuggestions = true;
+                this.cdr.detectChanges();
+              });
             })
           );
         } else {
-          this.showSuggestions = false;
-          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.showSuggestions = false;
+            this.cdr.detectChanges();
+          });
           return of([]);
         }
       })

@@ -49,7 +49,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     
     authReq = req.clone({ headers });
   } else {
-    console.log('⚠️ No hay token JWT para:', req.url);
+    // Silenciar warning para rutas de Ollama (no requieren JWT)
+    if (!req.url.includes('/api/ollama')) {
+      console.log('⚠️ No hay token JWT para:', req.url);
+    }
   }
 
   //console.log('🌐 Enviando petición HTTP:', authReq.url);
