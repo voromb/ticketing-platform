@@ -25,13 +25,13 @@ export class AiService {
   private ollamaUrl = '/api/ollama/generate';
   
   // Modelos
-  private chatModel = 'metalhead-assistant-v3';
+  private chatModel = 'metalhead-assistant-v4';
   private searchModel = 'search-nlp-v2';
 
   constructor(private http: HttpClient) {}
 
   /**
-   * Chat conversacional con el asistente V3
+   * Chat conversacional con el asistente V4 (datos actualizados)
    */
   chat(message: string): Observable<string> {
     return this.http.post<OllamaResponse>(this.ollamaUrl, {

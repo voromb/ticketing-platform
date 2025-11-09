@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { debounceTime, switchMap, Observable, of } from 'rxjs';
+import { debounceTime, switchMap, Observable, of, tap } from 'rxjs';
 import { SearchService } from '~/app/core/services/search.service';
 
 @Component({
@@ -19,7 +19,8 @@ export class SearchBarComponent implements OnInit {
 
   constructor(
     private searchService: SearchService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -30,10 +31,15 @@ export class SearchBarComponent implements OnInit {
       debounceTime(300),
       switchMap(value => {
         if (value && value.length >= 3) {
-          this.showSuggestions = true;
-          return this.searchService.getSuggestions(value);
+          return this.searchService.getSuggestions(value).pipe(
+            tap(() => {
+              this.showSuggestions = true;
+              this.cdr.detectChanges();
+            })
+          );
         } else {
           this.showSuggestions = false;
+          this.cdr.detectChanges();
           return of([]);
         }
       })

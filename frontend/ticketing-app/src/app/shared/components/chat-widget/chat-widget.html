@@ -1,0 +1,78 @@
+<!-- Botón flotante -->
+<div class="chat-button" (click)="toggleChat()" [class.open]="isOpen">
+  <i class="fas fa-comments"></i>
+  <span class="chat-label">Chat por IA</span>
+</div>
+
+<!-- Panel de chat -->
+<div class="chat-panel" [class.open]="isOpen">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-robot me-2"></i>
+      <div>
+        <h5 class="mb-0">Asistente IA</h5>
+        <small class="text-muted">Eventos de Rock & Metal</small>
+      </div>
+    </div>
+    <button class="btn-close-chat" (click)="toggleChat()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="chat-body">
+    <div *ngFor="let message of messages" 
+         class="message"
+         [class.user-message]="message.role === 'user'"
+         [class.assistant-message]="message.role === 'assistant'">
+      <div class="message-content">
+        <div class="message-avatar" *ngIf="message.role === 'assistant'">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-bubble">
+          <p class="mb-0">{{ message.content }}</p>
+          <small class="message-time">{{ message.timestamp | date:'HH:mm' }}</small>
+        </div>
+        <div class="message-avatar" *ngIf="message.role === 'user'">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="message assistant-message">
+      <div class="message-content">
+        <div class="message-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-bubble">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="chat-footer">
+    <div class="input-group">
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Escribe tu mensaje..."
+        [(ngModel)]="userMessage"
+        (keypress)="onKeyPress($event)"
+        [disabled]="isLoading">
+      <button 
+        class="btn btn-primary" 
+        (click)="sendMessage()"
+        [disabled]="!userMessage.trim() || isLoading">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>

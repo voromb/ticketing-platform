@@ -3,7 +3,7 @@
 **Fecha:** 8-9 de Noviembre 2025  
 **Proyecto:** Sistema de IA con Ollama para venta de entradas  
 **Hardware:** Proxmox (i9-11980HK + RTX 5070 Ti 16GB)  
-**Versión:** 3.0 - Con Fine-tuning Real (sm_120) + API Pública
+**Versión:** 4.0 - Búsqueda + Chat Implementados (Producción)
 
 ---
 
@@ -18,8 +18,9 @@
 - ✅ API pública accesible en `http://voro-moran.dyndns.org:11434`
 
 **Modelos en Producción:**
--  `metalhead-assistant-v3` (8B) - Chat con 419 eventos reales
--  `search-nlp-v2` (8B) - Búsqueda NLP con ~500 ejemplos
+-  `metalhead-assistant-v4` (8B) - Chat con datos actualizados ⭐ **ACTIVO**
+-  `metalhead-assistant-v3` (8B) - Chat legacy (419 eventos)
+-  `search-nlp-v2` (8B) - Búsqueda NLP con ~500 ejemplos ⭐ **ACTIVO**
 -  `metalhead-finetuned` (1.1B) - Fine-tuned experimental
 
 **Endpoints Públicos Activos:**
@@ -35,10 +36,22 @@
 - ✅ Port forwarding configurado
 - ✅ DynDNS funcionando
 
+**Integración Frontend Angular:**
+- ✅ Búsqueda con IA funcionando (search-nlp-v2)
+- ✅ Chat flotante implementado (metalhead-assistant-v4)
+- ✅ Página de resultados con estilo shop
+- ✅ Mensajes personalizados de IA
+- ✅ Filtrado por ciudad en frontend
+- ✅ UI responsive y moderna
+
 ###  Próximos Pasos
 
-1. Integrar en Angular con URL pública
-2. Implementar rate limiting
+1. ~~Integrar en Angular con URL pública~~ ✅ **COMPLETADO**
+2. ~~Implementar búsqueda con IA~~ ✅ **COMPLETADO**
+3. ~~Implementar chat flotante~~ ✅ **COMPLETADO**
+4. Implementar rate limiting
+5. Agregar autenticación con API Key
+6. Implementar RAG completo (búsqueda en BD desde chat)
 
 ---
 
@@ -2153,6 +2166,37 @@ sk-dcb742a4f7384ca48fae9c4dc095f042
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3OTRkOTJiLTBkZWQtNDhiYy1iNWNhLTU1MmU3MTJkYzVlZiJ9.cPMfDUNZh6d_FM-fyrBeVwJ1KV8B7O222zPDGnPiJ8A
 ```
+
+---
+
+## 📚 Documentación Adicional
+
+Este documento contiene la documentación técnica completa del sistema de IA. Para guías específicas de uso:
+
+### Guías de Usuario:
+- **`BUSQUEDA_IA_README.md`** - Guía completa de búsqueda con IA
+  - Cómo funciona la búsqueda NLP
+  - Ejemplos de búsquedas
+  - Arquitectura y flujo
+  - Solución de problemas
+  
+- **`CHAT_IA_README.md`** - Guía completa del chat flotante
+  - Características del chat
+  - Cómo usar el asistente
+  - Personalización
+  - Troubleshooting
+
+### Estado de Implementación:
+- ✅ **Búsqueda con IA:** Funcional y documentada
+- ✅ **Chat flotante:** Funcional y documentado
+- ✅ **Modelos V4:** Entrenados con datos actualizados
+- 🔄 **RAG completo:** Pendiente (chat con búsqueda en BD)
+
+---
+
+**Última actualización:** 9 Noviembre 2025 - 19:10  
+**Versión:** 4.0  
+**Estado:** ✅ Producción
 
 ---
 

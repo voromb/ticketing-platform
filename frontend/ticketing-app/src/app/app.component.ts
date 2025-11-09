@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from "./shared/components/navbar/navbar.component";
+import { ChatWidgetComponent } from "./shared/components/chat-widget/chat-widget";
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, CommonModule],
+  imports: [RouterOutlet, NavbarComponent, ChatWidgetComponent, CommonModule],
   templateUrl: './app.component.html',
   styles: [`
     .main-content {

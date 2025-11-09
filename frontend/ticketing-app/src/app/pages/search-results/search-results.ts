@@ -1,14 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EventsComponent } from '~/app/shared/components/events/events.component';
 import { SearchService } from '~/app/core/services/search.service';
 import { AiService } from '~/app/core/services/ai.service';
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
-  imports: [CommonModule, EventsComponent, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './search-results.html',
   styleUrls: ['./search-results.css']
 })

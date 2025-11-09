@@ -2,3 +2,6 @@
 <div class="main-content">
   <router-outlet></router-outlet>
 </div>
+
+<!-- Chat flotante (visible en todas las páginas) -->
+<app-chat-widget *ngIf="!isAdminRoute"></app-chat-widget>

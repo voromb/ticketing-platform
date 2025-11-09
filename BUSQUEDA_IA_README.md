@@ -4,11 +4,15 @@
 
 ### Archivos Creados/Modificados:
 
-1. **`src/app/core/services/ai.service.ts`** - Servicio de IA
-2. **`src/app/core/services/search.service.ts`** - Servicio de búsqueda con IA
-3. **`src/app/shared/components/search-bar/`** - Componente de búsqueda
-4. **`proxy.conf.json`** - Configuración CORS
-5. **`angular.json`** - Proxy configurado
+1. **`src/app/core/services/ai.service.ts`** - Servicio de IA con Ollama
+2. **`src/app/core/services/search.service.ts`** - Servicio de búsqueda (IA + BD)
+3. **`src/app/shared/components/search-bar/`** - Componente de búsqueda con sugerencias
+4. **`src/app/pages/search-results/`** - Página de resultados con estilo shop
+   - `search-results.ts` - Lógica con filtrado por ciudad
+   - `search-results.html` - UI con grid de eventos
+   - `search-results.css` - Estilos Metal Mania
+5. **`proxy.conf.json`** - Configuración CORS para Ollama
+6. **`angular.json`** - Proxy configurado
 
 ### APIs Configuradas:
 
@@ -74,14 +78,14 @@ Abre la aplicación y busca en el buscador:
 
 ## 📊 Qué Esperar
 
-### Flujo de Búsqueda:
+### Flujo de Búsqueda Actual:
 
 ```
 Usuario escribe: "thrash metal en Valencia"
          ↓
-    [Spinner aparece]
+    [Spinner rojo aparece]
          ↓
-IA NLP extrae parámetros:
+ IA NLP extrae parámetros:
 {
   "genre": "thrash metal",
   "city": "Valencia",
@@ -89,12 +93,20 @@ IA NLP extrae parámetros:
   "price_max": null
 }
          ↓
-Busca en BD con: "thrash metal Valencia"
+Backend busca en BD con: "thrash" (primer término del género)
          ↓
-Muestra resultados:
-- 🤖 IA detectó: 🎸 thrash metal 📍 Valencia
+Frontend filtra por ciudad: "Valencia"
+         ↓
+Muestra resultados en página /search:
+- 🎸 Título "Resultados de búsqueda con IA" (tipografía Metal Mania)
+- 🤖 Badges: thrash metal | Valencia
+- 🤖 Mensaje personalizado de IA
 - ✅ X eventos encontrados
-- Lista de eventos (máximo 5)
+- 📋 Grid de eventos (2 columnas) con estilo shop:
+  * Banner con blur
+  * Precio en badge rojo
+  * Botón "Comprar"
+  * Información completa del evento
 ```
 
 ### En la Consola del Navegador:
@@ -104,8 +116,11 @@ Deberías ver logs como:
 ```
 🔍 Búsqueda con IA: thrash metal en Valencia
 📊 Parámetros extraídos por IA: {genre: "thrash metal", city: "Valencia", ...}
-🔎 Buscando en BD con: thrash metal Valencia
-✅ Eventos encontrados: 5
+🔎 Buscando en BD con: thrash
+🏙️ Filtrar por ciudad: Valencia
+✅ Eventos encontrados en BD: 27
+🏙️ Filtrando por ciudad: Valencia
+✅ Eventos después de filtrar por ciudad: 4
 ```
 
 ## 🔧 Troubleshooting
@@ -181,27 +196,82 @@ console.log('Filtrar por: 🔍, 📊, 🔎, ✅');
 tail -f backend/admin/logs/app.log
 ```
 
-## 🎯 Próximos Pasos
+## 🔧 Detalles Técnicos
 
-1. **Mejorar UI de resultados:**
-   - Crear página dedicada de resultados
-   - Agregar filtros adicionales
-   - Paginación
+### Arquitectura de Búsqueda:
 
-2. **Optimizar búsqueda:**
-   - Cache de resultados
-   - Búsqueda incremental
-   - Sugerencias dinámicas
+```
+┌─────────────────┐
+│  SearchBar      │ → Usuario escribe query
+│  Component      │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│  SearchService  │ → searchWithAI(query)
+└────────┬────────┘
+ ****        │
+    ┌────┴────┐
+    │         │
+    ↓         ↓
+┌────────┐ ┌──────────┐
+│ AI NLP │ │ EventAPI │
+│ Ollama │ │ Backend  │
+└────┬───┘ └────┬─────┘
+     │          │
+     └────┬─────┘
+          ↓
+┌─────────────────────┐
+│ SearchResults       │
+│ Component           │
+│ - Filtra por ciudad │
+│ - Muestra eventos   │
+└─────────────────────┘
+```
 
-3. **Integrar Chat:**
-   - Botón de chat flotante
-   - Conversación con contexto
-   - Historial de chat
+### Lógica de Búsqueda:
 
-4. **Analytics:**
-   - Tracking de búsquedas
-   - Métricas de uso de IA
-   - Búsquedas populares
+1. **Extracción de parámetros (IA):**
+   - Modelo: `search-nlp-v2`
+   - Input: Query del usuario
+   - Output: `{genre, city, date, price_max}`
+
+2. **Búsqueda en BD:**
+   - Si hay género: busca por primer término ("thrash" de "thrash metal")
+   - Si solo ciudad: busca por ciudad
+   - Si ambos: busca por género
+
+3. **Filtrado frontend:**
+   - Si IA detectó ciudad: filtra eventos por `venue.city`
+   - Elimina duplicados por ID
+
+4. **Renderizado:**
+   - Grid 2 columnas (col-lg-6)
+   - Estilo idéntico a `/shop`
+   - Tipografía Metal Mania
+   - Banner con blur effect
+
+### Fix de Errores Comunes:
+
+**ExpressionChangedAfterItHasBeenCheckedError:**
+- Solucionado con `ChangeDetectorRef` en SearchBarComponent
+- Uso de `tap()` para cambios de estado en observables
+
+## 🎯 Estado Actual
+
+✅ **Completado:**
+- Búsqueda con IA funcionando
+- Extracción de parámetros (género, ciudad)
+- Filtrado por ciudad en frontend
+- UI con estilo shop (Metal Mania)
+- Mensajes personalizados de IA
+- Sin errores de detección de cambios
+
+🔄 **Pendiente:**
+- Paginación de resultados
+- Cache de búsquedas
+- Sugerencias dinámicas desde BD
+- Analytics de búsquedas
 
 ## 📚 Documentación Adicional
 
@@ -211,5 +281,5 @@ tail -f backend/admin/logs/app.log
 
 ---
 
-**Última actualización:** 9 Noviembre 2025  
-**Estado:** ✅ Funcional y listo para pruebas
+**Última actualización:** 9 Noviembre 2025 - 18:30  
+**Estado:** ✅ Funcional, testeado y documentado
