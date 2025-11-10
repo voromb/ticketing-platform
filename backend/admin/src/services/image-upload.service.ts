@@ -141,8 +141,8 @@ export class ImageUploadService {
             await fs.unlink(filePath);
             logger.info(`Imagen eliminada: ${filePath}`);
             return true;
-        } catch (error) {
-            logger.error(`Error eliminando imagen: ${error}`);
+        } catch (error: any) {
+            logger.error({ err: error }, 'Error eliminando imagen');
             return false;
         }
     }

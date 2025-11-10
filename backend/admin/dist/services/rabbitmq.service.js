@@ -54,7 +54,7 @@ class RabbitMQService {
             logger_1.logger.info('[RABBITMQ] RabbitMQ conectado exitosamente');
         }
         catch (error) {
-            logger_1.logger.error('[RABBITMQ] Error conectando a RabbitMQ:', error.message);
+            logger_1.logger.error({ err: error }, '[RABBITMQ] Error conectando a RabbitMQ');
             this.connected = false;
         }
     }
@@ -75,7 +75,7 @@ class RabbitMQService {
             logger_1.logger.info(`[PUBLISH] Evento publicado: ${routingKey}`);
         }
         catch (error) {
-            logger_1.logger.error('Error publicando evento:', error);
+            logger_1.logger.error({ err: error }, 'Error publicando evento');
         }
     }
     async subscribe(routingKey, callback) {
@@ -97,7 +97,7 @@ class RabbitMQService {
                         this.channel?.ack(msg);
                     }
                     catch (error) {
-                        logger_1.logger.error('Error procesando mensaje:', error);
+                        logger_1.logger.error({ err: error }, 'Error procesando mensaje');
                         this.channel?.nack(msg, false, false);
                     }
                 }
@@ -105,7 +105,7 @@ class RabbitMQService {
             logger_1.logger.info(`[SUBSCRIBE] Suscrito a eventos: ${routingKey}`);
         }
         catch (error) {
-            logger_1.logger.error('Error suscribiéndose a eventos:', error);
+            logger_1.logger.error({ err: error }, 'Error suscribiéndose a eventos');
         }
     }
     async close() {
@@ -116,7 +116,7 @@ class RabbitMQService {
             logger_1.logger.info('RabbitMQ desconectado');
         }
         catch (error) {
-            logger_1.logger.error('Error cerrando RabbitMQ:', error);
+            logger_1.logger.error({ err: error }, 'Error cerrando RabbitMQ');
         }
     }
 }

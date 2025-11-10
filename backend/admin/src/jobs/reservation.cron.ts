@@ -16,7 +16,7 @@ export function startReservationCron() {
               logger.info(`[CRON] ${result.expired} reservas expiradas y liberadas`);
           }
       } catch (error: any) {
-          logger.error('Error en cron de reservas:', error);
+          logger.error({ err: error }, 'Error en cron de reservas');
       }
   });
 

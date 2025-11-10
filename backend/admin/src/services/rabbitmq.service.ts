@@ -22,7 +22,7 @@ export class RabbitMQService {
       this.connected = true;
       logger.info('[RABBITMQ] RabbitMQ conectado exitosamente');
     } catch (error: any) {
-      logger.error('[RABBITMQ] Error conectando a RabbitMQ:', error.message);
+      logger.error({ err: error }, '[RABBITMQ] Error conectando a RabbitMQ');
       this.connected = false;
     }
   }
@@ -52,7 +52,7 @@ export class RabbitMQService {
 
       logger.info(`[PUBLISH] Evento publicado: ${routingKey}`);
     } catch (error: any) {
-      logger.error('Error publicando evento:', error);
+      logger.error({ err: error }, 'Error publicando evento');
     }
   }
 
@@ -77,7 +77,7 @@ export class RabbitMQService {
             callback(data);
             this.channel?.ack(msg);
           } catch (error: any) {
-            logger.error('Error procesando mensaje:', error);
+            logger.error({ err: error }, 'Error procesando mensaje');
             this.channel?.nack(msg, false, false);
           }
         }
@@ -85,7 +85,7 @@ export class RabbitMQService {
 
       logger.info(`[SUBSCRIBE] Suscrito a eventos: ${routingKey}`);
     } catch (error: any) {
-      logger.error('Error suscribiéndose a eventos:', error);
+      logger.error({ err: error }, 'Error suscribiéndose a eventos');
     }
   }
 
@@ -96,7 +96,7 @@ export class RabbitMQService {
       this.connected = false;
       logger.info('RabbitMQ desconectado');
     } catch (error: any) {
-      logger.error('Error cerrando RabbitMQ:', error);
+      logger.error({ err: error }, 'Error cerrando RabbitMQ');
     }
   }
 }

@@ -110,7 +110,7 @@ class ImageUploadService {
             return true;
         }
         catch (error) {
-            logger_1.logger.error(`Error eliminando imagen: ${error}`);
+            logger_1.logger.error({ err: error }, 'Error eliminando imagen');
             return false;
         }
     }

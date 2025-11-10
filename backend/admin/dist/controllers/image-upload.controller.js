@@ -21,7 +21,7 @@ class ImageUploadController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error subiendo imágenes de evento:', error);
+            logger_1.logger.error({ err: error }, 'Error subiendo imágenes de evento:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -44,7 +44,7 @@ class ImageUploadController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error subiendo imágenes de venue:', error);
+            logger_1.logger.error({ err: error }, 'Error subiendo imágenes de venue:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -67,7 +67,7 @@ class ImageUploadController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error subiendo imágenes de categoría:', error);
+            logger_1.logger.error({ err: error }, 'Error subiendo imágenes de categoría:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -90,7 +90,7 @@ class ImageUploadController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error subiendo imágenes de subcategoría:', error);
+            logger_1.logger.error({ err: error }, 'Error subiendo imágenes de subcategoría:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -120,7 +120,7 @@ class ImageUploadController {
             }
         }
         catch (error) {
-            logger_1.logger.error('Error eliminando imagen:', error);
+            logger_1.logger.error({ err: error }, 'Error eliminando imagen:');
             return reply.status(500).send({
                 error: 'Error eliminando imagen',
             });
@@ -144,7 +144,7 @@ class ImageUploadController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error eliminando imágenes:', error);
+            logger_1.logger.error({ err: error }, 'Error eliminando imágenes:');
             return reply.status(500).send({
                 error: 'Error eliminando imágenes',
             });

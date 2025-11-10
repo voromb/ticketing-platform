@@ -268,7 +268,7 @@ class PaymentController {
                 },
             });
         } catch (error: any) {
-            logger.error('[PAYMENT] Error completing demo payment:', error);
+            logger.error({ err: error }, '[PAYMENT] Error completing demo payment:');
             logger.error('Error message:', error.message);
             logger.error('Error stack:', error.stack);
             return reply.status(500).send({
@@ -376,7 +376,7 @@ class PaymentController {
 
             return reply.send({ received: true });
         } catch (error: any) {
-            logger.error('Error handling webhook:', error);
+            logger.error({ err: error }, 'Error handling webhook:');
             return reply.status(500).send({ error: 'Error procesando webhook' });
         }
     }
@@ -429,7 +429,7 @@ class PaymentController {
                 },
             });
         } catch (error: any) {
-            logger.error('Error checking payment status:', error);
+            logger.error({ err: error }, 'Error checking payment status:');
             return reply
                 .status(500)
                 .send({ success: false, error: 'Error verificando estado de pago' });

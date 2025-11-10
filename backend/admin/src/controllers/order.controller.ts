@@ -238,7 +238,7 @@ class OrderController {
                 message: 'Orden creada exitosamente',
             });
         } catch (error: any) {
-            logger.error('Error creating order:', error);
+            logger.error({ err: error }, 'Error creating order:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -300,7 +300,7 @@ class OrderController {
                 total: orders.length,
             });
         } catch (error: any) {
-            logger.error('Error getting orders:', error);
+            logger.error({ err: error }, 'Error getting orders:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -368,7 +368,7 @@ class OrderController {
                 data: order,
             });
         } catch (error: any) {
-            logger.error('Error getting order:', error);
+            logger.error({ err: error }, 'Error getting order:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -447,7 +447,7 @@ class OrderController {
             logger.info(`Orden ${orderId} actualizada a estado: ${status}`);
             return { success: true, data: order };
         } catch (error: any) {
-            logger.error('Error updating order status:', error);
+            logger.error({ err: error }, 'Error updating order status:');
             return { success: false, error: error.message };
         }
     }
@@ -500,7 +500,7 @@ class OrderController {
                 total: orders.length,
             });
         } catch (error: any) {
-            logger.error('Error getting all orders:', error);
+            logger.error({ err: error }, 'Error getting all orders:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -591,7 +591,7 @@ class OrderController {
                 message: 'Pago procesado exitosamente',
             };
         } catch (error: any) {
-            logger.error('Error processing order payment:', error);
+            logger.error({ err: error }, 'Error processing order payment:');
             throw error;
         }
     }

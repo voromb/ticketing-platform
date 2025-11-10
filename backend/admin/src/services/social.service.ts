@@ -21,7 +21,7 @@ class SocialService {
             });
             return response.data;
         } catch (error: any) {
-            logger.error('Error getting event likes:', error.message);
+            logger.error({ err: error }, 'Error getting event likes');
             return { success: false, totalLikes: 0, isLikedByUser: false };
         }
     }
@@ -39,7 +39,7 @@ class SocialService {
             });
             return response.data;
         } catch (error: any) {
-            logger.error('Error getting event comments:', error.message);
+            logger.error({ err: error }, 'Error getting event comments');
             return { success: false, comments: [], total: 0 };
         }
     }
@@ -57,7 +57,7 @@ class SocialService {
             });
             return response.data;
         } catch (error: any) {
-            logger.error('Error getting user follow stats:', error.message);
+            logger.error({ err: error }, 'Error getting user follow stats');
             return { success: false, followersCount: 0, followingCount: 0, isFollowing: false };
         }
     }
@@ -73,7 +73,7 @@ class SocialService {
             });
             return response.data;
         } catch (error: any) {
-            logger.error('Error getting user followers:', error.message);
+            logger.error({ err: error }, 'Error getting user followers');
             return { success: false, followers: [], total: 0 };
         }
     }
@@ -89,7 +89,7 @@ class SocialService {
             });
             return response.data;
         } catch (error: any) {
-            logger.error('Error getting user following:', error.message);
+            logger.error({ err: error }, 'Error getting user following');
             return { success: false, following: [], total: 0 };
         }
     }
@@ -114,7 +114,7 @@ class SocialService {
                 isLikedByUser: likesData.isLikedByUser || false
             };
         } catch (error: any) {
-            logger.error('Error getting event social stats:', error.message);
+            logger.error({ err: error }, 'Error getting event social stats');
             return {
                 success: false,
                 eventId,

@@ -32,6 +32,9 @@ async function bootstrap() {
         },
     });
     console.log('🔧 Configurando microservicio RabbitMQ...');
+    app.getHttpAdapter().get('/health', (req, res) => {
+        res.status(200).json({ status: 'ok', service: 'messaging-service' });
+    });
     app.enableCors({
         origin: process.env.FRONTEND_URL || 'http://localhost:4200',
         credentials: true,

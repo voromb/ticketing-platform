@@ -17,7 +17,7 @@ export class VipController {
         data: {}
       });
     } catch (error: any) {
-      logger.error('❌ Error obteniendo configuración VIP:', error);
+      logger.error({ err: error }, '❌ Error obteniendo configuración VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -36,7 +36,7 @@ export class VipController {
         message: 'VIP config updated - To be implemented'
       });
     } catch (error: any) {
-      logger.error('❌ Error actualizando configuración VIP:', error);
+      logger.error({ err: error }, '❌ Error actualizando configuración VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -55,7 +55,7 @@ export class VipController {
         message: 'Benefit created - To be implemented'
       });
     } catch (error: any) {
-      logger.error('❌ Error creando beneficio VIP:', error);
+      logger.error({ err: error }, '❌ Error creando beneficio VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -74,7 +74,7 @@ export class VipController {
         message: 'Benefit updated - To be implemented'
       });
     } catch (error: any) {
-      logger.error('❌ Error actualizando beneficio VIP:', error);
+      logger.error({ err: error }, '❌ Error actualizando beneficio VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -93,7 +93,7 @@ export class VipController {
         message: 'Benefit deleted - To be implemented'
       });
     } catch (error: any) {
-      logger.error('❌ Error eliminando beneficio VIP:', error);
+      logger.error({ err: error }, '❌ Error eliminando beneficio VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -113,7 +113,7 @@ export class VipController {
         data: { discount: 0 }
       });
     } catch (error: any) {
-      logger.error('❌ Error calculando descuento VIP:', error);
+      logger.error({ err: error }, '❌ Error calculando descuento VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'
@@ -133,7 +133,7 @@ export class VipController {
         data: {}
       });
     } catch (error: any) {
-      logger.error('❌ Error obteniendo estadísticas VIP:', error);
+      logger.error({ err: error }, '❌ Error obteniendo estadísticas VIP:');
       return reply.code(500).send({
         success: false,
         error: 'Error interno del servidor'

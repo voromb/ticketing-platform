@@ -83,6 +83,133 @@ services:
     networks:
       - ticketing-network
 
+  # ===================
+  # SERVICIOS DE APLICACIÓN (PROFILE: deploy)
+  # Usar: docker compose --profile deploy up -d
+  # ===================
+
+  # Admin Backend (Fastify)
+  admin-backend:
+    profiles: ["deploy"]
+    build:
+      context: ../backend/admin
+      dockerfile: Dockerfile
+    container_name: ticketing-admin-backend
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - ticketing-network
+
+  # User Service (Express)
+  user-service:
+    profiles: ["deploy"]
+    build:
+      context: ../backend/user-service
+      dockerfile: Dockerfile
+    container_name: ticketing-user-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - ticketing-network
+
+  # Festival Services (NestJS)
+  festival-services:
+    profiles: ["deploy"]
+    build:
+      context: ../backend/services/festival-services
+      dockerfile: Dockerfile
+    container_name: ticketing-festival-services
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: production
+      PORT: 3004
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    depends_on:
+      - postgres
+      - mongodb
+      - rabbitmq
+    networks:
+      - ticketing-network
+
+  # Messaging Service (NestJS)
+  messaging-service:
+    profiles: ["deploy"]
+    build:
+      context: ../backend/services/messaging-service
+      dockerfile: Dockerfile
+    container_name: ticketing-messaging-service
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: production
+      PORT: 3005
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - ticketing-network
+
+  # Frontend (Angular)
+  frontend:
+    profiles: ["deploy"]
+    build:
+      context: ../frontend/ticketing-app
+      dockerfile: Dockerfile
+    container_name: ticketing-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    networks:
+      - ticketing-network
+
+  # Nginx (Reverse Proxy)
+  nginx:
+    profiles: ["deploy"]
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: ticketing-nginx
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    depends_on:
+      - frontend
+      - admin-backend
+      - user-service
+      - festival-services
+      - messaging-service
+    networks:
+      - ticketing-network
+
 volumes:
   mongo_data:
   postgres_data:

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { ApprovalController } from '../controllers/approval.controller';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import authenticateToken from '../middlewares/auth.middleware';
 
 export async function approvalRoutes(fastify: FastifyInstance) {
   const approvalController = new ApprovalController();

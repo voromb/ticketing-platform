@@ -131,7 +131,7 @@ class ReservationController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error creating reservation:', error);
+            logger_1.logger.error({ err: error }, 'Error creating reservation:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -186,7 +186,7 @@ class ReservationController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting reservations:', error);
+            logger_1.logger.error({ err: error }, 'Error getting reservations:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -236,7 +236,7 @@ class ReservationController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error cancelling reservation:', error);
+            logger_1.logger.error({ err: error }, 'Error cancelling reservation:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -286,7 +286,7 @@ class ReservationController {
             return { expired: expiredReservations.length };
         }
         catch (error) {
-            logger_1.logger.error('Error expiring reservations:', error);
+            logger_1.logger.error({ err: error }, 'Error expiring reservations:');
             return { expired: 0, error: error.message };
         }
     }
@@ -336,7 +336,7 @@ class ReservationController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting reservation:', error);
+            logger_1.logger.error({ err: error }, 'Error getting reservation:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -379,7 +379,7 @@ class ReservationController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting all reservations:', error);
+            logger_1.logger.error({ err: error }, 'Error getting all reservations:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }

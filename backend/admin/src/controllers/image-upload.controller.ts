@@ -22,7 +22,7 @@ export class ImageUploadController {
                 count: imageUrls.length,
             });
         } catch (error) {
-            logger.error('Error subiendo imágenes de evento:', error);
+            logger.error({ err: error }, 'Error subiendo imágenes de evento:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -46,7 +46,7 @@ export class ImageUploadController {
                 count: imageUrls.length,
             });
         } catch (error) {
-            logger.error('Error subiendo imágenes de venue:', error);
+            logger.error({ err: error }, 'Error subiendo imágenes de venue:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -70,7 +70,7 @@ export class ImageUploadController {
                 count: imageUrls.length,
             });
         } catch (error) {
-            logger.error('Error subiendo imágenes de categoría:', error);
+            logger.error({ err: error }, 'Error subiendo imágenes de categoría:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -94,7 +94,7 @@ export class ImageUploadController {
                 count: imageUrls.length,
             });
         } catch (error) {
-            logger.error('Error subiendo imágenes de subcategoría:', error);
+            logger.error({ err: error }, 'Error subiendo imágenes de subcategoría:');
             return reply.status(400).send({
                 error: error.message || 'Error subiendo imágenes',
             });
@@ -129,7 +129,7 @@ export class ImageUploadController {
                 });
             }
         } catch (error) {
-            logger.error('Error eliminando imagen:', error);
+            logger.error({ err: error }, 'Error eliminando imagen:');
             return reply.status(500).send({
                 error: 'Error eliminando imagen',
             });
@@ -159,7 +159,7 @@ export class ImageUploadController {
                 count: imageUrls.length,
             });
         } catch (error) {
-            logger.error('Error eliminando imágenes:', error);
+            logger.error({ err: error }, 'Error eliminando imágenes:');
             return reply.status(500).send({
                 error: 'Error eliminando imágenes',
             });

@@ -9,6 +9,7 @@ import { PerformanceInterceptor } from './auth/interceptors/performance.intercep
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import compression from 'compression';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,6 +24,11 @@ async function bootstrap() {
     },
     threshold: 1024, // Solo comprimir respuestas > 1KB
   }));
+
+  // Health check endpoint
+  app.getHttpAdapter().get('/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok', service: 'festival-services' });
+  });
 
   // Configuración global
   app.enableCors();

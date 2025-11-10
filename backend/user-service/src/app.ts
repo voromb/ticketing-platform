@@ -13,7 +13,6 @@ process.env.DOTENVX_QUIET = 'true';
 
 dotenv.config({
     override: false,
-    processEnv: process.env,
     debug: false,
 });
 

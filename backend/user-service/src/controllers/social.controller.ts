@@ -144,7 +144,7 @@ class SocialController {
             },
             likedAt: like.createdAt
           };
-        } catch (e) {
+        } catch (e: any) {
           console.error(`❌ Evento ${like.eventId} no encontrado (${e.response?.status || 'error'})`);
          
           return {
@@ -289,10 +289,11 @@ class SocialController {
 
       res.json({
         success: true,
+        userId,
         followersCount,
         followingCount,
         isFollowing
-      } as UserSocialStatsDTO);
+      });
     } catch (error: any) {
       console.error('Error getting user follow stats:', error);
       res.status(500).json({ success: false, error: 'Error interno del servidor' });

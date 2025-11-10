@@ -70,7 +70,7 @@ class EventController {
                 message: `Evento ${category.name} - ${subcategory.name} creado exitosamente!`,
             });
         } catch (error: any) {
-            logger.error('Error creating event:', error);
+            logger.error({ err: error }, 'Error creating event:');
             return reply
                 .status(500)
                 .send({ success: false, error: error.message || 'Error interno' });
@@ -121,7 +121,7 @@ class EventController {
 
             return reply.send({ success: true, data: events, total: events.length });
         } catch (error: any) {
-            logger.error('Error listing events:', error);
+            logger.error({ err: error }, 'Error listing events:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -258,7 +258,7 @@ class EventController {
       }
     });
   } catch (error: any) {
-    logger.error('Error getting event by ID or slug:', error);
+    logger.error({ err: error }, 'Error getting event by ID or slug:');
     return reply.status(500).send({ success: false, error: 'Error interno' });
   }
 }
@@ -313,7 +313,7 @@ async getEventsByVenueSlugPaginated(
             totalPages: Math.ceil(totalEvents / pageSize),
         });
     } catch (error: any) {
-        logger.error('Error fetching paginated events by venue slug:', error);
+        logger.error({ err: error }, 'Error fetching paginated events by venue slug:');
         return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
     }
 }
@@ -391,7 +391,7 @@ async getEventsByVenueSlugPaginated(
             console.error('❌ ERROR COMPLETO AL ACTUALIZAR:', error);
             console.error('📋 Mensaje:', error.message);
             console.error('📋 Stack:', error.stack);
-            logger.error('Error updating event:', error);
+            logger.error({ err: error }, 'Error updating event:');
             return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
@@ -407,7 +407,7 @@ async getEventsByVenueSlugPaginated(
             await prisma.event.delete({ where: { id } });
             return reply.send({ success: true, message: 'Evento eliminado exitosamente' });
         } catch (error: any) {
-            logger.error('Error deleting event:', error);
+            logger.error({ err: error }, 'Error deleting event:');
             return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
@@ -443,7 +443,7 @@ async getEventsByVenueSlugPaginated(
                 total: localities.length,
             });
         } catch (error: any) {
-            logger.error('Error getting event localities:', error);
+            logger.error({ err: error }, 'Error getting event localities:');
             return reply
                 .status(500)
                 .send({ success: false, error: 'Error interno', details: error.message });

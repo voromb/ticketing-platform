@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import compression from 'compression';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,6 +34,11 @@ async function bootstrap() {
   });
   
   console.log('🔧 Configurando microservicio RabbitMQ...');
+
+  // Health check endpoint
+  app.getHttpAdapter().get('/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok', service: 'messaging-service' });
+  });
 
   // CORS Configuration
   app.enableCors({

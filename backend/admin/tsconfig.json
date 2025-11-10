@@ -14,7 +14,10 @@
         "noEmitOnError": false,
         "noImplicitAny": false,
         "noUnusedLocals": false,
-        "noUnusedParameters": false
+        "noUnusedParameters": false,
+        "strictNullChecks": false,
+        "strictFunctionTypes": false,
+        "strictPropertyInitialization": false
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "dist"]

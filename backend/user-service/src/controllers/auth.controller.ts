@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import AuthService from '../services/auth.service';
 
 class AuthController {
+  private authService: AuthService;
+
   constructor() {
     this.authService = new AuthService();
   }

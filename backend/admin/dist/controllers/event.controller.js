@@ -69,7 +69,7 @@ class EventController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error creating event:', error);
+            logger_1.logger.error({ err: error }, 'Error creating event:');
             return reply
                 .status(500)
                 .send({ success: false, error: error.message || 'Error interno' });
@@ -116,7 +116,7 @@ class EventController {
             return reply.send({ success: true, data: events, total: events.length });
         }
         catch (error) {
-            logger_1.logger.error('Error listing events:', error);
+            logger_1.logger.error({ err: error }, 'Error listing events:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -233,7 +233,7 @@ class EventController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting event by ID or slug:', error);
+            logger_1.logger.error({ err: error }, 'Error getting event by ID or slug:');
             return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
@@ -278,7 +278,7 @@ class EventController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error fetching paginated events by venue slug:', error);
+            logger_1.logger.error({ err: error }, 'Error fetching paginated events by venue slug:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -335,7 +335,7 @@ class EventController {
             console.error('❌ ERROR COMPLETO AL ACTUALIZAR:', error);
             console.error('📋 Mensaje:', error.message);
             console.error('📋 Stack:', error.stack);
-            logger_1.logger.error('Error updating event:', error);
+            logger_1.logger.error({ err: error }, 'Error updating event:');
             return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
@@ -350,7 +350,7 @@ class EventController {
             return reply.send({ success: true, message: 'Evento eliminado exitosamente' });
         }
         catch (error) {
-            logger_1.logger.error('Error deleting event:', error);
+            logger_1.logger.error({ err: error }, 'Error deleting event:');
             return reply.status(500).send({ success: false, error: 'Error interno' });
         }
     }
@@ -379,7 +379,7 @@ class EventController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting event localities:', error);
+            logger_1.logger.error({ err: error }, 'Error getting event localities:');
             return reply
                 .status(500)
                 .send({ success: false, error: 'Error interno', details: error.message });

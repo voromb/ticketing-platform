@@ -190,7 +190,7 @@ class OrderController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error creating order:', error);
+            logger_1.logger.error({ err: error }, 'Error creating order:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -246,7 +246,7 @@ class OrderController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting orders:', error);
+            logger_1.logger.error({ err: error }, 'Error getting orders:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -308,7 +308,7 @@ class OrderController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting order:', error);
+            logger_1.logger.error({ err: error }, 'Error getting order:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -380,7 +380,7 @@ class OrderController {
             return { success: true, data: order };
         }
         catch (error) {
-            logger_1.logger.error('Error updating order status:', error);
+            logger_1.logger.error({ err: error }, 'Error updating order status:');
             return { success: false, error: error.message };
         }
     }
@@ -424,7 +424,7 @@ class OrderController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error getting all orders:', error);
+            logger_1.logger.error({ err: error }, 'Error getting all orders:');
             return reply.status(500).send({ success: false, error: 'Error interno del servidor' });
         }
     }
@@ -504,7 +504,7 @@ class OrderController {
             };
         }
         catch (error) {
-            logger_1.logger.error('Error processing order payment:', error);
+            logger_1.logger.error({ err: error }, 'Error processing order payment:');
             throw error;
         }
     }

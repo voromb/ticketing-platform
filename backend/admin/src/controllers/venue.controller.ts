@@ -118,7 +118,7 @@ export class VenueController {
                 venue,
             });
         } catch (error) {
-            logger.error('Error creando venue:', error);
+            logger.error({ err: error }, 'Error creando venue:');
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -192,7 +192,7 @@ export class VenueController {
                     },
                 });
         } catch (error) {
-            logger.error('Error obteniendo venues:', error);
+            logger.error({ err: error }, 'Error obteniendo venues:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -241,7 +241,7 @@ export class VenueController {
 
             return reply.send({ venue });
         } catch (error) {
-            logger.error('Error obteniendo venue:', error);
+            logger.error({ err: error }, 'Error obteniendo venue:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -292,7 +292,7 @@ export class VenueController {
 
 //     return reply.send({ venue });
 //   } catch (error) {
-//     logger.error('Error obteniendo venue por slug:', error);
+//     logger.error({ err: error }, 'Error obteniendo venue por slug:');
 //     return reply.status(500).send({
 //       error: 'Error interno del servidor',
 //     });
@@ -367,7 +367,7 @@ export class VenueController {
                 venue,
             });
         } catch (error) {
-            logger.error('Error actualizando venue:', error);
+            logger.error({ err: error }, 'Error actualizando venue:');
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -421,7 +421,7 @@ export class VenueController {
                 message: 'Venue desactivado exitosamente',
             });
         } catch (error) {
-            logger.error('Error desactivando venue:', error);
+            logger.error({ err: error }, 'Error desactivando venue:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -454,7 +454,7 @@ export class VenueController {
                 venue,
             });
         } catch (error) {
-            logger.error('Error activando venue:', error);
+            logger.error({ err: error }, 'Error activando venue:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -537,7 +537,7 @@ export class VenueController {
                 venue,
             });
         } catch (error) {
-            logger.error('Error gestionando secciones:', error);
+            logger.error({ err: error }, 'Error gestionando secciones:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -594,7 +594,7 @@ export class VenueController {
                 largestVenues,
             });
         } catch (error) {
-            logger.error('Error obteniendo estadísticas:', error);
+            logger.error({ err: error }, 'Error obteniendo estadísticas:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -655,7 +655,7 @@ export class VenueController {
                 }
             });
         } catch (error) {
-            logger.error('Error deleting venue:', error);
+            logger.error({ err: error }, 'Error deleting venue:');
             return reply.status(500).send({
                 error: 'Error interno del servidor'
             });

@@ -103,7 +103,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error creando admin:', error);
+            logger_1.logger.error({ err: error }, 'Error creando admin:');
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -181,7 +181,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error obteniendo admins:', error);
+            logger_1.logger.error({ err: error }, 'Error obteniendo admins:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -235,7 +235,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error obteniendo perfil:', error);
+            logger_1.logger.error({ err: error }, 'Error obteniendo perfil:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -304,7 +304,7 @@ class AdminController {
             return reply.send({ admin });
         }
         catch (error) {
-            logger_1.logger.error('Error obteniendo admin:', error);
+            logger_1.logger.error({ err: error }, 'Error obteniendo admin:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -377,7 +377,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error actualizando admin:', error);
+            logger_1.logger.error({ err: error }, 'Error actualizando admin:');
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -436,7 +436,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error cambiando contraseña:', error);
+            logger_1.logger.error({ err: error }, 'Error cambiando contraseña:');
             if (error.name === 'ZodError') {
                 return reply.status(400).send({
                     error: 'Datos inválidos',
@@ -505,7 +505,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error desactivando admin:', error);
+            logger_1.logger.error({ err: error }, 'Error desactivando admin:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -546,7 +546,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error activando admin:', error);
+            logger_1.logger.error({ err: error }, 'Error activando admin:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });
@@ -623,7 +623,7 @@ class AdminController {
             });
         }
         catch (error) {
-            logger_1.logger.error('Error obteniendo estadísticas:', error);
+            logger_1.logger.error({ err: error }, 'Error obteniendo estadísticas:');
             return reply.status(500).send({
                 error: 'Error interno del servidor',
             });

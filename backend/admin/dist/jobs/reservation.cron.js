@@ -54,7 +54,7 @@ function startReservationCron() {
             }
         }
         catch (error) {
-            logger_1.logger.error('Error en cron de reservas:', error);
+            logger_1.logger.error({ err: error }, 'Error en cron de reservas');
         }
     });
     logger_1.logger.info('[CRON] Cron job de reservas iniciado (cada 1 minuto)');

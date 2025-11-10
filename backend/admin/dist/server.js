@@ -201,7 +201,7 @@ async function buildServer() {
     });
     // Manejo de errores
     server.setErrorHandler((error, request, reply) => {
-        logger.error(`Error: ${error.message}`);
+        logger.error({ err: error }, 'Error en request');
         reply.status(error.statusCode || 500).send({
             error: error.message || 'Internal Server Error',
         });

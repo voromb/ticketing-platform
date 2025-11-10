@@ -82,7 +82,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error('Error obteniendo usuarios:', error);
+            logger.error({ err: error }, 'Error obteniendo usuarios:');
             return reply.status(500).send({
                 error: 'No se pudieron obtener los usuarios del user-service',
                 details: error.message
@@ -121,7 +121,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error(`Error obteniendo usuario ${request.params.id}:`, error);
+            logger.error({ err: error }, `Error obteniendo usuario ${request.params.id}:`);
             return reply.status(500).send({
                 error: 'No se pudo obtener el usuario',
                 details: error.message
@@ -186,7 +186,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error(`Error promocionando usuario ${request.params.id} a VIP:`, error);
+            logger.error({ err: error }, `Error promocionando usuario ${request.params.id} a VIP:`);
             
             if (error.message.includes('Usuario no encontrado')) {
                 return reply.status(404).send({
@@ -263,7 +263,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error(`Error degradando usuario VIP ${request.params.id}:`, error);
+            logger.error({ err: error }, `Error degradando usuario VIP ${request.params.id}:`);
             
             if (error.message.includes('Usuario no encontrado')) {
                 return reply.status(404).send({
@@ -414,7 +414,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error(`Error promocionando usuario ${request.params.id} a COMPANY_ADMIN:`, error);
+            logger.error({ err: error }, `Error promocionando usuario ${request.params.id} a COMPANY_ADMIN:`);
             
             return reply.status(500).send({
                 error: 'Error promocionando usuario a COMPANY_ADMIN',
@@ -465,7 +465,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error(`Error degradando COMPANY_ADMIN ${request.params.id}:`, error);
+            logger.error({ err: error }, `Error degradando COMPANY_ADMIN ${request.params.id}:`);
             
             return reply.status(500).send({
                 error: 'Error degradando COMPANY_ADMIN',
@@ -502,7 +502,7 @@ export class UserManagementController {
             });
 
         } catch (error: any) {
-            logger.error('Error obteniendo COMPANY_ADMIN:', error);
+            logger.error({ err: error }, 'Error obteniendo COMPANY_ADMIN:');
             
             return reply.status(500).send({
                 error: 'Error obteniendo COMPANY_ADMIN',
@@ -578,7 +578,7 @@ export class UserManagementController {
                 });
             }
         } catch (error: any) {
-            logger.error('Error obteniendo estadísticas de usuarios:', error);
+            logger.error({ err: error }, 'Error obteniendo estadísticas de usuarios:');
             return reply.status(500).send({
                 error: 'Error obteniendo estadísticas de usuarios',
                 details: error.message
