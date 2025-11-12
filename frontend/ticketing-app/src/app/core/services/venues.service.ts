@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Venue } from '../models/Venue.model';
@@ -18,7 +19,7 @@ export interface VenuesResponse {
   providedIn: 'root'
 })
 export class VenuesService {
-  private baseUrl = 'http://localhost:3003'; 
+  private baseUrl = environment.apiUrl.replace('/api', ''); 
 
   constructor(private http: HttpClient) {}
 

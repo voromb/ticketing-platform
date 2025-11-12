@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payment-checkout',
@@ -143,7 +144,7 @@ export class PaymentCheckoutComponent implements OnInit {
     
     if (isAdminOrder) {
       // Orden de Admin Service (solo tickets)
-      this.http.get<any>(`http://localhost:3003/api/orders/${this.orderId}`, {
+      this.http.get<any>(`${environment.apiUrl}/orders/${this.orderId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       }).subscribe({
         next: (response) => {
@@ -169,7 +170,7 @@ export class PaymentCheckoutComponent implements OnInit {
       });
     } else {
       // Orden de Festival Services (packs)
-      this.http.get<any>(`http://localhost:3004/api/order/${this.orderId}`, {
+      this.http.get<any>(`${environment.festivalApiUrl}/order/${this.orderId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       }).subscribe({
         next: (response) => {
@@ -223,7 +224,7 @@ export class PaymentCheckoutComponent implements OnInit {
       
       if (isAdminOrder) {
         // Orden de Admin Service (solo tickets)
-        this.http.post<any>('http://localhost:3003/api/payments/complete-payment', 
+        this.http.post<any>(`${environment.apiUrl}/payments/complete-payment`, 
           { orderId: this.orderId },
           { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
         ).subscribe({
@@ -261,7 +262,7 @@ export class PaymentCheckoutComponent implements OnInit {
         });
       } else {
         // Orden de Festival Services (packs)
-        this.http.post<any>('http://localhost:3004/api/order/complete-payment', 
+        this.http.post<any>(`${environment.festivalApiUrl}/order/complete-payment`, 
           { orderId: this.orderId },
           { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
         ).subscribe({

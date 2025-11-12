@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 export interface User {
   id: string;
@@ -20,7 +21,7 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = 'http://localhost:3003/api/auth';
+  private baseUrl = `${environment.apiUrl}/auth`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -99,15 +100,15 @@ export class AuthService {
   }
 
   private tryCompanyAdminLogin(email: string, password: string): Observable<any> {
-    return this.http.post<any>('http://localhost:3004/api/auth/company-admin/login', { email, password });
+    return this.http.post<any>(`${environment.festivalApiUrl}/auth/company-admin/login`, { email, password });
   }
 
   private tryAdminLogin(email: string, password: string): Observable<any> {
-    return this.http.post<any>('http://localhost:3003/api/auth/login', { email, password });
+    return this.http.post<any>(`${environment.apiUrl}/auth/login`, { email, password });
   }
 
   private tryUserLogin(email: string, password: string): Observable<any> {
-    return this.http.post<any>('http://localhost:3001/api/auth/login', { email, password });
+    return this.http.post<any>(`${environment.userApiUrl}/auth/login`, { email, password });
   }
 
   private handleSuccessfulLogin(response: any): void {

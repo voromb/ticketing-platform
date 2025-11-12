@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -1060,7 +1061,7 @@ export class UsersListComponent implements OnInit {
         
         // Obtener COMPANY_ADMIN de PostgreSQL
         const token = localStorage.getItem('token');
-        this.http.get<any>('http://localhost:3003/api/user-management/company-admins', {
+        this.http.get<any>(`${environment.apiUrl}/user-management/company-admins`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).subscribe({
           next: (companyAdminsResponse) => {
@@ -1124,7 +1125,7 @@ export class UsersListComponent implements OnInit {
 
         // Obtener COMPANY_ADMIN de PostgreSQL para actualizar las estadísticas
         const token = localStorage.getItem('token');
-        this.http.get<any>('http://localhost:3003/api/user-management/company-admins', {
+        this.http.get<any>(`${environment.apiUrl}/user-management/company-admins`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).subscribe({
           next: (companyAdminsResponse) => {
@@ -1511,7 +1512,7 @@ export class UsersListComponent implements OnInit {
     }
 
     this.http
-      .post(`http://localhost:3003/api/user-management/${userId}/promote-company-admin`, data, {
+      .post(`${environment.apiUrl}/user-management/${userId}/promote-company-admin`, data, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .subscribe({
@@ -1641,7 +1642,7 @@ export class UsersListComponent implements OnInit {
       if (result.isConfirmed) {
         const token = localStorage.getItem('token');
         
-        this.http.delete(`http://localhost:3003/api/user-management/company-admins/${companyAdminId}`, {
+        this.http.delete(`${environment.apiUrl}/user-management/company-admins/${companyAdminId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).subscribe({
           next: (response: any) => {

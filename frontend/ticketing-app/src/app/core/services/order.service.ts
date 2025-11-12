@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -7,7 +8,7 @@ import { map, catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:3003/api/orders';
+  private apiUrl = `${environment.apiUrl}/orders`;
 
   constructor(private http: HttpClient) {}
 
@@ -57,7 +58,7 @@ export class OrderService {
 
     // Petición a Festival Services (órdenes de packs)
     const packageOrders$ = this.http.get<any>(
-      `http://localhost:3004/api/order/user/${userId}`,
+      `${environment.festivalApiUrl}/order/user/${userId}`,
       { headers: this.getAuthHeaders() }
     ).pipe(
       catchError(error => {

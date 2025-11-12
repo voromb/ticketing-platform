@@ -2,25 +2,24 @@
 
 ## Requisitos Previos
 
-- Docker y Docker Compose instalados
 - Puertos disponibles: 3001, 3003, 3004, 3005, 4200, 9090
 - Bases de datos: MongoDB (27017), PostgreSQL (5432), RabbitMQ (5672, 15672)
 - Servidor Ollama para IA (opcional): `voro-moran.dyndns.org:11434`
 
 ---
 
-## Despliegue en Producción (RECOMENDADO)
+## Despliegue en Producción
 
 ### 1. Configurar variables de entorno
 
-Crea o verifica el archivo `.env` en la carpeta `docker/`:
+Creamos el archivo `.env` en la carpeta `docker/`:
 
 ```bash
 cd docker
 cp .env.example .env
 ```
 
-Edita `.env` con tus credenciales.
+Editamos `.env` con tus credenciales.
 
 ### 2. Levantar todo el stack
 
@@ -28,7 +27,7 @@ Edita `.env` con tus credenciales.
 docker compose --profile deploy up -d
 ```
 
-**Eso es todo.** No necesitas ejecutar ningún script adicional.
+**Eso es todo.** No necesitamos ejecutar ningún script adicional.
 
 Esto levantará automáticamente:
 - ✅ MongoDB, PostgreSQL, RabbitMQ
@@ -133,7 +132,7 @@ docker compose --profile deploy up -d --build
 
 ## Desarrollo Local (Solo Bases de Datos)
 
-Si solo quieres las bases de datos para desarrollo local:
+Si solo queremos las bases de datos para desarrollo local:
 
 ```bash
 cd docker
@@ -146,7 +145,7 @@ Esto levanta solo:
 - RabbitMQ (5672, 15672)
 - Mongo Express (8081)
 
-Luego ejecuta los servicios manualmente:
+Luego ejecutamos los servicios manualmente:
 
 ```bash
 # Backend Admin

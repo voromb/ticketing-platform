@@ -21,8 +21,8 @@ export interface DeleteMultipleImagesRequest {
   providedIn: 'root',
 })
 export class ImageUploadService {
-  // Upload siempre va a festival-services (puerto 3004)
-  private apiUrl = 'http://localhost:3004/api';
+  // Upload siempre va a festival-services
+  private apiUrl = environment.festivalApiUrl;
 
   constructor(private http: HttpClient) {}
 

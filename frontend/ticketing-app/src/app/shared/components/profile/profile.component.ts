@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -70,7 +71,7 @@ export class ProfileComponent implements OnInit {
 
     // Obtener datos frescos de la base de datos
     const token = localStorage.getItem('token');
-    this.http.get('http://localhost:3001/api/users/profile', {
+    this.http.get(`${environment.userApiUrl}/users/profile`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
       next: (response: any) => {
@@ -130,7 +131,7 @@ export class ProfileComponent implements OnInit {
     this.loading = true;
     const token = localStorage.getItem('token');
     
-    this.http.put('http://localhost:3001/api/users/profile', this.profileForm.value, {
+    this.http.put(`${environment.userApiUrl}/users/profile`, this.profileForm.value, {
       headers: { 
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -188,7 +189,7 @@ export class ProfileComponent implements OnInit {
     this.loading = true;
     const token = localStorage.getItem('token');
     
-    this.http.put('http://localhost:3001/api/auth/change-password', {
+    this.http.put(`${environment.userApiUrl}/auth/change-password`, {
       newPassword: this.passwordForm.value.newPassword
     }, {
       headers: { Authorization: `Bearer ${token}` }

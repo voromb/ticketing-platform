@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 // Interfaces
 export interface Message {
@@ -79,7 +80,7 @@ export interface CreateNotificationDto {
   providedIn: 'root'
 })
 export class MessagingService {
-  private apiUrl = 'http://localhost:3005/api';
+  private apiUrl = environment.messagingApiUrl;
   
   // BehaviorSubjects para notificaciones en tiempo real
   private unreadMessagesCount$ = new BehaviorSubject<number>(0);
@@ -231,7 +232,7 @@ export class MessagingService {
   getUsersByType(userType: string): Observable<any[]> {
     if (userType === 'USER') {
       // Llamar a la API de usuarios (puerto 3001) - SIN autenticación requerida
-      return this.http.get<any>('http://localhost:3001/api/users')
+      return this.http.get<any>(`${environment.userApiUrl}/users`)
         .pipe(
           map(response => {
             // Si la respuesta es un objeto con propiedad 'users' o 'data', extraer el array
@@ -243,10 +244,10 @@ export class MessagingService {
         );
     } else if (userType === 'SUPER_ADMIN') {
       // Llamar al nuevo endpoint público para admins (puerto 3003) - SIN autenticación requerida
-      return this.http.get<any[]>('http://localhost:3003/api/messaging-users/admins');
+      return this.http.get<any[]>(`${environment.apiUrl}/messaging-users/admins`);
     } else if (userType === 'COMPANY_ADMIN') {
       // Llamar al nuevo endpoint público para company admins (puerto 3003) - SIN autenticación requerida
-      return this.http.get<any[]>('http://localhost:3003/api/messaging-users/company-admins');
+      return this.http.get<any[]>(`${environment.apiUrl}/messaging-users/company-admins`);
     }
     
     // Fallback: retornar array vacío

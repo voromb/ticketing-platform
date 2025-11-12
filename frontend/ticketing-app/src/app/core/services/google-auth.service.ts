@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -98,7 +99,7 @@ export class GoogleAuthService {
   private async handleGoogleResponse(response: any) {
     try {
       // Enviar el token al backend para validación
-      const result = await this.http.post('http://localhost:3001/api/auth/google-login', {
+      const result = await this.http.post(`${environment.userApiUrl}/auth/google-login`, {
         token: response.credential
       }).toPromise();
 

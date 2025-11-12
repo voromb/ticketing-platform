@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Trip {
   _id?: string;
@@ -45,7 +46,7 @@ export interface TripStats {
   providedIn: 'root'
 })
 export class TravelService {
-  private apiUrl = 'http://localhost:3004/api/travel';
+  private apiUrl = `${environment.festivalApiUrl}/travel`;
 
   constructor(private http: HttpClient) {}
 

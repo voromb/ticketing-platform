@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 import { OrderService } from './order.service';
@@ -47,7 +48,7 @@ export class TicketService {
 
   /** Obtener primera localidad disponible */
   private async getFirstLocality(eventId: string, token?: string): Promise<string> {
-    const response: any = await this.http.get(`http://localhost:3003/api/events/${eventId}/localities`, {
+    const response: any = await this.http.get(`${environment.apiUrl}/events/${eventId}/localities`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     }).toPromise();
 

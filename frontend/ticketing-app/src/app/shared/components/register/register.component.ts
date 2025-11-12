@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import Swal from 'sweetalert2';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -51,7 +52,7 @@ onSubmit() {
 
   console.log('📤 Enviando datos de registro:', userData);
 
-  this.http.post('http://localhost:3001/api/auth/register', userData)
+  this.http.post(`${environment.userApiUrl}/auth/register`, userData)
     .pipe(
       catchError((error) => {
         console.error('⚠️ Error en registro:', error);

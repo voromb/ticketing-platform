@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Restaurant {
   _id?: string;
@@ -45,7 +46,7 @@ export interface RestaurantStats {
   providedIn: 'root'
 })
 export class RestaurantService {
-  private apiUrl = 'http://localhost:3004/api/restaurant';
+  private apiUrl = `${environment.festivalApiUrl}/restaurant`;
 
   constructor(private http: HttpClient) {}
 

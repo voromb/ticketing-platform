@@ -6,7 +6,7 @@ import { environment } from '~/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
-  private baseUrl = environment.apiUrl ?? 'http://localhost:3003';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

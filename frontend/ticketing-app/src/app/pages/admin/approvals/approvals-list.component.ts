@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -235,7 +236,7 @@ export class ApprovalsListComponent implements OnInit {
   loadApprovals() {
     const token = localStorage.getItem('token');
     
-    this.http.get<any>('http://localhost:3003/api/approvals', {
+    this.http.get<any>(`${environment.apiUrl}/approvals`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
       next: (response) => {
@@ -268,7 +269,7 @@ export class ApprovalsListComponent implements OnInit {
     if (confirm(`¿Aprobar "${approval.resourceName}"?`)) {
       const token = localStorage.getItem('token');
       
-      this.http.patch(`http://localhost:3003/api/approvals/${approval.id}/approve`, {}, {
+      this.http.patch(`${environment.apiUrl}/approvals/${approval.id}/approve`, {}, {
         headers: { 'Authorization': `Bearer ${token}` }
       }).subscribe({
         next: () => {
@@ -288,7 +289,7 @@ export class ApprovalsListComponent implements OnInit {
     if (reason) {
       const token = localStorage.getItem('token');
       
-      this.http.patch(`http://localhost:3003/api/approvals/${approval.id}/reject`, 
+      this.http.patch(`${environment.apiUrl}/approvals/${approval.id}/reject`, 
         { reason }, 
         { headers: { 'Authorization': `Bearer ${token}` } }
       ).subscribe({

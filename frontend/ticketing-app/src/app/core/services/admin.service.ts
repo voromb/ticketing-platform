@@ -100,7 +100,7 @@ export interface CategoryStats {
   providedIn: 'root',
 })
 export class AdminService {
-  private baseUrl = 'http://localhost:3003/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

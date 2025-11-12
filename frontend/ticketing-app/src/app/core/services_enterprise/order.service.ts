@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface OrderItem {
   productId: string;
@@ -51,7 +52,7 @@ export interface Order extends CreateOrderDto {
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:3004/api/order';
+  private apiUrl = `${environment.festivalApiUrl}/order`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,5 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: '/api/festival',
-  userApiUrl: '/api/users'
+  apiUrl: '/api/admin',
+  userApiUrl: '/api/users',
+  festivalApiUrl: '/api/festival',
+  messagingApiUrl: '/api/messages'
 };

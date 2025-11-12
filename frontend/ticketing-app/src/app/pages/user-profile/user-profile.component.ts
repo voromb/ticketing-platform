@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -393,7 +394,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
             if (response.success) {
               const order = response.data;
               
-              this.http.post<any>('http://localhost:3003/api/payments/create-checkout', 
+              this.http.post<any>(`${environment.apiUrl}/payments/create-checkout`, 
                 { orderId: order.id },
                 { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
               ).subscribe({
