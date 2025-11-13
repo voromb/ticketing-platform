@@ -37,9 +37,6 @@ export class DetailEvent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.eventSlug = this.route.snapshot.paramMap.get('slug') || '';
     this.eventId = this.route.snapshot.paramMap.get('id') || '';
-
-    console.log('📍 Parámetros de ruta - slug:', this.eventSlug, 'id:', this.eventId);
-
     this.loadEvent();
   }
 
@@ -55,12 +52,11 @@ export class DetailEvent implements OnInit, OnChanges {
         this.events = [res.data];
         this.currentEventId = res.data.id || '';
         this.eventId = this.currentEventId;
-        console.log('✅ Evento cargado:', res.data);
       } else {
         this.error = 'No se pudo cargar el evento';
       }
       this.loading = false;
-      this.cdRef.detectChanges(); // 👈 fuerza render inmediato
+      this.cdRef.detectChanges();
     };
 
     const handleError = (err: any) => {
@@ -92,7 +88,7 @@ export class DetailEvent implements OnInit, OnChanges {
         if (res.success) {
           this.events = res.data;
           this.currentEventId = this.events[0]?.id || '';
-          console.log('Eventos recibidos:', this.events);
+          this.eventId = this.currentEventId;
         } else {
           this.error = 'No se pudieron cargar los eventos';
         }

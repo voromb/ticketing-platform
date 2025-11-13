@@ -7,6 +7,9 @@
   </app-carousel>
 
   <app-event-details [event]="events[0]"></app-event-details>
+}
+
+@if (!loading && eventId) {
   <app-mercha-list [festivalId]="eventId"></app-mercha-list>
 }
 

@@ -1,9 +1,15 @@
 <div class="row g-3">
+  @if (loading) {
+    <div class="col-12">
+      <p style="color: #888; text-align: center; padding: 10px; font-size: 0.9rem;">
+        Loading merchandising...
+      </p>
+    </div>
+  }
+  
   @for (product of products; track product._id) {
     <div class="col-md-4 col-sm-6">
       <app-mercha-card [product]="product"></app-mercha-card>
     </div>
-  } @empty {
-  
   }
 </div>
