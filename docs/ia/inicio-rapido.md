@@ -13,7 +13,7 @@
 
 ### API Pública:
 ```
-http://voro-moran.dyndns.org:11434
+http://openweb.voro-moran.com/api
 ```
 
 ---

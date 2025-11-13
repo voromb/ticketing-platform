@@ -1,18 +1,13 @@
 #!/bin/sh
 set -e
 
-# Resolver el dominio dinámico y guardarlo
-OLLAMA_IP=$(getent hosts voro-moran.dyndns.org | awk '{ print $1 }' | head -n1)
+# Usar el dominio openweb que tiene el proxy configurado
+OLLAMA_HOST="openweb.voro-moran.com"
 
-if [ -z "$OLLAMA_IP" ]; then
-    echo "⚠️ No se pudo resolver voro-moran.dyndns.org, usando IP por defecto"
-    OLLAMA_IP="92.172.161.69"
-fi
-
-echo "✅ Ollama resuelto a: $OLLAMA_IP"
+echo "✅ Usando Ollama en: $OLLAMA_HOST"
 
 # Reemplazar en la configuración
-sed -i "s/OLLAMA_HOST_PLACEHOLDER/$OLLAMA_IP/g" /etc/nginx/nginx.conf
+sed -i "s/OLLAMA_HOST_PLACEHOLDER/$OLLAMA_HOST/g" /etc/nginx/nginx.conf
 
 # Iniciar Nginx
 exec nginx -g 'daemon off;'

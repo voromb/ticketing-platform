@@ -16,7 +16,7 @@
 
 **Estado:** ✅ En producción  
 **Modelos activos:** metalhead-assistant-v4, search-nlp-v2  
-**API:** http://voro-moran.dyndns.org:11434
+**API:** http://openweb.voro-moran.com/api
 
 ---
 

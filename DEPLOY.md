@@ -4,7 +4,7 @@
 
 - Puertos disponibles: 3001, 3003, 3004, 3005, 4200, 9090
 - Bases de datos: MongoDB (27017), PostgreSQL (5432), RabbitMQ (5672, 15672)
-- Servidor Ollama para IA (opcional): `voro-moran.dyndns.org:11434`
+- Servidor Ollama para IA (opcional): `openweb.voro-moran.com/api`
 
 ---
 
@@ -179,7 +179,7 @@ La plataforma incluye funcionalidades de IA para:
 
 ### Configuración de Ollama
 
-El sistema usa un servidor Ollama remoto: `voro-moran.dyndns.org:11434`
+El sistema usa un servidor Ollama remoto: `openweb.voro-moran.com/api`
 
 **Modelos disponibles:**
 - `metalhead-assistant-v4` - Chat conversacional
@@ -194,7 +194,7 @@ docker compose --profile deploy restart nginx
 ```
 
 El script `/docker-entrypoint.sh` en Nginx:
-1. Resuelve `voro-moran.dyndns.org` a su IP actual
+1. Configura el proxy a `openweb.voro-moran.com`
 2. Actualiza la configuración de Nginx
 3. Inicia el servidor
 
@@ -266,7 +266,7 @@ docker compose --profile deploy logs nginx
 
 1. Verifica que el servidor Ollama esté accesible:
 ```bash
-curl http://voro-moran.dyndns.org:11434/api/tags
+curl http://openweb.voro-moran.com/api/tags
 ```
 
 2. Reinicia Nginx para resolver DNS:
