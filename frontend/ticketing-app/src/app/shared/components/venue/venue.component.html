@@ -7,19 +7,12 @@
 
 
   <div class="venue-header">
-    <ng-container *ngIf="venue.images && venue.images.length > 0; else noImage">
+    
       <img
-        [src]="venue.images[0]"
+        [src]="venue.images[0] || '/assets/categories/rock-metal.jpg'"
         [alt]="venue.name"
         class="venue-image"
       />
-    </ng-container>
-
-    <ng-template #noImage>
-      <div class="venue-placeholder">
-        <span>Sin imagen</span>
-      </div>
-    </ng-template>
   </div>
 
   <div class="flex-grow-1 overflow-auto p-3">

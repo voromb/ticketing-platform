@@ -30,26 +30,73 @@ const updateSubcategorySchema = createSubcategorySchema.partial();
 
 // ============= CATEGORÍAS =============
 
+// export const getAllCategories = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+//     try {
+
+    
+//         const categories = await prisma.eventCategory.findMany({
+//             include: {
+//                 subcategories: {
+//                     orderBy: { name: 'asc' },
+//                 },
+//                 _count: {
+//                     select: {
+//                         events: true,
+//                         subcategories: true,
+//                     },
+//                 },
+//             },
+//             orderBy: { name: 'asc' },
+//         });
+
+//         reply.send({
+//             success: true,
+//             data: categories,
+//             pagination: {
+//                 page: 1,
+//                 limit: 50,
+//                 total: categories.length,
+//                 totalPages: 1,
+//                 hasNext: false,
+//                 hasPrev: false,
+//             },
+//         });
+//     } catch (error) {
+//         console.error('Error al obtener categorías:', error);
+//         reply.code(500).send({
+//             success: false,
+//             error: 'Error interno del servidor',
+//         });
+//     }
+// };
+
 export const getAllCategories = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
+        
+
         const categories = await prisma.eventCategory.findMany({
-            include: {
-                subcategories: {
-                    orderBy: { name: 'asc' },
-                },
-                _count: {
-                    select: {
-                        events: true,
-                        subcategories: true,
-                    },
-                },
+            // Solo seleccionamos los campos básicos. 
+            // Eliminamos 'include' y '_count' por completo.
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                // Puedes incluir otros campos simples aquí, pero no relaciones.
             },
             orderBy: { name: 'asc' },
         });
 
+        // 🔍 PASO DE DEPURACIÓN: Comprobar el resultado real antes de enviarlo
+        console.log('--- DEPURACIÓN getAllCategories ---');
+        console.log('Resultado de la consulta (longitud):', categories.length);
+        console.log('Primer resultado (si existe):', categories[0]);
+        console.log('-----------------------------------');
+
+
         reply.send({
             success: true,
             data: categories,
+            // La paginación sigue utilizando categories.length para el total
             pagination: {
                 page: 1,
                 limit: 50,
@@ -60,7 +107,7 @@ export const getAllCategories = async (req: FastifyRequest, reply: FastifyReply)
             },
         });
     } catch (error) {
-        console.error('Error al obtener categorías:', error);
+        console.error('❌ Error al obtener categorías (Controller):', error);
         reply.code(500).send({
             success: false,
             error: 'Error interno del servidor',

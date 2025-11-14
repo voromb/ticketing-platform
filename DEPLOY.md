@@ -25,7 +25,7 @@ Edita `.env` con tus credenciales.
 ### 2. Levantar todo el stack
 
 ```bash
-docker compose --profile deploy up -d
+cle
 ```
 
 **Eso es todo.** No necesitas ejecutar ningún script adicional.

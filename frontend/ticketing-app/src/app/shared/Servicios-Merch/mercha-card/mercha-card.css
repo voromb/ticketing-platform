@@ -1,4 +1,7 @@
-/* Estilos para la imagen del producto */
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rock+Salt&display=swap');
+
+/*
+ Estilos para la imagen del producto */
 .product-image-style {
   /* 1. Dimensiones (ajusta esto si quieres otro tamaño) */
   width: 125px;
@@ -30,6 +33,7 @@
 
 /* Estilos para el estado seleccionado */
 .card {
+  font-family: 'Metal Mania', cursive;
   position: relative;
   transition: all 0.3s ease;
 }

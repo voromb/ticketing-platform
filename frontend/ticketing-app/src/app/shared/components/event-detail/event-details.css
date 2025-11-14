@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rock+Salt&display=swap');
+
+
 .event-layout {
   background-color: rgb(3, 5, 18);
   display: flex;
@@ -9,14 +12,20 @@
   padding: 0 5%;
   box-sizing: border-box;
 }
-
+.event-details {
+  font-family: 'Metal Mania', cursive;
+  background-color: #0a0f27;
+  margin: 0;
+  padding: 0;
+}
 .event-info {
+  font-family: 'Metal Mania', cursive;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* empuja el contenido hacia abajo */
   height: 100%;
-  padding-bottom: 15vh; /* controla cuán abajo queda la descripción */
+ /* controla cuán abajo queda la descripción */
 }
 
 .event-info .title {
@@ -35,7 +44,7 @@
   font-size: 1.5rem;
   line-height: 1.6;
   margin-bottom: 2rem;
-  color: rgb(162, 170, 176);
+  color: rgb(232, 239, 244);
 }
 
 .ubicacion {
@@ -49,24 +58,9 @@
   justify-content: center; /* centra horizontalmente */
   gap: 1rem;
   margin-top: 2rem;
-}
-.banner {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden; /* evita que el contenido (imagen) se desborde */
+  background-color: rgb(3, 5, 18);
 }
 
-.banner img {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  object-fit: cover; /* ajusta la imagen al contenedor sin deformarla */
-}
 
 .buy-btn {
   background-color: #e10909;
@@ -99,15 +93,46 @@
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: right;
+  /* ¡CLAVE! Se necesita para el posicionamiento absoluto del degradado */
+  position: relative; 
+  /* Asegura que el degradado no se desborde */
+  overflow: hidden;
 }
 
 .banner img {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  width:100vh;
+  height: 50vh;
+  max-width: 100%;
   object-fit: cover;
+mask-image: radial-gradient(
+  /* El degradado es un círculo centrado */
+  circle at center, 
+  /* Totalmente visible hasta el 70% del centro */
+  black 70%, 
+  /* Se desvanece a transparente en el 100% */
+  transparent 100% 
+);
+
+}
+.banner::after {
+  content: '';
+  position: absolute;
+  /* Posiciona el efecto en la parte inferior del contenedor */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  /* Define la altura de la zona de difuminado (ajusta este valor si quieres un desvanecimiento más pequeño o más grande) */
+  height: 25%; 
+
+
+  background-image: linear-gradient(
+    to bottom,
+    rgba(11, 58, 130, 0) 0%, /* Transparente total */
+    rgb(3, 5, 18) 100% /* Tu color sólido */
+  );
+  
+  pointer-events: none;
 }
 
 .info{
@@ -131,9 +156,14 @@
 /* ==================== ESTILOS DE PAQUETES ==================== */
 
 .package-buttons {
+  flex: content;
+  justify-content: center;
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
+  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .package-btn {

@@ -62,6 +62,8 @@
 
 
 .carousel-container {
+  background-color: rgb(3, 5, 18);
+
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -111,12 +113,43 @@
 }
 
 /* 🎟️ EVENT DETAILS STYLE */
+.carousel-slide.event-style {
+  /* Habilita el posicionamiento absoluto para el pseudo-elemento */
+  position: relative; 
+  /* Asegura que la imagen no se desborde */
+  overflow: hidden;
+  /* Establece la altura, ya que la imagen lo llenará */
+  height: 50vh; 
+  width: 100%;
+}
 .event-image {
   width: 100%;
-  height: 500px;
-  object-fit: cover;
-  border-radius: 1rem;
+  height: 100%; /* Ocupa el 100% de la altura del contenedor (50vh) */
+  object-fit: cover; 
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
+.carousel-slide.event-style::after {
+  content: "";
+  /* Se posiciona absolutamente dentro de .carousel-slide.event-style */
+  position: absolute;
+  bottom: 0; /* Empieza desde la parte inferior */
+  left: 0;
+  width: 100%;
+  height: 60%; /* Ajusta esta altura para controlar el área difuminada */
+
+  /* Degradado: de transparente (arriba) a negro/oscuro (abajo) */
+  background: linear-gradient(
+    to bottom, 
+    rgba(0, 0, 0, 0) 50%,   /* Totalmente transparente en la parte superior del efecto */
+    rgba(225, 79, 79, 0.7) 100% /* Oscuro en la parte inferior, ideal para superponer texto */
+  );
+  
+  pointer-events: none;
+  /* Opcional: Asegurar que esté encima de la imagen */
+  z-index: 2; 
+}
+
+
 
 /* Controles */
 .nav {
@@ -140,7 +173,7 @@
   margin-top: 10px;
 }
 
-.dots span {
+/* .dots span {
   width: 10px;
   height: 10px;
   margin: 0 5px;
@@ -148,7 +181,7 @@
   background-color: #ccc;
   cursor: pointer;
   transition: background-color 0.3s ease;
-}
+} */
 
 .dots span.active {
   background-color: #333;

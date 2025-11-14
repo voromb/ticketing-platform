@@ -3,5 +3,6 @@
   <router-outlet></router-outlet>
 </div>
 
-<!-- Chat flotante (visible en todas las páginas) -->
-<app-chat-widget *ngIf="!isAdminRoute"></app-chat-widget>
+@if (!isAdminRoute) { 
+<app-chat-widget ></app-chat-widget>
+}

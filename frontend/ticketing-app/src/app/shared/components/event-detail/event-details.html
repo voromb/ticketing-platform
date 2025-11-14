@@ -3,12 +3,21 @@
     <div class="event-layout">
       
       <!-- IZQUIERDA: información -->
+
+      <section class="details-section">
       <div class="event-info">
       <h1 class="title">{{ event.name }}</h1>
       <p class="date">{{ event.eventDate | date:'fullDate' }}</p>
-      
+         <ul>
+      <li class="description">{{ event.description }}</li>
+      <li class="ubicacion">Lugar del evento: {{ event.venue.name }} - {{ event.venue.city }}</li>
+      <li class="tickets"> Entradas disponibles: {{event.availableTickets}}</li>
+      <li class="precioVip"> Entradas VIP:  {{event.maxPrice}} €</li>  
+      <li class="precioEstandar"> Entradas a pie de pista: {{event.minPrice}} €</li>
+      </ul>
+    
       </div>
-
+      </section>
       <!-- DERECHA: imagen -->
       <div class="banner">
         <img [src]="event.bannerImage || './assets/rock1.jpg'" alt="Banner del evento" />
@@ -16,14 +25,8 @@
 
     </div>
      
-    <div class="info"> 
-      <ul>
-      <li class="description">{{ event.description }}</li>
-      <li class="ubicacion">Lugar del evento: {{ event.venue.name }} - {{ event.venue.city }}</li>
-      <li class="tickets"> Entradas disponibles: {{event.availableTickets}}</li>
-      <li class="precioVip"> Entradas VIP:  {{event.maxPrice}} €</li>  
-      <li class="precioEstandar"> Entradas a pie de pista: {{event.minPrice}} €</li>
-      </ul>
+    
+   
       
       
 
@@ -61,7 +64,7 @@
       </div>
     }
   </div>
-    </div>
+ 
   </div>
 
   <!-- MODAL UNIFICADO DE PAQUETES -->

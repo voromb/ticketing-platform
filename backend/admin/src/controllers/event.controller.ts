@@ -127,27 +127,27 @@ class EventController {
     }
 
     // Opcional: solo categorías que tienen al menos un evento activo
-    async listAvailableCategories(req, reply) {
-        try {
-            const categories = await prisma.eventCategory.findMany({
-                where: {
-                    Event: {
-                        some: { status: 'ACTIVE' },
-                    },
-                },
-                include: {
-                    EventSubcategory: {
-                        where: { Event: { some: { status: 'ACTIVE' } } },
-                    },
-                },
-            });
+    // async listAvailableCategories(req, reply) {
+    //     try {
+    //         const categories = await prisma.eventCategory.findMany({
+    //             where: {
+    //                 Event: {
+    //                     some: { status: 'ACTIVE' },
+    //                 },
+    //             },
+    //             include: {
+    //                 EventSubcategory: {
+    //                     where: { Event: { some: { status: 'ACTIVE' } } },
+    //                 },
+    //             },
+    //         });
 
-            return reply.send(categories);
-        } catch (error) {
-            console.error(error);
-            return reply.status(500).send({ message: 'Error fetching available categories' });
-        }
-    }
+    //         return reply.send(categories);
+    //     } catch (error) {
+    //         console.error(error);
+    //         return reply.status(500).send({ message: 'Error fetching available categories' });
+    //     }
+    // }
 
     // ==================== LISTAR EVENTOS ====================
   async listRockEvents(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
