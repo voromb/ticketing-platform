@@ -1,6 +1,6 @@
 <div class="row g-3">
   @for (product of products; track product._id) {
-    <div class="col-md-4 col-sm-6">
+    <div class="col-md-2 col-sm-6" style="background-color: rgb(3, 5, 18);">
       <app-mercha-card [product]="product"></app-mercha-card>
     </div>
   } @empty {

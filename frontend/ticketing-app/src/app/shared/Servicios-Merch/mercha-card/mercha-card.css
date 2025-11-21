@@ -35,6 +35,11 @@
 .card {
   font-family: 'Metal Mania', cursive;
   position: relative;
+  color : white;  
+  border: 2px solid rgb(225, 180, 29);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  background-color: rgb(3, 5, 18);
   transition: all 0.3s ease;
 }
 

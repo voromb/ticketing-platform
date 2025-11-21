@@ -27,7 +27,7 @@ export class MerchaListComponent implements OnInit {
 }
     loadProducts() {
     this.merchandisingService.getProducts(this.festivalId).subscribe({
-      next: (res) => (this.products = res),
+      next: (res) => (this.products = res.slice(0, 6)), // Limitar a 6 productos  
       error: (err) => console.error('Error cargando productos:', err),
     });
   }
