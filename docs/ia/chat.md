@@ -179,7 +179,7 @@ private searchModel = 'search-nlp-v2';         // Búsqueda NLP
 private ollamaUrl = '/api/ollama/generate';
 
 // URL real (a través del proxy)
-http://voro-moran.dyndns.org:11434/api/generate
+http://openweb.voro-moran.com/api/generate
 ```
 
 ### Proxy Configuration:
@@ -187,7 +187,7 @@ http://voro-moran.dyndns.org:11434/api/generate
 ```json
 {
   "/api/ollama": {
-    "target": "http://voro-moran.dyndns.org:11434",
+    "target": "http://openweb.voro-moran.com/api",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
@@ -215,7 +215,7 @@ http://voro-moran.dyndns.org:11434/api/generate
 **Solución:**
 ```bash
 # Test directo a la API
-curl http://voro-moran.dyndns.org:11434/api/tags
+curl http://openweb.voro-moran.com/api/tags
 
 # Verificar que metalhead-assistant-v4 esté en la lista
 ```
@@ -304,7 +304,7 @@ console.error('❌ Error en chat:', error);
 ### Documentación Relacionada:
 - **IA General:** `ia2.md`
 - **Búsqueda con IA:** `BUSQUEDA_IA_README.md`
-- **API Ollama:** http://voro-moran.dyndns.org:11434/api/tags
+- **API Ollama:** http://openweb.voro-moran.com/api/tags
 
 ### Modelos Disponibles:
 - `metalhead-assistant-v4` ⭐ (Chat - datos actualizados)

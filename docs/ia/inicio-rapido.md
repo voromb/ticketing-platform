@@ -24,7 +24,7 @@ http://openweb.voro-moran.com/api
 
 ```bash
 # Conectar al servidor Proxmox
-ssh root@voro-moran.dyndns.org
+ssh root@openweb.voro-moran.com
 
 # Ir al directorio de entrenamiento
 cd /opt/ai-training
@@ -85,7 +85,7 @@ ollama list
 ```json
 {
   "/api/ollama": {
-    "target": "http://voro-moran.dyndns.org:11434",
+    "target": "http://openweb.voro-moran.com/api",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
@@ -186,10 +186,10 @@ this.aiService.extractSearchParams('thrash metal valencia').subscribe(params => 
 
 ```bash
 # Listar modelos disponibles
-curl http://voro-moran.dyndns.org:11434/api/tags
+curl http://openweb.voro-moran.com/api/tags
 
 # Test chat
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
+curl -X POST http://openweb.voro-moran.com/api/generate \
   -H "Content-Type: application/json" \
   -d '{
     "model": "metalhead-assistant-v4",
@@ -198,7 +198,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
   }'
 
 # Test búsqueda NLP
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
+curl -X POST http://openweb.voro-moran.com/api/generate \
   -H "Content-Type: application/json" \
   -d '{
     "model": "search-nlp-v2",
@@ -271,10 +271,10 @@ cd /ruta/a/tu/proyecto
 ./docker/bd_backup/backup.ps1
 
 # 2. Copiar backup al servidor
-scp backup.sql root@voro-moran.dyndns.org:/opt/ai-training/
+scp backup.sql root@openweb.voro-moran.com:/opt/ai-training/
 
 # 3. Entrenar
-ssh root@voro-moran.dyndns.org
+ssh root@openweb.voro-moran.com
 cd /opt/ai-training
 python3 extract_and_train_from_github.py
 

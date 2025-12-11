@@ -62,7 +62,7 @@ Asistente conversacional:
 
 ### API Pública:
 ```
-http://voro-moran.dyndns.org:11434
+http://openweb.voro-moran.com/api
 ```
 
 ### Integración:
@@ -75,7 +75,7 @@ http://voro-moran.dyndns.org:11434
 
 ## 🔗 Enlaces Rápidos
 
-- [Ollama API](http://voro-moran.dyndns.org:11434/api/tags)
+- [Ollama API](http://openweb.voro-moran.com/api/tags)
 - [OpenWebUI](http://openweb.voro-moran.com/)
 - [Repositorio GitHub](https://github.com/voromb/ticketing-platform)
 

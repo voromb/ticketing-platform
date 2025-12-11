@@ -15,7 +15,7 @@
 - ✅ Ollama + OpenWebUI instalado y funcionando
 - ✅ GPU RTX 5070 Ti (Blackwell sm_120) con PyTorch 2.10 dev
 - ✅ Fine-tuning exitoso (13 segundos, Loss 97% reducción)
-- ✅ API pública accesible en `http://voro-moran.dyndns.org:11434`
+- ✅ API pública accesible en `http://openweb.voro-moran.com/api`
 
 **Modelos en Producción:**
 -  `metalhead-assistant-v4` (8B) - Chat con datos actualizados ⭐ **ACTIVO**
@@ -1283,22 +1283,22 @@ curl http://localhost:4200/api/chat \
 
 ### API Pública - Endpoints Necesarios
 
-Para exponer tu API de Ollama públicamente a través de `http://voro-moran.dyndns.org:11434`, necesitas abrir los siguientes endpoints:
+Para exponer tu API de Ollama públicamente a través de `http://openweb.voro-moran.com/api`, necesitas abrir los siguientes endpoints:
 
 #### Endpoints que YA tienes abiertos:
 
 ```bash
 # Información del sistema
-GET http://voro-moran.dyndns.org:11434/api/tags
-GET http://voro-moran.dyndns.org:11434/api/version
-GET http://voro-moran.dyndns.org:11434/api/ps
+GET http://openweb.voro-moran.com/api/tags
+GET http://openweb.voro-moran.com/api/version
+GET http://openweb.voro-moran.com/api/ps
 ```
 
 #### Endpoints CRÍTICOS para Chat y Búsqueda:
 
 ```bash
 # 1. GENERACIÓN (Chat y Búsqueda) - EL MÁS IMPORTANTE
-POST http://voro-moran.dyndns.org:11434/api/generate
+POST http://openweb.voro-moran.com/api/generate
 Content-Type: application/json
 Body: {
   "model": "metalhead-assistant-v3",
@@ -1307,7 +1307,7 @@ Body: {
 }
 
 # 2. CHAT (Conversacional con historial)
-POST http://voro-moran.dyndns.org:11434/api/chat
+POST http://openweb.voro-moran.com/api/chat
 Content-Type: application/json
 Body: {
   "model": "metalhead-assistant-v3",
@@ -1318,7 +1318,7 @@ Body: {
 }
 
 # 3. EMBEDDINGS (Para búsqueda semántica avanzada - opcional)
-POST http://voro-moran.dyndns.org:11434/api/embeddings
+POST http://openweb.voro-moran.com/api/embeddings
 Content-Type: application/json
 Body: {
   "model": "metalhead-assistant-v3",
@@ -1342,7 +1342,7 @@ Body: {
 
 #### Configuración Paso a Paso - API Pública
 
-**Objetivo:** Exponer Ollama públicamente en `http://voro-moran.dyndns.org:11434`
+**Objetivo:** Exponer Ollama públicamente en `http://openweb.voro-moran.com/api`
 
 ##### Paso 1: Conectar al servidor LXC
 
@@ -1425,14 +1425,14 @@ tcp   LISTEN 0   4096   *:11434   *:*   users:(("ollama",pid=702631,fd=3))
 En tu router o Proxmox, asegúrate de tener:
 - ✅ Port forwarding: `11434` → `192.168.0.50:11434`
 - ✅ Firewall: Permitir tráfico TCP en puerto `11434`
-- ✅ DynDNS: `voro-moran.dyndns.org` apuntando a tu IP pública
+- ✅ DynDNS: `openweb.voro-moran.com` apuntando a tu IP pública
 
 #### Paso 8: Tests de Endpoints Públicos
 
 ##### Test 1: Listar modelos (GET) ✅
 
 ```bash
-curl http://voro-moran.dyndns.org:11434/api/tags
+curl http://openweb.voro-moran.com/api/tags
 ```
 
 **Salida exitosa:**
@@ -1465,7 +1465,7 @@ curl http://voro-moran.dyndns.org:11434/api/tags
 
 **En Linux/Mac:**
 ```bash
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
+curl -X POST http://openweb.voro-moran.com/api/generate \
   -H "Content-Type: application/json" \
   -d '{
     "model": "metalhead-assistant-v3",
@@ -1477,7 +1477,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
 **En Windows PowerShell:**
 ```powershell
 # Opción 1: Con backticks
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate -H "Content-Type: application/json" -d "{`"model`": `"metalhead-assistant-v3`", `"prompt`": `"Hola`", `"stream`": false}"
+curl -X POST http://openweb.voro-moran.com/api/generate -H "Content-Type: application/json" -d "{`"model`": `"metalhead-assistant-v3`", `"prompt`": `"Hola`", `"stream`": false}"
 
 # Opción 2: Crear archivo JSON
 @"
@@ -1488,7 +1488,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/generate -H "Content-Type: a
 }
 "@ | Out-File -Encoding UTF8 test.json
 
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate -H "Content-Type: application/json" -d "@test.json"
+curl -X POST http://openweb.voro-moran.com/api/generate -H "Content-Type: application/json" -d "@test.json"
 ```
 
 **Salida esperada:**
@@ -1504,7 +1504,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/generate -H "Content-Type: a
 
 ```bash
 # Linux/Mac
-curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
+curl -X POST http://openweb.voro-moran.com/api/generate \
   -H "Content-Type: application/json" \
   -d '{
     "model": "search-nlp-v2",
@@ -1525,7 +1525,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/generate \
 ##### Test 4: Chat conversacional (POST)
 
 ```bash
-curl -X POST http://voro-moran.dyndns.org:11434/api/chat \
+curl -X POST http://openweb.voro-moran.com/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "model": "metalhead-assistant-v3",
@@ -1545,7 +1545,7 @@ curl -X POST http://voro-moran.dyndns.org:11434/api/chat \
 - ✅ Servicio reiniciado correctamente
 - ✅ Test GET `/api/tags` funciona
 - ✅ Test POST `/api/generate` funciona
-- ✅ API accesible desde `http://voro-moran.dyndns.org:11434`
+- ✅ API accesible desde `http://openweb.voro-moran.com/api`
 - ✅ 14 modelos disponibles (incluyendo V3 y V2)
 
 **Modelos en producción:**
@@ -1561,8 +1561,8 @@ export const environment = {
   production: true,
   
   // API PÚBLICA
-  ollamaUrl: 'http://voro-moran.dyndns.org:11434/api/generate',
-  ollamaChatUrl: 'http://voro-moran.dyndns.org:11434/api/chat',
+  ollamaUrl: 'http://openweb.voro-moran.com/api/generate',
+  ollamaChatUrl: 'http://openweb.voro-moran.com/api/chat',
   
   // Modelos
   chatModel: 'metalhead-assistant-v3',
@@ -1672,7 +1672,7 @@ systemctl restart ollama
 1. ✅ Ollama escuchando en `0.0.0.0`: `ss -tulpn | grep 11434`
 2. ✅ Port forwarding en router: `11434 → 192.168.0.50:11434`
 3. ✅ Firewall permite puerto: `ufw allow 11434` (si usas UFW)
-4. ✅ DynDNS actualizado: `ping voro-moran.dyndns.org`
+4. ✅ DynDNS actualizado: `ping openweb.voro-moran.com`
 5. ✅ Test local funciona: `curl http://localhost:11434/api/tags`
 
 ##### Problema 6: Modelo no encontrado

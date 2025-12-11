@@ -16,7 +16,7 @@
 
 ### APIs Configuradas:
 
-- **Ollama API:** `http://voro-moran.dyndns.org:11434`
+- **Ollama API:** `http://openweb.voro-moran.com/api`
 - **Backend Events:** `http://localhost:3003/api`
 - **Modelos:**
   - Chat: `metalhead-assistant-v3`
@@ -162,7 +162,7 @@ curl http://localhost:3003/api/events
 **Solución:**
 ```bash
 # Test directo a Ollama
-curl http://voro-moran.dyndns.org:11434/api/tags
+curl http://openweb.voro-moran.com/api/tags
 
 # Debería listar modelos incluyendo:
 # - metalhead-assistant-v3
@@ -276,7 +276,7 @@ tail -f backend/admin/logs/app.log
 ## 📚 Documentación Adicional
 
 - **Documentación completa:** `ia2.md`
-- **API Ollama:** http://voro-moran.dyndns.org:11434/api/tags
+- **API Ollama:** http://openweb.voro-moran.com/api/tags
 - **Modelos disponibles:** Ver `ia2.md` sección "Modelos en Producción"
 
 ---
